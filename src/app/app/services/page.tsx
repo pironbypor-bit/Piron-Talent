@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bookmark, Calculator, FileText, Laptop, MoreHorizontal, Palette, Scale, Sparkles, Wrench, type LucideIcon } from "lucide-react";
+import { Bookmark, Calculator, FileText, Laptop, MoreHorizontal, Palette, Scale, Search, Sparkles, Star, Wrench, type LucideIcon } from "lucide-react";
 import { CheckedPill, EmptyState } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { toggleKeepProvider } from "@/lib/app/actions";
-import { listProviders } from "@/lib/app/queries";
+import { listProviders, type ProviderSort } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
@@ -26,11 +26,24 @@ const TILES: Record<string, { Icon: LucideIcon; tone: string; review?: boolean }
 const GRID = ["finance", "documents", "legal", "technology", "electrical", "beauty", "creative"];
 
 /** Services tab: category grid from the categories table, then providers who marked themselves available. */
-export default async function ServicesPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
-  const [t, locale, categories, { category }] = await Promise.all([getT(), getLocale(), getCategories(), searchParams]);
-  const selected = categories.find((c) => String(c.id) === category) ?? null;
-  const providers = await listProviders(selected?.id);
-  const path = selected ? `/app/services?category=${selected.id}` : "/app/services";
+type Params = { category?: string; q?: string; remote?: string; sort?: string };
+
+export default async function ServicesPage({ searchParams }: { searchParams: Promise<Params> }) {
+  const [t, locale, categories, params] = await Promise.all([getT(), getLocale(), getCategories(), searchParams]);
+  const selected = categories.find((c) => String(c.id) === params.category) ?? null;
+  const q = (params.q ?? "").trim().slice(0, 60);
+  const remote = params.remote === "1";
+  const sort: ProviderSort = params.sort === "completed" || params.sort === "newest" ? params.sort : "rated";
+  const providers = await listProviders({ categoryId: selected?.id, q, remote, sort });
+  const searching = Boolean(q || remote || params.sort);
+  const qs = (over: Partial<Params>) => {
+    const p = new URLSearchParams();
+    const merged: Params = { category: selected ? String(selected.id) : undefined, q: q || undefined, remote: remote ? "1" : undefined, sort: params.sort, ...over };
+    for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
+    const str = p.toString();
+    return str ? `/app/services?${str}` : "/app/services";
+  };
+  const path = qs({});
   const short = (name: string) => name.split(/ (&|និង) /)[0];
 
   return (
@@ -68,7 +81,31 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
         </li>
       </ul>
 
-      <h2 className="mt-6 text-lg font-bold">{selected ? categoryLabel(selected, locale) : t("Popular providers")}</h2>
+      <form action="/app/services" method="get" className="mt-5 space-y-2">
+        {selected && <input type="hidden" name="category" value={selected.id} />}
+        {remote && <input type="hidden" name="remote" value="1" />}
+        <label className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-brand-500">
+          <Search className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+          <span className="sr-only">{t("Search providers")}</span>
+          <input name="q" defaultValue={q} placeholder={t("Search providers")} maxLength={60} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+          <button type="submit" className="rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-ink hover:bg-brand-400">
+            {t("Search")}
+          </button>
+        </label>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <Link href={qs({ remote: remote ? undefined : "1" })} aria-pressed={remote} className={`rounded-full border px-3 py-1 font-medium ${remote ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
+            {t("Remote")}
+          </Link>
+          <span className="ml-auto text-ink-muted">{t("Sort")}</span>
+          <select name="sort" defaultValue={sort} className="rounded-full border border-stone-200 bg-white px-2 py-1 text-xs">
+            <option value="rated">{t("Best rated")}</option>
+            <option value="completed">{t("Most completed jobs")}</option>
+            <option value="newest">{t("Newest")}</option>
+          </select>
+        </div>
+      </form>
+
+      <h2 className="mt-5 text-lg font-bold">{selected ? categoryLabel(selected, locale) : searching ? t("Results") : t("Popular providers")}</h2>
       {providers.length === 0 ? (
         <div className="mt-3">
           <EmptyState
@@ -79,7 +116,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
               </Link>
             }
           >
-            {t("No providers yet.")}
+            {searching ? t("No results. Try another word.") : t("No providers yet.")}
           </EmptyState>
         </div>
       ) : (
@@ -101,6 +138,12 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                     {p.identity_checked ? <CheckedPill>{t("Identity checked")}</CheckedPill> : <span className="rounded-full bg-stone-100 px-2 py-0.5 text-ink-muted">{t("New")}</span>}
                     <span className="text-ink-muted">{t("{n} completed jobs", { n: p.completed_jobs })}</span>
+                    {p.rating !== null && (
+                      <span className="inline-flex items-center gap-0.5 text-ink">
+                        <Star className="size-3.5 fill-brand-500 text-brand-500" aria-hidden="true" />
+                        {p.rating.toFixed(1)} <span className="text-ink-muted">({t("{n} reviews", { n: p.reviews })})</span>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1.5">

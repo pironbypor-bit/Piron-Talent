@@ -440,6 +440,23 @@ const km: Messages = {
   "Hire shift": "ជួលវេន",
   "Upload failed.": "ការបង្ហោះបរាជ័យ។",
 
+  // Search and portfolio
+  "Search providers": "ស្វែងរកអ្នកផ្តល់សេវា",
+  "Sort": "តម្រៀប",
+  "Best rated": "វាយតម្លៃល្អបំផុត",
+  "Most completed jobs": "ការងារបានបញ្ចប់ច្រើនបំផុត",
+  "Newest": "ថ្មីបំផុត",
+  "Add to portfolio": "បន្ថែមទៅស្នាដៃ",
+  "Caption": "ចំណងជើងរូប",
+  "Remove": "លុបចេញ",
+  "Up to 12 photos of your past work.": "រហូតដល់ 12 រូបថតនៃការងារពីមុនរបស់អ្នក។",
+  "{n} reviews": "ការវាយតម្លៃ {n}",
+  "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
+  "Search": "ស្វែងរក",
+  "Uploading…": "កំពុងបង្ហោះ…",
+  "No results. Try another word.": "គ្មានលទ្ធផល។ សាកល្បងពាក្យផ្សេង។",
+  "Results": "លទ្ធផល",
+
   // Phase 2 core
   "Scope": "វិសាលភាព",
   "Send your quote": "ផ្ញើសម្រង់តម្លៃរបស់អ្នក",

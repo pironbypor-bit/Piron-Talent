@@ -77,25 +77,59 @@ export async function getPost(id: string): Promise<{ post: PostRow; comments: Co
 
 const withSkills = <T extends SkillJoin>(row: T) => ({ ...row, skills: row.profile_skills.map((s) => s.skills?.name).filter(Boolean) as string[] });
 
-export async function listProviders(categoryId?: number): Promise<ProviderRow[]> {
+export type ProviderSort = "rated" | "completed" | "newest";
+
+export async function listProviders(opts: { categoryId?: number; q?: string; remote?: boolean; sort?: ProviderSort } = {}): Promise<(ProviderRow & { rating: number | null; reviews: number })[]> {
   const supabase = await createClient();
   const uid = await getUserId();
-  let q = supabase
+  const term = (opts.q ?? "").trim().slice(0, 60);
+  let ids: string[] | null = null;
+  if (term) {
+    // Skills live in their own table: find matching skill names first, then the profiles that have them.
+    const { data: skillRows } = await supabase.from("profile_skills").select("profile_id,skills!inner(name)").ilike("skills.name", `%${term}%`).limit(200);
+    ids = ((skillRows ?? []) as unknown as { profile_id: string }[]).map((r) => r.profile_id);
+  }
+  let query = supabase
     .from("profiles")
-    .select(`${AUTHOR},city,bio,price_from,remote,completed_jobs,primary_category_id,profile_skills(skills(name))`)
+    .select(`${AUTHOR},city,bio,price_from,remote,completed_jobs,primary_category_id,created_at,profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
     .eq("is_available", true)
-    .order("identity_checked", { ascending: false })
-    .order("completed_jobs", { ascending: false })
     .limit(60);
-  if (categoryId) q = q.eq("primary_category_id", categoryId);
-  const { data } = await q;
-  const rows = (data ?? []) as unknown as (Omit<ProviderRow, "skills" | "saved"> & SkillJoin)[];
+  if (opts.categoryId) query = query.eq("primary_category_id", opts.categoryId);
+  if (opts.remote) query = query.eq("remote", true);
+  if (term) {
+    const safe = term.replace(/[%,()]/g, " ");
+    const parts = [`display_name.ilike.%${safe}%`, `role_line.ilike.%${safe}%`, `bio.ilike.%${safe}%`];
+    if (ids && ids.length) parts.push(`id.in.(${ids.join(",")})`);
+    query = query.or(parts.join(","));
+  }
+  const { data } = await query;
+  type Row = Omit<ProviderRow, "skills" | "saved"> & SkillJoin & { created_at: string; reviews: { stars: number }[] };
+  const rows = (data ?? []) as unknown as Row[];
   let saved = new Set<string>();
   if (uid && rows.length) {
     const { data: s } = await supabase.from("saved_providers").select("provider_id").eq("user_id", uid);
     saved = new Set((s ?? []).map((x) => x.provider_id));
   }
-  return rows.map((r) => ({ ...withSkills(r), saved: saved.has(r.id) }));
+  const out = rows.map((r) => {
+    const n = r.reviews?.length ?? 0;
+    const rating = n ? r.reviews.reduce((a, x) => a + x.stars, 0) / n : null;
+    return { ...withSkills(r), saved: saved.has(r.id), rating, reviews: n };
+  });
+  const sort = opts.sort ?? "rated";
+  out.sort((a, b) =>
+    sort === "newest" ? b.created_at.localeCompare(a.created_at)
+    : sort === "completed" ? b.completed_jobs - a.completed_jobs || Number(b.identity_checked) - Number(a.identity_checked)
+    : (b.rating ?? 0) - (a.rating ?? 0) || b.reviews - a.reviews || Number(b.identity_checked) - Number(a.identity_checked) || b.completed_jobs - a.completed_jobs,
+  );
+  return out;
+}
+
+export async function myPortfolio() {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("portfolio_items").select("id,image_path,caption,sort_order").eq("provider_id", uid).order("sort_order").order("created_at");
+  return (data ?? []) as { id: string; image_path: string; caption: string | null; sort_order: number }[];
 }
 
 export async function getProvider(id: string) {

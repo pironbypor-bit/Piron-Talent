@@ -194,6 +194,32 @@ export async function setAvatar(path: string) {
   revalidatePath("/app/profile");
 }
 
+const PORTFOLIO_MAX = 12;
+
+/** Called after the browser uploaded the image to portfolio/<uid>/...; records it with an optional caption. */
+export async function addPortfolioItem(path: string, caption: string) {
+  const uid = await requireUser("/app/profile/edit");
+  if (!path.startsWith(`${uid}/`)) return;
+  const supabase = await createClient();
+  const { count } = await supabase.from("portfolio_items").select("id", { count: "exact", head: true }).eq("provider_id", uid);
+  if ((count ?? 0) >= PORTFOLIO_MAX) {
+    await supabase.storage.from("portfolio").remove([path]);
+    return;
+  }
+  await supabase.from("portfolio_items").insert({ provider_id: uid, image_path: path, caption: caption.trim().slice(0, 300) || null, sort_order: count ?? 0 });
+  revalidatePath("/app/profile/edit");
+  revalidatePath(`/app/providers/${uid}`);
+}
+
+export async function removePortfolioItem(id: string) {
+  const uid = await requireUser("/app/profile/edit");
+  const supabase = await createClient();
+  const { data } = await supabase.from("portfolio_items").delete().eq("id", id).eq("provider_id", uid).select("image_path").maybeSingle();
+  if (data?.image_path) await supabase.storage.from("portfolio").remove([data.image_path]);
+  revalidatePath("/app/profile/edit");
+  revalidatePath(`/app/providers/${uid}`);
+}
+
 export async function markNotificationsRead() {
   const uid = await requireUser("/app/profile");
   const supabase = await createClient();

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle } from "@/components/ui";
-import { getMe } from "@/lib/app/queries";
+import { getMe, myPortfolio } from "@/lib/app/queries";
+import { PortfolioEditor } from "../uploads";
 import { getCategories } from "@/lib/categories";
 import { getT } from "@/lib/i18n/server";
 import { EditProfileForm } from "./edit-form";
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function EditProfilePage() {
-  const [t, me, categories] = await Promise.all([getT(), getMe(), getCategories()]);
+  const [t, me, categories, portfolio] = await Promise.all([getT(), getMe(), getCategories(), myPortfolio()]);
   if (!me) return null;
   return (
     <main className="px-4 py-4">
@@ -23,6 +24,10 @@ export default async function EditProfilePage() {
         <PageTitle>{t("Edit profile")}</PageTitle>
       </div>
       <EditProfileForm me={me} categories={categories} />
+      <h2 className="mt-8 text-lg font-bold">{t("Portfolio")}</h2>
+      <div className="mt-2">
+        <PortfolioEditor userId={me.id} items={portfolio} />
+      </div>
     </main>
   );
 }
