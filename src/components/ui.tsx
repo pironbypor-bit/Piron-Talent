@@ -97,11 +97,25 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
   );
 }
 
-export function EmptyState({ children, action }: { children: ReactNode; action?: ReactNode }) {
+export function EmptyState({ children, action, illustration }: { children: ReactNode; action?: ReactNode; illustration?: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-center">
+    <div className="card px-4 py-8 text-center">
+      {illustration && <div className="mb-3">{illustration}</div>}
       <p className="text-ink-muted">{children}</p>
       {action && <div className="mt-3">{action}</div>}
     </div>
+  );
+}
+
+/** "Identity checked" with a tick, the one trust label the plan allows on cards. Pass translated text. */
+export function CheckedPill({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+      <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
+        <circle cx="8" cy="8" r="8" fill="#16a34a" />
+        <path d="M4.5 8.5l2.2 2.2L11.5 6" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      {children}
+    </span>
   );
 }

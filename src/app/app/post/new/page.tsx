@@ -9,12 +9,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("Write a post@@title") };
 }
 
-export default async function NewPostPage() {
-  const [t, categories] = await Promise.all([getT(), getCategories()]);
+export default async function NewPostPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
+  const [t, categories, { kind }] = await Promise.all([getT(), getCategories(), searchParams]);
+  const initialKind = ["need_help", "offer_skill", "share_knowledge"].includes(kind ?? "") ? (kind as "need_help" | "offer_skill" | "share_knowledge") : "need_help";
   return (
     <main className="px-4 py-4">
       <PageTitle>{t("Write a post@@title")}</PageTitle>
-      <NewPostForm categories={categories} />
+      <NewPostForm categories={categories} initialKind={initialKind} />
     </main>
   );
 }

@@ -54,7 +54,7 @@ export default async function ConversationPage({ params }: Props) {
             <li key={m.id}>
               {showDay && <p className="my-2 text-center text-xs text-ink-muted">{day}</p>}
               <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <p className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${mine ? "bg-brand-100" : "bg-white shadow-sm"}`}>{m.body}</p>
+                <p className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${mine ? "bg-brand-100" : "card"}`}>{m.body}</p>
               </div>
             </li>
           );

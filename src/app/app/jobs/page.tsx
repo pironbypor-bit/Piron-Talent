@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { EmptyState, Pill } from "@/components/ui";
+import { EmptyIllustration } from "@/components/illustrations";
 import { listJobs } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -21,12 +22,14 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const list = jobs.filter((j) => active === "all" || j.job_type === active);
 
   return (
-    <main className="px-4 py-4">
-      <h1 className="text-xl font-bold">{t("Jobs & Shifts")}</h1>
-      <p className="text-sm text-ink-muted">{t("Flexible work, real pay. Shift jobs open after the legal review.")}</p>
+    <main className="px-4 pb-24 pt-4">
+      <section className="hero-amber rounded-3xl p-4">
+        <h1 className="text-xl font-bold">{t("Jobs & Shifts")}</h1>
+        <p className="text-sm text-brand-900">{t("Flexible work, real pay. Shift jobs open after the legal review.")}</p>
+      </section>
       <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
         {(["all", "freelance", "project"] as const).map((k) => (
-          <Link key={k} href={k === "all" ? "/app/jobs" : `/app/jobs?type=${k}`} aria-current={active === k ? "page" : undefined} className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium ${active === k ? "border-ink bg-ink text-white" : "border-stone-300 bg-white hover:bg-stone-50"}`}>
+          <Link key={k} href={k === "all" ? "/app/jobs" : `/app/jobs?type=${k}`} aria-current={active === k ? "page" : undefined} className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium ${active === k ? "bg-ink text-white" : "card hover:bg-brand-50"}`}>
             {k === "all" ? t("All posts") : t(JOB_TYPE_LABEL[k])}
           </Link>
         ))}
@@ -34,12 +37,12 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
 
       {list.length === 0 ? (
         <div className="mt-6">
-          <EmptyState>{t("No jobs yet.")}</EmptyState>
+          <EmptyState illustration={<EmptyIllustration kind="jobs" />}>{t("No jobs yet.")}</EmptyState>
         </div>
       ) : (
         <ul className="mt-4 space-y-3">
           {list.map((j) => (
-            <li key={j.id} className="rounded-2xl bg-white p-3 shadow-sm">
+            <li key={j.id} className="card p-3">
               <div className="flex gap-3">
                 <AvatarImg name={j.poster.display_name} url={j.poster.avatar_url} />
                 <div className="min-w-0 flex-1">
@@ -54,7 +57,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between gap-2">
-                <Pill tone="neutral">{t(JOB_TYPE_LABEL[j.job_type])}</Pill>
+                <Pill tone="amber">{t(JOB_TYPE_LABEL[j.job_type])}</Pill>
                 {j.pay_amount !== null && (
                   <p className="text-base font-bold">
                     ${j.pay_amount} <span className="text-xs font-normal text-ink-muted">{t(PAY_UNIT_LABEL[j.pay_unit])}</span>

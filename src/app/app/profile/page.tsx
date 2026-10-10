@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, FileCheck, MessageCircle, Settings, Sparkles, type LucideIcon } from "lucide-react";
-import { Button, Pill } from "@/components/ui";
+import { Bell, Bookmark, Briefcase, FileCheck, FileText, MessageCircle, Settings, Sparkles, Users, type LucideIcon } from "lucide-react";
+import { AngkorSilhouette } from "@/components/brand";
+import { Button, CheckedPill, Pill } from "@/components/ui";
 import { markNotificationsRead } from "@/lib/app/actions";
 import { getMe, listNotifications, myCounters, myIdentityStatus } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
@@ -25,31 +26,35 @@ export default async function ProfilePage() {
   const unread = notifications.filter((n) => !n.read_at).length;
 
   return (
-    <main className="px-4 py-4">
-      <div className="flex items-start justify-between gap-3 rounded-3xl bg-brand-100 p-4">
-        <div className="flex items-center gap-3">
-          <AvatarImg name={me.display_name} url={me.avatar_url} size={14} />
-          <div>
-            <h1 className="text-xl font-bold">{t("Hello, {name}!", { name: me.display_name })}</h1>
-            <p className="text-sm text-brand-900">{me.role_line ?? t("Build your record, one job at a time.")}</p>
-            {me.identity_checked && <span className="mt-1 inline-block"><Pill tone="green">{t("Identity checked")}</Pill></span>}
+    <main className="px-4 pb-24 pt-4">
+      <div className="hero-amber relative overflow-hidden rounded-3xl p-4">
+        <AngkorSilhouette className="pointer-events-none absolute bottom-0 right-0 h-16 w-56 text-brand-600/25" />
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <AvatarImg name={me.display_name} url={me.avatar_url} size={14} />
+            <div>
+              <h1 className="text-xl font-bold leading-tight">{t("Hello, {name}!", { name: me.display_name })}</h1>
+              <p className="text-sm text-brand-900">{me.role_line ?? t("Build your record, one job at a time.")}</p>
+              {me.identity_checked && <span className="mt-1 inline-block"><CheckedPill>{t("Identity checked")}</CheckedPill></span>}
+            </div>
           </div>
+          <Link href="/app/profile/edit" aria-label={t("Edit profile")} className="rounded-full bg-white/90 p-2 text-ink-muted hover:text-ink">
+            <Settings className="size-4" />
+          </Link>
         </div>
-        <Link href="/app/profile/edit" aria-label={t("Edit profile")} className="rounded-full bg-white p-2 text-ink-muted hover:text-ink">
-          <Settings className="size-4" />
-        </Link>
       </div>
 
       <ul className="mt-4 grid grid-cols-4 gap-2">
-        {([[t("Saved posts"), counters.savedPosts], [t("Saved providers"), counters.savedProviders], [t("My applications"), counters.applications], [t("Projects"), counters.posts]] as [string, number][]).map(([label, n]) => (
-          <li key={label} className="rounded-2xl bg-white p-2 text-center shadow-sm">
-            <p className="text-xl font-bold">{n}</p>
+        {([[t("Saved posts"), counters.savedPosts, Bookmark], [t("Saved providers"), counters.savedProviders, Users], [t("My applications"), counters.applications, FileText], [t("Projects"), counters.posts, Briefcase]] as [string, number, LucideIcon][]).map(([label, n, Icon]) => (
+          <li key={label} className="card flex flex-col items-center p-2 text-center">
+            <span className="flex size-8 items-center justify-center rounded-xl bg-brand-100 text-brand-800"><Icon className="size-4" /></span>
+            <p className="mt-1 text-xl font-bold">{n}</p>
             <p className="text-[11px] leading-tight text-ink-muted">{label}</p>
           </li>
         ))}
       </ul>
 
-      <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+      <section className="mt-4 card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-semibold">{t("Identity check")}</p>
@@ -61,7 +66,7 @@ export default async function ProfilePage() {
         {(identity === "none" || identity === "rejected") && <IdentityUpload userId={me.id} />}
       </section>
 
-      <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+      <section className="mt-4 card p-4">
         <p className="font-semibold">{t("Avatar")}</p>
         <AvatarUpload userId={me.id} />
       </section>
@@ -80,7 +85,7 @@ export default async function ProfilePage() {
         {notifications.length === 0 ? (
           <p className="mt-2 text-sm text-ink-muted">{t("Nothing yet.")}</p>
         ) : (
-          <ul className="mt-2 divide-y divide-stone-200 rounded-2xl bg-white shadow-sm">
+          <ul className="mt-2 card divide-y divide-stone-100">
             {notifications.map((n) => {
               const Icon = ICONS[n.title] ?? Bell;
               const inner = (

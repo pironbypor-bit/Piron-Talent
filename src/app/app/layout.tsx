@@ -11,8 +11,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="bg-stone-100">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-white sm:border-x sm:border-stone-200">
-        <TopBar base="/app" name={me?.display_name ?? ""} unread={unread} signedIn={!!me} />
-        <div className="flex-1 bg-brand-50/40">{children}</div>
+        <TopBar base="/app" name={me?.display_name ?? ""} unread={unread} signedIn={!!me} avatarUrl={me?.avatar_url ?? null} />
+        <div className="app-bg flex-1">{children}</div>
         <TabBar base="/app" />
       </div>
     </div>

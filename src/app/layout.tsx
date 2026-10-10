@@ -6,6 +6,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { messagesFor } from "@/lib/i18n/messages";
 import { I18nProvider } from "@/lib/i18n/client";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { HideOn } from "@/components/hide-on";
 
 // Latin from Inter, Khmer from Noto Sans Khmer; the browser picks per glyph, so mixed lines look right.
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -22,9 +23,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} className={`${inter.variable} ${khmer.variable}`}>
       <body className="flex min-h-screen flex-col font-sans antialiased">
         <I18nProvider locale={locale} messages={messagesFor(locale)}>
-          <SiteHeader />
+          <HideOn prefixes={["/app", "/demo/app"]}>
+            <SiteHeader />
+          </HideOn>
           <div className="flex-1">{children}</div>
-          <SiteFooter />
+          <HideOn prefixes={["/app", "/demo/app"]}>
+            <SiteFooter />
+          </HideOn>
         </I18nProvider>
       </body>
     </html>

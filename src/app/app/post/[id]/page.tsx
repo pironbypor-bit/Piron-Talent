@@ -27,7 +27,7 @@ export default async function PostPage({ params, searchParams }: Props) {
   const path = `/app/post/${post.id}`;
 
   return (
-    <main className="px-4 py-4">
+    <main className="px-4 pb-24 pt-4">
       <Link href="/app" className="text-sm font-medium underline">
         {t("Back")}
       </Link>
@@ -62,7 +62,7 @@ export default async function PostPage({ params, searchParams }: Props) {
         <h2 className="font-semibold">{t("Comments")} ({comments.length})</h2>
         <ul className="mt-2 space-y-2">
           {comments.map((c) => (
-            <li key={c.id} className="flex items-start gap-3 rounded-2xl bg-white p-3 shadow-sm">
+            <li key={c.id} className="flex items-start gap-3 card p-3">
               <AvatarImg name={c.author.display_name} url={c.author.avatar_url} />
               <div className="min-w-0">
                 <p className="text-sm font-semibold">

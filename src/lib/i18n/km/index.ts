@@ -439,6 +439,15 @@ const km: Messages = {
   "No posts yet. Be the first.": "មិនទាន់មានប្រកាសទេ។ ធ្វើជាអ្នកដំបូង។",
   "Hire shift": "ជួលវេន",
   "Upload failed.": "ការបង្ហោះបរាជ័យ។",
+
+  // UI polish
+  "Good to see you, {name}": "រីករាយដែលបានជួបអ្នក {name}",
+  "What would you like to do today?": "តើអ្នកចង់ធ្វើអ្វីថ្ងៃនេះ?",
+  "Post a job offer": "បង្ហោះការផ្តល់ការងារ",
+  "Offer a skill": "ផ្តល់ជំនាញ",
+  "Share what you know": "ចែករំលែកអ្វីដែលអ្នកដឹង",
+  "Browse without an account, or log in to take part.": "មើលដោយគ្មានគណនី ឬចូលគណនីដើម្បីចូលរួម។",
+  "New": "ថ្មី",
   "New message": "សារថ្មី",
   "In the live product the employer sees your profile and completed jobs, and replies here.": "នៅក្នុងផលិតផលពិត និយោជកឃើញប្រវត្តិរូប និងការងារដែលបានបញ្ចប់របស់អ្នក ហើយឆ្លើយតបនៅទីនេះ។",
 };

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui";
+import { EmptyIllustration } from "@/components/illustrations";
 import { getMe, listConversations } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -14,15 +15,17 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MessagesPage() {
   const [t, locale, me, conversations] = await Promise.all([getT(), getLocale(), getMe(), listConversations()]);
   return (
-    <main className="px-4 py-4">
-      <h1 className="text-xl font-bold">{t("Messages")}</h1>
-      <p className="text-sm text-ink-muted">{t("Messaging opens only after a quote or an invitation, so nobody receives unwanted messages.")}</p>
+    <main className="px-4 pb-24 pt-4">
+      <section className="hero-amber rounded-3xl p-4">
+        <h1 className="text-xl font-bold">{t("Messages")}</h1>
+        <p className="text-sm text-brand-900">{t("Messaging opens only after a quote or an invitation, so nobody receives unwanted messages.")}</p>
+      </section>
       {conversations.length === 0 ? (
         <div className="mt-6">
-          <EmptyState>{t("No messages yet.")}</EmptyState>
+          <EmptyState illustration={<EmptyIllustration kind="messages" />}>{t("No messages yet.")}</EmptyState>
         </div>
       ) : (
-        <ul className="mt-4 divide-y divide-stone-200 rounded-2xl bg-white shadow-sm">
+        <ul className="card mt-4 divide-y divide-stone-100">
           {conversations.map((c) => {
             const name = c.other?.display_name ?? "?";
             const mine = c.last?.sender_id === me?.id;

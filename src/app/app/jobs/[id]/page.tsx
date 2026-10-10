@@ -27,7 +27,7 @@ export default async function JobPage({ params }: Props) {
   const path = `/app/jobs/${job.id}`;
 
   return (
-    <main className="px-4 py-4">
+    <main className="px-4 pb-24 pt-4">
       <Link href="/app/jobs" className="text-sm font-medium underline">
         {t("Back")}
       </Link>
@@ -60,7 +60,7 @@ export default async function JobPage({ params }: Props) {
           {applicants.length === 0 && <p className="mt-1 text-sm text-ink-muted">{t("Nothing yet.")}</p>}
           <ul className="mt-2 space-y-2">
             {applicants.map((a) => (
-              <li key={a.id} className="rounded-2xl bg-white p-3 shadow-sm">
+              <li key={a.id} className="card p-3">
                 <div className="flex items-start justify-between gap-2">
                   <Link href={`/app/providers/${a.applicant.id}`} className="font-semibold hover:underline">
                     {a.applicant.display_name}

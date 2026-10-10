@@ -33,7 +33,7 @@ export default async function ProviderPage({ params, searchParams }: Props) {
   const rating = reviews.length ? reviews.reduce((s, r) => s + r.stars, 0) / reviews.length : null;
 
   return (
-    <main className="px-4 py-4">
+    <main className="px-4 pb-24 pt-4">
       <Link href="/app/services" className="text-sm font-medium underline">
         {t("Back")}
       </Link>
@@ -85,7 +85,7 @@ export default async function ProviderPage({ params, searchParams }: Props) {
           <h2 className="font-semibold">{t("Portfolio")}</h2>
           <ul className="mt-2 grid grid-cols-2 gap-2">
             {portfolio.map((item) => (
-              <li key={item.id} className="overflow-hidden rounded-xl bg-white shadow-sm">
+              <li key={item.id} className="card overflow-hidden">
                 <img src={image(item.image_path)} alt={item.caption ?? ""} className="aspect-[4/3] w-full object-cover" />
                 {item.caption && <p className="px-2 py-1.5 text-xs">{item.caption}</p>}
               </li>
@@ -121,7 +121,7 @@ export default async function ProviderPage({ params, searchParams }: Props) {
         ) : (
           <ul className="mt-2 space-y-2">
             {reviews.map((r) => (
-              <li key={r.id} className="rounded-2xl bg-white p-3 shadow-sm">
+              <li key={r.id} className="card p-3">
                 <Stars rating={r.stars} />
                 {r.comment && <p className="mt-1 text-sm">{r.comment}</p>}
                 <p className="mt-1 text-xs text-ink-muted">

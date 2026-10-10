@@ -10,7 +10,7 @@ import { idle } from "@/lib/validation";
 
 const KINDS = ["need_help", "offer_skill", "share_knowledge"] as const;
 
-export function NewPostForm({ categories }: { categories: Category[] }) {
+export function NewPostForm({ categories, initialKind = "need_help" }: { categories: Category[]; initialKind?: (typeof KINDS)[number] }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(createPost, idle);
@@ -25,7 +25,7 @@ export function NewPostForm({ categories }: { categories: Category[] }) {
         <div className="flex flex-wrap gap-2">
           {KINDS.map((k) => (
             <label key={k} className="cursor-pointer rounded-full border border-stone-300 px-3 py-1.5 text-sm has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-white">
-              <input type="radio" name="kind" value={k} defaultChecked={val("kind", "need_help") === k} className="sr-only" />
+              <input type="radio" name="kind" value={k} defaultChecked={val("kind", initialKind) === k} className="sr-only" />
               {t(KIND_LABEL[k])}
             </label>
           ))}
