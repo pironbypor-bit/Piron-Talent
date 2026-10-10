@@ -61,5 +61,4 @@ export function PortfolioGrid({ items, locale }: { items: { caption: L; tone: st
   );
 }
 
-export const demoDate = (iso: string, locale: Locale) =>
-  new Date(iso + "T00:00:00").toLocaleDateString(locale === "km" ? "km-KH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
+export { formatDate as demoDate } from "@/lib/dates";

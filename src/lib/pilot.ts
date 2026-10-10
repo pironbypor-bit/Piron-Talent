@@ -1,4 +1,3 @@
-import type { Locale } from "@/lib/i18n/core";
 import type { T } from "@/lib/i18n/core";
 
 // Rows of the concierge pilot tables (migration 0003), as the pages read them.
@@ -68,8 +67,7 @@ export const statusLabel = (t: T, status: string) => t(STATUS_TEXT[status] ?? st
 export const statusTone = (status: string): "neutral" | "amber" | "green" | "red" =>
   status === "new" ? "amber" : status === "completed" || status === "approved" ? "green" : status === "rejected" || status === "cancelled" ? "red" : "neutral";
 
-export const formatDate = (iso: string, locale: Locale) =>
-  new Date(iso).toLocaleDateString(locale === "km" ? "km-KH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
+export { formatDate } from "@/lib/dates";
 
 export const formatBudget = (min: number | null, max: number | null) =>
   min === null && max === null ? null : min !== null && max !== null ? `$${min} - $${max}` : min !== null ? `$${min}+` : `$${max}`;
