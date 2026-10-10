@@ -97,6 +97,7 @@ const km: Messages = {
   "This link has expired. Request a new one.": "តំណនេះផុតកំណត់ហើយ។ សូមស្នើសុំថ្មី។",
   "Please confirm your email first. Check your inbox for the link.": "សូមបញ្ជាក់អ៊ីមែលរបស់អ្នកជាមុនសិន។ ពិនិត្យប្រអប់សារសម្រាប់តំណ។",
   "Too many attempts. Wait a minute and try again.": "ព្យាយាមច្រើនដងពេក។ រង់ចាំមួយនាទី ហើយព្យាយាមម្តងទៀត។",
+  "Email limit reached. Try again in an hour.": "ដល់ដែនកំណត់អ៊ីមែលហើយ។ សូមព្យាយាមម្តងទៀតក្នុងមួយម៉ោងក្រោយ។",
   "Signed in as {email}": "បានចូលជា {email}",
   "Your requests": "សំណើរបស់អ្នក",
   "Your provider application": "ពាក្យសុំអ្នកផ្តល់សេវារបស់អ្នក",
