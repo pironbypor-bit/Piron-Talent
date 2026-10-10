@@ -28,8 +28,8 @@ export default function DesignIndex() {
             arrive from Facebook posts aimed at shop owners.
           </p>
         </Link>
-        <Link href="/design/home-b" className="rounded-2xl border border-stone-200 p-5 hover:border-brand-400">
-          <p className="text-lg font-bold">B: two doors</p>
+        <Link href="/" className="rounded-2xl border border-brand-300 bg-brand-50 p-5 hover:border-brand-400">
+          <p className="text-lg font-bold">B: two doors (live at /)</p>
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">
             One headline speaks to both sides, then two equal doors with three steps each, sample provider profiles, districts. Best when the same page must
             recruit providers at campus events and win customers.
@@ -37,10 +37,10 @@ export default function DesignIndex() {
         </Link>
       </div>
 
-      <h2 className="mt-10 text-xl font-bold">Recommendation</h2>
+      <h2 className="mt-10 text-xl font-bold">Decision</h2>
       <p className="mt-3 leading-relaxed">
-        Use A as the public homepage during the pilot, because paid demand comes first in the plan and the request box turns a visit into a request in
-        one step. Keep B&apos;s provider door as the /join landing page for campus and TikTok recruitment, where the audience is providers only.
+        B is the homepage since 10 October 2026 (owner&apos;s choice). A stays here as a reference; its request box is a candidate for the segment
+        landing pages aimed at shop owners.
       </p>
     </main>
   );

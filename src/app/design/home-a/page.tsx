@@ -3,7 +3,7 @@ import { Button, inputClass } from "@/components/ui";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { pick, projects } from "@/lib/demo/fixtures";
 import { getLocale, getT } from "@/lib/i18n/server";
-import { Faq, PilotNote, TrustBlock } from "../shared";
+import { Faq, PilotNote, TrustBlock } from "@/components/home-blocks";
 
 const LAUNCH = ["creative", "technology", "documents", "finance"];
 
