@@ -27,7 +27,7 @@ Dates are targets, not commitments. Status as of 2026-10-10.
 | 1 Concierge pilot | Q1 2027 | Khmer/English landing, two intake forms, accounts, admin matching, demo, SEO test pages, owner notifications, KPI counters | 20 genuine paid projects completed, repeat buyers appear, support time per job manageable |
 | 2 Web marketplace | Q2 2027 | Profiles and portfolio, project posts with structured scope, quotes, accept, delivery confirmation, completion record, reviews, messaging with consent, notifications, search, reports and moderation, disputes, identity check review | Legal sign-off and a usable end-to-end transaction flow |
 | 3 Repeat and subscriptions | Q3 2027 | Saved providers, one-tap rehire, request templates, business accounts and seats, Business and Business Pro plans, payment references from a licensed provider, AI scope helper | Evidence of 90-day repeat purchase |
-| 4 Expansion | Q4 2027 | More categories after clearance, scheduling and availability, provider analytics, team tools, community post types | Fill rate and support quality stay healthy |
+| 4 Expansion | Q4 2027 | More categories after clearance, scheduling and availability, provider analytics, team tools, Workspace board | Fill rate and support quality stay healthy |
 
 ## 3. Feature inventory
 
@@ -86,7 +86,7 @@ Status: done, next (this phase), later. "Server" names where the state change li
 ### 3.4 Phase 4, expansion
 
 Scheduling and availability (service_availability, bookings), provider analytics (response time, win rate, repeat
-rate), team tools, community post types (offer_skill, share_knowledge, hire_shift after clearance) with Cheer, Keep and
+rate), team tools, Workspace board post types (Job offer, Skill offer, Share knowledge; Hire shift after clearance) with Cheer, Keep and
 Connect, category expansion after the legal workplan clears each category.
 
 ### 3.5 Trust and safety across phases

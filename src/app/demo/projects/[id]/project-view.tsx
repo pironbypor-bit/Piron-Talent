@@ -27,9 +27,9 @@ export function ProjectView({ project, locale, posted = false }: { project: Demo
         <div className="mt-4 space-y-2">
           <Notice tone="success">{t("Posted. Providers in this category are being notified. Quotes will appear here.")}</Notice>
           <p className="text-sm text-ink-muted">
-            {t("Your project also appears on the community board.")}{" "}
-            <Link href="/demo/community" className="font-medium text-ink underline">
-              {t("View on Community")}
+            {t("Your project also appears in the Workspace.")}{" "}
+            <Link href="/demo/workspace" className="font-medium text-ink underline">
+              {t("View in Workspace")}
             </Link>
           </p>
         </div>

@@ -10,13 +10,13 @@ import { Avatar } from "../demo-ui";
 
 const KINDS: { key: PostKind | "all"; label: string }[] = [
   { key: "all", label: "All posts" },
-  { key: "need_help", label: "Need help" },
-  { key: "offer_skill", label: "Offer skill" },
+  { key: "need_help", label: "Job offer" },
+  { key: "offer_skill", label: "Skill offer" },
   { key: "share_knowledge", label: "Share knowledge" },
 ];
 const KIND_TONE: Record<PostKind, "amber" | "green" | "neutral"> = { need_help: "amber", offer_skill: "green", share_knowledge: "neutral" };
 
-/** The community board: a chronological list with Cheer, Keep and Connect. Reactions live in this tab only. */
+/** The Workspace board: a chronological list with Cheer, Keep and Connect. Reactions live in this tab only. */
 export function Board({ locale }: { locale: Locale }) {
   const t = useT();
   const [kind, setKind] = useState<PostKind | "all">("all");

@@ -72,7 +72,7 @@ export function NewProjectForm({ locale }: { locale: Locale }) {
       </Field>
       <label className="flex items-start gap-3 rounded-xl border border-stone-200 px-4 py-3 text-sm">
         <input type="checkbox" defaultChecked className="mt-1" />
-        <span>{t("Show on the community board so providers can see it")}</span>
+        <span>{t("Show in the Workspace so providers can see it")}</span>
       </label>
       <Button type="submit">{t("Publish project")}</Button>
     </form>

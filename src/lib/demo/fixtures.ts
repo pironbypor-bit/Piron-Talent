@@ -177,7 +177,7 @@ export const projectById = (id: string) => projects.find((p) => p.id === id);
 /** The walkthrough tells the cafe story. */
 export const story = projects[0];
 
-// Community board posts. Three of the plan's four types; "hire shift" waits for legal clearance.
+// Workspace board posts. Three of the plan's four types; "hire shift" waits for legal clearance.
 export type PostKind = "need_help" | "offer_skill" | "share_knowledge";
 export type DemoPost = {
   id: string;

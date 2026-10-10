@@ -20,7 +20,7 @@ Tailwind 4, Cloudflare Workers via OpenNext (npm run deploy), own GitHub repo.
 ## Concierge pilot (Phase 1, built 2026-10-10)
 - Intake: /post-project and /join write to project_requests / provider_applications (migration 0003), anonymous inserts allowed.
 - Admin: /admin needs a row in public.admins; every status change calls an admin_* database function (security definer, checks is_admin()).
-- Demo: /demo, /demo/project, /demo/providers/[slug] use fixtures in src/lib/demo/fixtures.ts only. Nothing there is real; keep the "Sample" ribbon.
+- Demo: /demo, /demo/projects, /demo/workspace (the board: Job offer, Skill offer, Share knowledge), /demo/providers/[slug] use fixtures in src/lib/demo/fixtures.ts only. Nothing there is real; keep the "Sample" ribbon.
 - Language: Khmer by default for everyone; the header switch sets the "lang" cookie. Browser language is ignored.
 
 ## Plan
