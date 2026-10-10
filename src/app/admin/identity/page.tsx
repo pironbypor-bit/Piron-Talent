@@ -10,7 +10,7 @@ import { reviewIdentity } from "./actions";
 
 export const metadata: Metadata = { title: "Admin" };
 
-type Row = { id: string; user_id: string; image_path: string; status: string; note: string | null; created_at: string; profiles: { display_name: string } | { display_name: string }[] | null };
+type Row = { id: string; user_id: string; image_path: string; selfie_path: string | null; legal_name: string | null; id_type: string | null; id_number: string | null; date_of_birth: string | null; status: string; note: string | null; created_at: string; profiles: { display_name: string } | { display_name: string }[] | null };
 
 /** Identity review queue: the photo (signed link, one hour), the name, approve or reject with a note. */
 export default async function IdentityReviewPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -22,10 +22,12 @@ export default async function IdentityReviewPage({ searchParams }: { searchParam
       </main>
     );
   }
-  const { data } = await supabase.from("identity_checks").select("id,user_id,image_path,status,note,created_at,profiles(display_name)").order("created_at", { ascending: false }).limit(100);
+  const { data } = await supabase.from("identity_checks").select("id,user_id,image_path,selfie_path,legal_name,id_type,id_number,date_of_birth,status,note,created_at,profiles(display_name)").order("created_at", { ascending: false }).limit(100);
   const rows = (data ?? []) as unknown as Row[];
   const pending = rows.filter((r) => r.status === "pending");
   const signed = await Promise.all(pending.map((r) => supabase.storage.from("identity").createSignedUrl(r.image_path, 3600)));
+  const signedSelfie = await Promise.all(pending.map((r) => (r.selfie_path ? supabase.storage.from("identity").createSignedUrl(r.selfie_path, 3600) : Promise.resolve({ data: null }))));
+  const ID_TYPE: Record<string, string> = { national_id: "National ID card", passport: "Passport", other: "Other" };
   const name = (r: Row) => (Array.isArray(r.profiles) ? r.profiles[0]?.display_name : r.profiles?.display_name) ?? r.user_id;
 
   return (
@@ -48,7 +50,28 @@ export default async function IdentityReviewPage({ searchParams }: { searchParam
               </div>
               <Pill tone="amber">{t("Pending")}</Pill>
             </div>
-            {signed[i]?.data?.signedUrl && <img src={signed[i].data!.signedUrl} alt="" className="mt-3 max-h-80 rounded-lg border border-stone-200 object-contain" />}
+            {(r.legal_name || r.id_number) && (
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg bg-stone-50 p-3 text-sm">
+                <dt className="text-ink-muted">{t("Legal name")}</dt><dd>{r.legal_name ?? "-"}</dd>
+                <dt className="text-ink-muted">{t("ID type")}</dt><dd>{r.id_type ? t(ID_TYPE[r.id_type] ?? r.id_type) : "-"}</dd>
+                <dt className="text-ink-muted">{t("ID number")}</dt><dd>{r.id_number ?? "-"}</dd>
+                <dt className="text-ink-muted">{t("Date of birth")}</dt><dd>{r.date_of_birth ?? "-"}</dd>
+              </dl>
+            )}
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {signed[i]?.data?.signedUrl && (
+                <figure>
+                  <img src={signed[i].data!.signedUrl} alt="" className="max-h-80 w-full rounded-lg border border-stone-200 object-contain" />
+                  <figcaption className="mt-1 text-xs text-ink-muted">{t("ID front")}</figcaption>
+                </figure>
+              )}
+              {signedSelfie[i]?.data?.signedUrl && (
+                <figure>
+                  <img src={signedSelfie[i].data!.signedUrl} alt="" className="max-h-80 w-full rounded-lg border border-stone-200 object-contain" />
+                  <figcaption className="mt-1 text-xs text-ink-muted">{t("Selfie")}</figcaption>
+                </figure>
+              )}
+            </div>
             <form action={reviewIdentity} className="mt-3 flex flex-wrap items-end gap-2">
               <input type="hidden" name="id" value={r.id} />
               <input name="note" placeholder={t("Note")} className={`${inputClass} w-64 py-1.5 text-sm`} />

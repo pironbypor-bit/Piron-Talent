@@ -60,38 +60,3 @@ export function AvatarUpload({ userId }: { userId: string }) {
   );
 }
 
-export function IdentityUpload({ userId }: { userId: string }) {
-  const t = useT();
-  const router = useRouter();
-  const { busy, error, upload } = useUpload("identity", userId);
-  const [done, setDone] = useState(false);
-  if (done) return <div className="mt-3"><Notice tone="success">{t("Pending")}</Notice></div>;
-  return (
-    <div className="mt-3">
-      <p className="text-sm text-ink-muted">{t("Upload a photo of your ID. Only Piron Talent staff can see it.")}</p>
-      <label className="mt-2 inline-block">
-        <span className="sr-only">{t("Start")}</span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-          onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (!f) return;
-            const path = await upload(f);
-            if (!path) return;
-            const { error: insertError } = await createClient().from("identity_checks").insert({ user_id: userId, image_path: path });
-            if (!insertError) {
-              setDone(true);
-              router.refresh();
-            }
-          }}
-        />
-        <Button type="button" className="px-3 py-1.5 text-sm" disabled={busy} onClick={(e) => (e.currentTarget.previousElementSibling as HTMLInputElement).click()}>
-          {t("Start")}
-        </Button>
-      </label>
-      {error && <div className="mt-2"><Notice tone="error">{t("Upload failed.")}</Notice></div>}
-    </div>
-  );
-}

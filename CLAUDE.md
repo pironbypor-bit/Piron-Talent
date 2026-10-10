@@ -28,7 +28,7 @@ Tailwind 4, Cloudflare Workers via OpenNext (npm run deploy), own GitHub repo.
   is_available), /app/providers/[id], /app/jobs (freelance and project only; shifts hidden until legal review), /app/messages,
   /app/profile (edit, avatar, identity check upload, notifications). Reads in src/lib/app/queries.ts, writes in src/lib/app/actions.ts.
 - Migration 0004: public read policies, profile fields, saved_providers, avatars and identity buckets, identity_checks,
-  start_conversation (consent rule), notification triggers, publish_job, set_my_skills. Admin reviews IDs at /admin/identity.
+  start_conversation (consent rule), notification triggers, publish_job, set_my_skills. Migration 0005 adds ID details (legal name, type, number, date of birth) and a selfie to identity_checks; /app/profile/identity is the three-step flow, admins compare both photos with the details at /admin/identity. Approval copies legal name and date of birth into profile_private.
 - Anonymous visitors browse; the proxy sends /app/profile, /app/messages, /app/post/new and /app/jobs/new to /login.
 
 ## Plan

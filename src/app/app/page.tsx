@@ -27,7 +27,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
   const steps = me
     ? [
         { label: t("Complete your profile"), href: "/app/profile/edit", done: !!me.role_line },
-        { label: t("Start the identity check"), href: "/app/profile", done: identity !== "none" },
+        { label: t("Start the identity check"), href: "/app/profile/identity", done: identity !== "none" },
         { label: t("Write your first post"), href: "/app/post/new", done: counters.posts > 0 },
       ]
     : [];

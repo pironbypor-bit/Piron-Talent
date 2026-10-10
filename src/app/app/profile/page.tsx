@@ -8,7 +8,7 @@ import { getMe, listNotifications, myCounters, myIdentityStatus } from "@/lib/ap
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
-import { AvatarUpload, IdentityUpload } from "./uploads";
+import { AvatarUpload } from "./uploads";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -90,7 +90,11 @@ export default async function ProfilePage() {
           {identity === "pending" && <Pill tone="amber">{t("Pending")}</Pill>}
           {identity === "checked" && <Pill tone="green">{t("Checked")}</Pill>}
         </div>
-        {(identity === "none" || identity === "rejected") && <IdentityUpload userId={me.id} />}
+        {(identity === "none" || identity === "rejected") && (
+          <Link href="/app/profile/identity" className="mt-3 inline-block rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-400">
+            {identity === "rejected" ? t("Try again") : t("Start")}
+          </Link>
+        )}
       </section>
 
       <section className="mt-4 card p-4">
