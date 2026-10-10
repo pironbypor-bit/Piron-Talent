@@ -26,7 +26,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
   const [t, locale, me, posts, { kind, error }, counters, identity] = await Promise.all([getT(), getLocale(), getMe(), listPosts(), searchParams, myCounters(), myIdentityStatus()]);
   const steps = me
     ? [
-        { label: t("Complete your profile"), href: "/app/profile/edit", done: !!(me.role_line && me.avatar_url) },
+        { label: t("Complete your profile"), href: "/app/profile/edit", done: !!me.role_line },
         { label: t("Start the identity check"), href: "/app/profile", done: identity !== "none" },
         { label: t("Write your first post"), href: "/app/post/new", done: counters.posts > 0 },
       ]

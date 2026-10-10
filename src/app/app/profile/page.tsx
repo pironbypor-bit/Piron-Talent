@@ -2,14 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Bell, Bookmark, Briefcase, FileCheck, FileText, MessageCircle, Settings, Sparkles, Users, type LucideIcon } from "lucide-react";
 import { AngkorSilhouette } from "@/components/brand";
-import { Button, CheckedPill, Pill } from "@/components/ui";
+import { CheckedPill, Pill } from "@/components/ui";
 import { markNotificationsRead } from "@/lib/app/actions";
 import { getMe, listNotifications, myCounters, myIdentityStatus } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
-import { logOut } from "@/app/auth/actions";
-import { setLocale } from "@/app/actions/locale";
-import { ALL_LANGUAGES } from "@/lib/i18n/core";
 import { AvatarImg } from "../avatar";
 import { AvatarUpload, IdentityUpload } from "./uploads";
 
@@ -38,7 +35,7 @@ export default async function ProfilePage() {
               {me.identity_checked && <span className="mt-1 inline-block"><CheckedPill>{t("Identity checked")}</CheckedPill></span>}
             </div>
           </div>
-          <Link href="/app/profile/edit" aria-label={t("Edit profile")} className="rounded-full bg-white/90 p-2 text-ink-muted hover:text-ink">
+          <Link href="/app/settings" aria-label={t("Settings")} className="rounded-full bg-white/90 p-2 text-ink-muted hover:text-ink">
             <Settings className="size-4" />
           </Link>
         </div>
@@ -138,19 +135,6 @@ export default async function ProfilePage() {
         )}
       </section>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        <form action={setLocale} className="flex overflow-hidden rounded-lg border border-stone-300 bg-white">
-          {ALL_LANGUAGES.map((l) => (
-            <button key={l} type="submit" name="lang" value={l} aria-pressed={locale === l} className={`px-3 py-1.5 text-sm font-medium ${locale === l ? "bg-ink text-white" : ""}`}>
-              {l === "km" ? "ខ្មែរ" : "EN"}
-            </button>
-          ))}
-        </form>
-        <form action={logOut}>
-          <Button type="submit" variant="secondary" className="px-3 py-1.5 text-sm">{t("Log out")}</Button>
-        </form>
-        {me && <Link href="/admin" className="text-sm text-ink-muted underline">Admin</Link>}
-      </div>
     </main>
   );
 }

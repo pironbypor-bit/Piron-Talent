@@ -221,3 +221,11 @@ export async function myIdentityStatus(): Promise<"none" | "pending" | "checked"
   const { data } = await supabase.from("identity_checks").select("status").eq("user_id", uid).order("created_at", { ascending: false }).limit(1).maybeSingle();
   return (data?.status as "pending" | "checked" | "rejected" | undefined) ?? "none";
 }
+
+export async function isAdmin(): Promise<boolean> {
+  const uid = await getUserId();
+  if (!uid) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.from("admins").select("user_id").eq("user_id", uid).maybeSingle();
+  return !!data;
+}

@@ -439,6 +439,10 @@ const km: Messages = {
   "No posts yet. Be the first.": "មិនទាន់មានប្រកាសទេ។ ធ្វើជាអ្នកដំបូង។",
   "Hire shift": "ជួលវេន",
   "Upload failed.": "ការបង្ហោះបរាជ័យ។",
+  "Account": "គណនី",
+  "Name, role, skills, availability": "ឈ្មោះ តួនាទី ជំនាញ ភាពទំនេរ",
+  "Admin tools": "ឧបករណ៍អ្នកគ្រប់គ្រង",
+  "Requests, identity review": "សំណើ ការពិនិត្យអត្តសញ្ញាណ",
 
   // Pass 2
   "Get started": "ចាប់ផ្តើម",
