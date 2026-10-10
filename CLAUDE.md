@@ -23,5 +23,8 @@ Tailwind 4, Cloudflare Workers via OpenNext (npm run deploy), own GitHub repo.
 - Demo: /demo, /demo/project, /demo/providers/[slug] use fixtures in src/lib/demo/fixtures.ts only. Nothing there is real; keep the "Sample" ribbon.
 - Language: Khmer by default for everyone; the header switch sets the "lang" cookie. Browser language is ignored.
 
+## Plan
+Feature, screen and UI plan for 2027: docs/product-plan.md. Update it when scope changes.
+
 ## Order of work (business plan, section 5)
 Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual matching, 20 paid projects before the full marketplace.
