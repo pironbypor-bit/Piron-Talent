@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Briefcase, Lightbulb, Plus, Sparkles } from "lucide-react";
 import { EmptyState, Notice } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
-import { getMe, listPosts } from "@/lib/app/queries";
+import { getMe, listPosts, myCounters, myIdentityStatus } from "@/lib/app/queries";
+import { WelcomeCard } from "./welcome-card";
 import { KIND_LABEL, type PostKind } from "@/lib/app/types";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { PostCard } from "./post-card";
@@ -22,7 +23,14 @@ const QUICK = [
 
 /** Home tab: the Workspace on real posts. Filtering is by URL so the page stays a plain server render. */
 export default async function AppHome({ searchParams }: { searchParams: Promise<{ kind?: string; error?: string }> }) {
-  const [t, locale, me, posts, { kind, error }] = await Promise.all([getT(), getLocale(), getMe(), listPosts(), searchParams]);
+  const [t, locale, me, posts, { kind, error }, counters, identity] = await Promise.all([getT(), getLocale(), getMe(), listPosts(), searchParams, myCounters(), myIdentityStatus()]);
+  const steps = me
+    ? [
+        { label: t("Complete your profile"), href: "/app/profile/edit", done: !!(me.role_line && me.avatar_url) },
+        { label: t("Start the identity check"), href: "/app/profile", done: identity !== "none" },
+        { label: t("Write your first post"), href: "/app/post/new", done: counters.posts > 0 },
+      ]
+    : [];
   const active = (KINDS as string[]).includes(kind ?? "") ? (kind as PostKind | "all") : "all";
   const list = posts.filter((p) => active === "all" || p.kind === active);
 
@@ -43,6 +51,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
         </div>
       </section>
 
+      {me && <WelcomeCard t={t} steps={steps} />}
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
 
       <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">

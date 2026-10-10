@@ -440,6 +440,23 @@ const km: Messages = {
   "Hire shift": "ជួលវេន",
   "Upload failed.": "ការបង្ហោះបរាជ័យ។",
 
+  // Pass 2
+  "Get started": "ចាប់ផ្តើម",
+  "Three steps to your first job": "បីជំហានទៅកាន់ការងារដំបូងរបស់អ្នក",
+  "Complete your profile": "បំពេញប្រវត្តិរូបរបស់អ្នក",
+  "Start the identity check": "ចាប់ផ្តើមការពិនិត្យអត្តសញ្ញាណ",
+  "Write your first post": "សរសេរប្រកាសដំបូងរបស់អ្នក",
+  "Done": "រួចរាល់",
+  "Profile strength": "កម្លាំងប្រវត្តិរូប",
+  "{n} of {total} complete": "បានបំពេញ {n} ក្នុងចំណោម {total}",
+  "Add a photo": "បន្ថែមរូបថត",
+  "Add a role line": "បន្ថែមបន្ទាត់តួនាទី",
+  "Write about yourself": "សរសេរអំពីខ្លួនអ្នក",
+  "Add your city": "បន្ថែមទីក្រុងរបស់អ្នក",
+  "Add skills": "បន្ថែមជំនាញ",
+  "Choose a main category": "ជ្រើសរើសប្រភេទសំខាន់",
+  "Email confirmed. Log in to continue.": "អ៊ីមែលបានបញ្ជាក់។ ចូលគណនីដើម្បីបន្ត។",
+
   // UI polish
   "Good to see you, {name}": "រីករាយដែលបានជួបអ្នក {name}",
   "What would you like to do today?": "តើអ្នកចង់ធ្វើអ្វីថ្ងៃនេះ?",

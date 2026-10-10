@@ -71,7 +71,10 @@ export default async function Home() {
           </section>
         ))}
       </div>
-      <p className="mt-4">
+      <p className="mt-4 flex flex-wrap items-center gap-4">
+        <Link href="/app" className="inline-block">
+          <Button type="button">{t("Open the app")}</Button>
+        </Link>
         <Link href="/demo" className="text-sm font-medium underline">
           {t("See a sample project")}
         </Link>

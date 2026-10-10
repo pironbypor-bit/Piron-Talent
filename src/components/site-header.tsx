@@ -30,6 +30,9 @@ export async function SiteHeader() {
               </button>
             ))}
           </form>
+          <Link href="/app" className="font-medium hover:underline">
+            {t("Open the app")}
+          </Link>
           {userId ? (
             <Link href="/dashboard" className="font-medium hover:underline">
               {t("Your account")}

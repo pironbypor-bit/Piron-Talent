@@ -8,11 +8,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("Log in") };
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
-  const [t, { next, error }] = await Promise.all([getT(), searchParams]);
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; confirmed?: string }> }) {
+  const [t, { next, error, confirmed }] = await Promise.all([getT(), searchParams]);
   return (
     <main className="mx-auto max-w-md px-4 py-12">
       <PageTitle>{t("Log in")}</PageTitle>
+      {confirmed === "1" && (
+        <div className="mb-5">
+          <Notice tone="success">{t("Email confirmed. Log in to continue.")}</Notice>
+        </div>
+      )}
       {error === "link" && (
         <div className="mb-5">
           <Notice tone="error">{t("This link has expired. Request a new one.")}</Notice>

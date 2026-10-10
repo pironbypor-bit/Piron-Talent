@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { credentialsSchema, fieldErrors, formEntries, signupSchema, type FormState } from "@/lib/validation";
@@ -17,7 +18,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: { data: { display_name: parsed.data.display_name } },
+    options: { data: { display_name: parsed.data.display_name }, emailRedirectTo: (await origin()) + "/login?confirmed=1" },
   });
   if (error) {
     console.error("signUp failed:", error.message);
@@ -53,3 +54,11 @@ function loginMessage(raw: string): string {
   return "Wrong email or password.";
 }
 
+
+/** The site's own origin, for links in emails. */
+async function origin() {
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  return proto + "://" + host;
+}

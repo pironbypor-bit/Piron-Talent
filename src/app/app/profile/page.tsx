@@ -44,6 +44,36 @@ export default async function ProfilePage() {
         </div>
       </div>
 
+      {(() => {
+        const checks: [string, boolean][] = [
+          [t("Add a photo"), !!me.avatar_url],
+          [t("Add a role line"), !!me.role_line],
+          [t("Write about yourself"), !!me.bio],
+          [t("Add your city"), !!me.city],
+          [t("Add skills"), me.skills.length > 0],
+          [t("Choose a main category"), !!me.primary_category_id],
+          [t("Identity check"), me.identity_checked],
+        ];
+        const done = checks.filter(([, ok]) => ok).length;
+        const next = checks.find(([, ok]) => !ok);
+        return (
+          <section className="card mt-4 p-4">
+            <div className="flex items-baseline justify-between">
+              <p className="font-semibold">{t("Profile strength")}</p>
+              <p className="text-sm text-ink-muted">{t("{n} of {total} complete", { n: done, total: checks.length })}</p>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-100">
+              <div className="h-full rounded-full bg-brand-500" style={{ width: `${Math.round((done / checks.length) * 100)}%` }} />
+            </div>
+            {next && (
+              <Link href={next[0] === t("Identity check") ? "/app/profile#identity" : "/app/profile/edit"} className="mt-2 inline-block text-sm font-medium text-brand-800 underline">
+                {next[0]}
+              </Link>
+            )}
+          </section>
+        );
+      })()}
+
       <ul className="mt-4 grid grid-cols-4 gap-2">
         {([[t("Saved posts"), counters.savedPosts, Bookmark], [t("Saved providers"), counters.savedProviders, Users], [t("My applications"), counters.applications, FileText], [t("Projects"), counters.posts, Briefcase]] as [string, number, LucideIcon][]).map(([label, n, Icon]) => (
           <li key={label} className="card flex flex-col items-center p-2 text-center">
@@ -54,7 +84,7 @@ export default async function ProfilePage() {
         ))}
       </ul>
 
-      <section className="mt-4 card p-4">
+      <section className="mt-4 card p-4" id="identity">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-semibold">{t("Identity check")}</p>
