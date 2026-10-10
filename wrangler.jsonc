@@ -1,0 +1,13 @@
+// Cloudflare Worker for Piron Talent, built by OpenNext from the main branch: npm run deploy.
+// Secrets and variables are typed into the Cloudflare dashboard by the owner, never written here.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "piron-talent",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-09-30",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "piron-talent" }],
+  "placement": { "mode": "smart" },
+  "observability": { "enabled": true }
+}
