@@ -9,12 +9,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("Post a project") };
 }
 
-export default async function PostProjectPage() {
-  const [t, categories] = await Promise.all([getT(), getCategories()]);
+type Props = { searchParams: Promise<{ details?: string; category?: string }> };
+
+export default async function PostProjectPage({ searchParams }: Props) {
+  const [t, categories, { details, category }] = await Promise.all([getT(), getCategories(), searchParams]);
+  const initial = { details: (details ?? "").slice(0, 3000), category_id: /^d+$/.test(category ?? "") ? category! : "" };
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
       <PageTitle lead={t("We reply within one working day by phone or Telegram.")}>{t("Tell us about your project")}</PageTitle>
-      <ProjectForm categories={categories} />
+      <ProjectForm categories={categories} initial={initial} />
     </main>
   );
 }

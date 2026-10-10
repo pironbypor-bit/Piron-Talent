@@ -8,7 +8,7 @@ import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 import { submitProjectRequest } from "./actions";
 
-export function ProjectForm({ categories }: { categories: Category[] }) {
+export function ProjectForm({ categories, initial }: { categories: Category[]; initial?: { details?: string; category_id?: string } }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(submitProjectRequest, idle);
@@ -25,7 +25,7 @@ export function ProjectForm({ categories }: { categories: Category[] }) {
   }
 
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
-  const val = (k: string) => state.values?.[k] ?? "";
+  const val = (k: string) => state.values?.[k] ?? (initial as Record<string, string | undefined> | undefined)?.[k] ?? "";
 
   return (
     <form action={action} noValidate className="space-y-5">
