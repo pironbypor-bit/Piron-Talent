@@ -10,7 +10,7 @@ import type { Locale } from "@/lib/i18n/core";
 import { ProviderCard, demoDate } from "../../demo-ui";
 
 /** The project page: scope, deliverables, quotes to compare, accept with a confirmation. */
-export function ProjectView({ project, locale }: { project: DemoProject; locale: Locale }) {
+export function ProjectView({ project, locale, posted = false }: { project: DemoProject; locale: Locale; posted?: boolean }) {
   const t = useT();
   const { job, ready, setJob } = useDemoJob(project.id);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -23,6 +23,17 @@ export function ProjectView({ project, locale }: { project: DemoProject; locale:
       <Link href="/demo/projects" className="text-sm font-medium underline">
         {t("Back")}
       </Link>
+      {posted && (
+        <div className="mt-4 space-y-2">
+          <Notice tone="success">{t("Posted. Providers in this category are being notified. Quotes will appear here.")}</Notice>
+          <p className="text-sm text-ink-muted">
+            {t("Your project also appears on the community board.")}{" "}
+            <Link href="/demo/community" className="font-medium text-ink underline">
+              {t("View on Community")}
+            </Link>
+          </p>
+        </div>
+      )}
       <p className="mt-4 text-sm text-ink-muted">
         {t("Customer")}: {pick(project.customer.name, locale)} · {pick(project.customer.area, locale)} · {t("Posted on {date}", { date: demoDate(project.postedOn, locale) })}
       </p>

@@ -286,6 +286,32 @@ const km: Messages = {
   "First 20 projects are matched by hand by the Piron Talent team.": "គម្រោង 20 ដំបូងត្រូវបានផ្គូផ្គងដោយដៃដោយក្រុមការងារ Piron Talent។",
   "Launch categories": "ប្រភេទដំបូង",
   "More categories open after the pilot.": "ប្រភេទផ្សេងទៀតបើកបន្ទាប់ពីការសាកល្បង។",
+
+  // Community board (demo)
+  "Community": "សហគមន៍",
+  "Newest first. No ranking, no ads. Phnom Penh only.": "ថ្មីបំផុតមុន។ គ្មានការរៀបលំដាប់ គ្មានការផ្សាយពាណិជ្ជកម្ម។ ភ្នំពេញតែប៉ុណ្ណោះ។",
+  "All posts": "ប្រកាសទាំងអស់",
+  "Need help": "ត្រូវការជំនួយ",
+  "Offer skill": "ផ្តល់ជំនាញ",
+  "Share knowledge": "ចែករំលែកចំណេះដឹង",
+  "Write a post": "សរសេរប្រកាស",
+  "Cheer": "លើកទឹកចិត្ត",
+  "Keep": "រក្សាទុក",
+  "Kept": "បានរក្សាទុក",
+  "Connect": "ភ្ជាប់ទំនាក់ទំនង",
+  "Comment": "មតិ",
+  "{n} comments": "មតិ {n}",
+  "Today@@time": "ថ្ងៃនេះ",
+  "Yesterday": "ម្សិលមិញ",
+  "{n} days ago": "{n} ថ្ងៃមុន",
+  "View project": "មើលគម្រោង",
+  "In the live product Connect sends an introduction. The other side accepts before any message is exchanged.": "នៅក្នុងផលិតផលពិត ភ្ជាប់ទំនាក់ទំនងផ្ញើការណែនាំខ្លួន។ ភាគីម្ខាងទៀតទទួលយកមុនពេលផ្លាស់ប្តូរសារណាមួយ។",
+  "In the live product this opens a short form: type, title, text, category.": "នៅក្នុងផលិតផលពិត វាបើកទម្រង់ខ្លីមួយ៖ ប្រភេទប្រកាស ចំណងជើង អត្ថបទ ប្រភេទការងារ។",
+  "Show on the community board so providers can see it": "បង្ហាញនៅលើក្តារសហគមន៍ ដើម្បីឱ្យអ្នកផ្តល់សេវាឃើញ",
+  "Posted. Providers in this category are being notified. Quotes will appear here.": "បានបង្ហោះ។ អ្នកផ្តល់សេវាក្នុងប្រភេទនេះកំពុងទទួលបានការជូនដំណឹង។ សម្រង់តម្លៃនឹងបង្ហាញនៅទីនេះ។",
+  "Your project also appears on the community board.": "គម្រោងរបស់អ្នកក៏បង្ហាញនៅលើក្តារសហគមន៍ដែរ។",
+  "View on Community": "មើលនៅសហគមន៍",
+  "No posts of this type yet.": "មិនទាន់មានប្រកាសប្រភេទនេះទេ។",
 };
 
 export default km;

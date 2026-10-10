@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { DEMO_CATEGORIES, pick } from "@/lib/demo/fixtures";
@@ -9,6 +10,7 @@ import type { Locale } from "@/lib/i18n/core";
 /** The Phase 2 structured-scope form, shown without saving anything. */
 export function NewProjectForm({ locale }: { locale: Locale }) {
   const t = useT();
+  const router = useRouter();
   const [sent, setSent] = useState(false);
   if (sent) return <Notice tone="success">{t("In the live product this publishes the project and providers in this category are notified.")}</Notice>;
 
@@ -18,6 +20,8 @@ export function NewProjectForm({ locale }: { locale: Locale }) {
       onSubmit={(e) => {
         e.preventDefault();
         setSent(true);
+        // After posting, the customer lands on their own project page, where quotes arrive.
+        router.push("/demo/projects/inventory-sheet?posted=1");
       }}
     >
       <Field label={t("Title")}>
@@ -66,6 +70,10 @@ export function NewProjectForm({ locale }: { locale: Locale }) {
       <Field label={t("Photos")} optional={t("optional")}>
         <div className="rounded-xl border border-dashed border-stone-300 px-4 py-6 text-center text-sm text-ink-muted">{t("Add photos")}</div>
       </Field>
+      <label className="flex items-start gap-3 rounded-xl border border-stone-200 px-4 py-3 text-sm">
+        <input type="checkbox" defaultChecked className="mt-1" />
+        <span>{t("Show on the community board so providers can see it")}</span>
+      </label>
       <Button type="submit">{t("Publish project")}</Button>
     </form>
   );

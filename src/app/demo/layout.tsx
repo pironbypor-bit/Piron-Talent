@@ -7,6 +7,7 @@ export default async function DemoLayout({ children }: { children: React.ReactNo
   const items: [string, string][] = [
     ["/demo", t("Overview")],
     ["/demo/projects", t("Projects")],
+    ["/demo/community", t("Community")],
     ["/demo/providers", t("Providers")],
     ["/demo/messages", t("Messages")],
     ["/demo/dashboard", t("Dashboard")],

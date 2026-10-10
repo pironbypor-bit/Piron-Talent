@@ -176,3 +176,57 @@ export const projectById = (id: string) => projects.find((p) => p.id === id);
 
 /** The walkthrough tells the cafe story. */
 export const story = projects[0];
+
+// Community board posts. Three of the plan's four types; "hire shift" waits for legal clearance.
+export type PostKind = "need_help" | "offer_skill" | "share_knowledge";
+export type DemoPost = {
+  id: string;
+  kind: PostKind;
+  author: { name: L; role: L; provider?: string };
+  daysAgo: number;
+  title: L;
+  body: L;
+  category: string;
+  cheers: number;
+  comments: number;
+  project?: string; // need_help: the project it links to
+};
+
+export const posts: DemoPost[] = [
+  {
+    id: "p1", kind: "share_knowledge", author: { name: { en: "Dara Vann", km: "វ៉ាន់ ដារ៉ា" }, role: { en: "Product photographer", km: "អ្នកថតរូបផលិតផល" }, provider: "dara-vann" }, daysAgo: 0,
+    title: { en: "Three phone settings for brighter menu photos", km: "ការកំណត់ទូរស័ព្ទបីយ៉ាងសម្រាប់រូបថតមុខម្ហូបភ្លឺជាងមុន" },
+    body: { en: "Turn off HDR, lock exposure on the plate, and shoot near a window before 9am. Most cafes can do this themselves for daily specials; hire a photographer for the full menu.", km: "បិទ HDR ចាក់សោពន្លឺលើចាន ហើយថតជិតបង្អួចមុនម៉ោង 9 ព្រឹក។ ហាងកាហ្វេភាគច្រើនអាចធ្វើដោយខ្លួនឯងសម្រាប់មុខម្ហូបប្រចាំថ្ងៃ។ ជួលអ្នកថតរូបសម្រាប់មុខម្ហូបពេញ។" },
+    category: "creative", cheers: 12, comments: 3,
+  },
+  {
+    id: "p2", kind: "need_help", author: { name: { en: "Chea Mart", km: "ជា ម៉ាត" }, role: { en: "Minimart, Chbar Ampov", km: "មីនីម៉ាត ច្បារអំពៅ" } }, daysAgo: 1,
+    title: { en: "Excel inventory sheet for 300 products", km: "តារាងស្តុក Excel សម្រាប់ផលិតផល 300 មុខ" },
+    body: { en: "We count stock on paper today. Want one sheet with products, suppliers, cost, sell price and a low-stock warning, plus one hour of training.", km: "បច្ចុប្បន្នយើងរាប់ស្តុកលើក្រដាស។ ចង់បានតារាងមួយដែលមានផលិតផល អ្នកផ្គត់ផ្គង់ ថ្លៃដើម តម្លៃលក់ និងការព្រមានស្តុកទាប បូកនឹងការបង្រៀនមួយម៉ោង។" },
+    category: "documents", cheers: 2, comments: 1, project: "inventory-sheet",
+  },
+  {
+    id: "p3", kind: "offer_skill", author: { name: { en: "Sokha Lim", km: "លឹម សុខា" }, role: { en: "Khmer-English translator", km: "អ្នកបកប្រែខ្មែរ-អង់គ្លេស" }, provider: "sokha-lim" }, daysAgo: 1,
+    title: { en: "Contract translation this week, two slots left", km: "បកប្រែកិច្ចសន្យាសប្តាហ៍នេះ នៅសល់ពីរកន្លែង" },
+    body: { en: "Supplier and rental contracts, Khmer to English or back, from $8 per page with a glossary of legal terms. Remote, delivered as Word.", km: "កិច្ចសន្យាអ្នកផ្គត់ផ្គង់ និងជួល ពីខ្មែរទៅអង់គ្លេស ឬត្រឡប់ ចាប់ពី $8 ក្នុងមួយទំព័រ ជាមួយបញ្ជីពាក្យច្បាប់។ ពីចម្ងាយ ប្រគល់ជា Word។" },
+    category: "documents", cheers: 5, comments: 0,
+  },
+  {
+    id: "p4", kind: "need_help", author: { name: { en: "Sophea's Cafe", km: "ហាងកាហ្វេ សុភា" }, role: { en: "Cafe, Toul Kork", km: "ហាងកាហ្វេ ទួលគោក" } }, daysAgo: 2,
+    title: { en: "Product photos for 12 menu items", km: "រូបថតផលិតផលសម្រាប់មុខម្ហូប 12 មុខ" },
+    body: { en: "Clean photos of 12 drinks and cakes for Facebook and the delivery app. White background, two sizes, shooting before opening.", km: "រូបថតស្អាតនៃភេសជ្ជៈ និងនំ 12 មុខ សម្រាប់ Facebook និងកម្មវិធីដឹកជញ្ជូន។ ផ្ទៃពណ៌ស ទំហំពីរ ថតមុនបើកហាង។" },
+    category: "creative", cheers: 4, comments: 2, project: "cafe-photos",
+  },
+  {
+    id: "p5", kind: "share_knowledge", author: { name: { en: "Rithy Phan", km: "ផាន់ រិទ្ធី" }, role: { en: "IT support and websites", km: "ជំនួយ IT និងគេហទំព័រ" }, provider: "rithy-phan" }, daysAgo: 3,
+    title: { en: "Before buying a POS, check the printer driver", km: "មុនទិញ POS សូមពិនិត្យកម្មវិធីបញ្ជាម៉ាស៊ីនបោះពុម្ព" },
+    body: { en: "Half of my call-outs are kitchen printers that the POS app does not support. Ask the seller for the printer model list first.", km: "ពាក់កណ្តាលនៃការហៅខ្ញុំគឺម៉ាស៊ីនបោះពុម្ពផ្ទះបាយដែលកម្មវិធី POS មិនគាំទ្រ។ សូមសួរអ្នកលក់រកបញ្ជីម៉ូដែលម៉ាស៊ីនបោះពុម្ពជាមុនសិន។" },
+    category: "technology", cheers: 9, comments: 4,
+  },
+  {
+    id: "p6", kind: "offer_skill", author: { name: { en: "Lina Sok", km: "សុខ លីណា" }, role: { en: "Content creator", km: "អ្នកបង្កើតមាតិកា" }, provider: "lina-sok" }, daysAgo: 4,
+    title: { en: "Weekend Reels package for cafes, $40", km: "កញ្ចប់ Reels ចុងសប្តាហ៍សម្រាប់ហាងកាហ្វេ $40" },
+    body: { en: "Three short clips shot on a phone in one visit, captions in Khmer and English, ready to post. Student freelancer, Toul Kork and BKK.", km: "ឃ្លីបខ្លីបីថតដោយទូរស័ព្ទក្នុងការមកម្តង ចំណងជើងជាភាសាខ្មែរ និងអង់គ្លេស រួចរាល់សម្រាប់បង្ហោះ។ និស្សិតធ្វើការឯករាជ្យ ទួលគោក និងបឹងកេងកង។" },
+    category: "creative", cheers: 7, comments: 1,
+  },
+];

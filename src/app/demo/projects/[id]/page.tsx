@@ -4,7 +4,7 @@ import { pick, projectById, projects } from "@/lib/demo/fixtures";
 import { getLocale } from "@/lib/i18n/server";
 import { ProjectView } from "./project-view";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ posted?: string }> };
 
 export function generateStaticParams() {
   return projects.map((p) => ({ id: p.id }));
@@ -16,13 +16,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: p ? pick(p.title, locale) : "Demo" };
 }
 
-export default async function DemoProjectPage({ params }: Props) {
-  const [{ id }, locale] = await Promise.all([params, getLocale()]);
+export default async function DemoProjectPage({ params, searchParams }: Props) {
+  const [{ id }, locale, { posted }] = await Promise.all([params, getLocale(), searchParams]);
   const project = projectById(id);
   if (!project) notFound();
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <ProjectView project={project} locale={locale} />
+      <ProjectView project={project} locale={locale} posted={posted === "1"} />
     </main>
   );
 }
