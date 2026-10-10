@@ -23,6 +23,12 @@ export default async function Home() {
         {t("Tell us what you need. We match you with a checked provider in Phnom Penh and follow the work until it is done.")}
       </p>
 
+      <p className="mt-4">
+        <Link href="/demo" className="text-sm font-medium underline">
+          {t("See a sample project")}
+        </Link>
+      </p>
+
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         <Link href="/post-project" className="rounded-2xl border border-brand-300 bg-brand-50 p-6 transition hover:border-brand-500">
           <p className="text-sm font-medium text-brand-800">{t("For businesses and households")}</p>

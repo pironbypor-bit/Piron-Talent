@@ -17,5 +17,11 @@ Tailwind 4, Cloudflare Workers via OpenNext (npm run deploy), own GitHub repo.
 - State changes (publish, booking status, verification, reviews, payments) run server-side only; RLS is default deny.
 - Check the build exit code before pushing. Secrets live in the Cloudflare dashboard and .env.local, never in the repo.
 
+## Concierge pilot (Phase 1, built 2026-10-10)
+- Intake: /post-project and /join write to project_requests / provider_applications (migration 0003), anonymous inserts allowed.
+- Admin: /admin needs a row in public.admins; every status change calls an admin_* database function (security definer, checks is_admin()).
+- Demo: /demo, /demo/project, /demo/providers/[slug] use fixtures in src/lib/demo/fixtures.ts only. Nothing there is real; keep the "Sample" ribbon.
+- Language: Khmer by default for everyone; the header switch sets the "lang" cookie. Browser language is ignored.
+
 ## Order of work (business plan, section 5)
 Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual matching, 20 paid projects before the full marketplace.
