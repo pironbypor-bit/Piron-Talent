@@ -14,7 +14,12 @@
   --color-brand-900: #78350f;
   --color-ink: #1c1917;
   --color-ink-muted: #57534e;
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Noto Sans Khmer", "Khmer OS", sans-serif;
+  /* Inter for Latin, Noto Sans Khmer for Khmer (loaded in layout.tsx), then system fallbacks. */
+  --font-sans: var(--font-inter), var(--font-khmer), ui-sans-serif, system-ui, "Segoe UI", Roboto, "Noto Sans Khmer", "Khmer OS", sans-serif;
 }
 
 html { color: var(--color-ink); background: #fff; }
+
+/* Khmer script needs more room between lines and reads better slightly larger on phones. */
+html[lang="km"] { line-height: 1.7; }
+@media (max-width: 640px) { html { font-size: 17px; } }

@@ -74,3 +74,34 @@ export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone
   }[tone];
   return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${look}`}>{children}</span>;
 }
+
+/** Steps of a job. `current` is the index of the last step reached. Pass translated labels. */
+export function Stepper({ steps, current }: { steps: string[]; current: number }) {
+  return (
+    <ol className="grid gap-2 sm:grid-cols-5 sm:gap-0">
+      {steps.map((label, i) => {
+        const done = i <= current;
+        return (
+          <li key={label} className="flex items-center gap-2 sm:flex-col sm:items-start sm:gap-1">
+            <span className="flex items-center sm:w-full">
+              <span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${done ? "bg-brand-500 text-ink" : "border border-stone-300 text-stone-400"}`}>
+                {done ? "✓" : i + 1}
+              </span>
+              {i < steps.length - 1 && <span className={`hidden h-0.5 flex-1 sm:block ${i < current ? "bg-brand-400" : "bg-stone-200"}`} />}
+            </span>
+            <span className={`text-sm ${done ? "font-medium" : "text-ink-muted"}`}>{label}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+export function EmptyState({ children, action }: { children: ReactNode; action?: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-center">
+      <p className="text-ink-muted">{children}</p>
+      {action && <div className="mt-3">{action}</div>}
+    </div>
+  );
+}

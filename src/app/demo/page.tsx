@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, PageTitle, Pill } from "@/components/ui";
-import { customer, outcome, pick, providerBySlug, quotes, request } from "@/lib/demo/fixtures";
+import { pick, providerBySlug, story } from "@/lib/demo/fixtures";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { ProviderCard, Stars, demoDate } from "./demo-ui";
 
@@ -12,7 +12,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function DemoOverviewPage() {
   const [t, locale] = await Promise.all([getT(), getLocale()]);
-  const winner = providerBySlug(outcome.acceptedProvider)!;
+  const { customer, outcome } = story;
+  const quotes = story.quotes;
+  const request = story;
+  const winner = providerBySlug(outcome!.acceptedProvider)!;
   const review = winner.reviews[0];
 
   const steps: { title: string; body: React.ReactNode }[] = [
@@ -26,7 +29,7 @@ export default async function DemoOverviewPage() {
           <p className="mt-1 text-lg font-semibold">{pick(request.title, locale)}</p>
           <p className="mt-2 leading-relaxed">{pick(request.details, locale)}</p>
           <p className="mt-3 text-sm text-ink-muted">
-            {pick(request.category, locale)} · {t("Budget")} ${request.budgetMin} - ${request.budgetMax} · {t("Needed by")} {pick(request.neededBy, locale)}
+            {pick(request.categoryName, locale)} · {t("Budget")} ${request.budgetMin} - ${request.budgetMax} · {t("Deadline")} {pick(request.deadline, locale)}
           </p>
         </div>
       ),
@@ -68,8 +71,8 @@ export default async function DemoOverviewPage() {
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Pill tone="green">{t("Accepted")}</Pill>
             <span className="font-semibold">{pick(winner.name, locale)}</span>
-            <span>${outcome.price}</span>
-            <span className="text-sm text-ink-muted">{demoDate(outcome.acceptedOn, locale)}</span>
+            <span>${outcome!.price}</span>
+            <span className="text-sm text-ink-muted">{demoDate(outcome!.acceptedOn, locale)}</span>
           </div>
         </div>
       ),
@@ -81,12 +84,12 @@ export default async function DemoOverviewPage() {
           <p className="text-ink-muted">{t("When the work is delivered, both sides confirm. The job becomes a record on the provider's profile, and the customer can leave a review.")}</p>
           <dl className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
             <dt className="text-ink-muted">{t("Job completed")}</dt>
-            <dd>{demoDate(outcome.completedOn, locale)}</dd>
+            <dd>{demoDate(outcome!.completedOn, locale)}</dd>
             <dt className="text-ink-muted">{t("Delivered")}</dt>
-            <dd>{pick(outcome.delivered, locale)}</dd>
+            <dd>{pick(outcome!.delivered, locale)}</dd>
             <dt className="text-ink-muted">{t("Agreed price (USD)")}</dt>
             <dd>
-              ${outcome.price} · {t("Paid directly to the provider")}
+              ${outcome!.price} · {t("Paid directly to the provider")}
             </dd>
           </dl>
           <blockquote className="mt-4 border-l-4 border-brand-300 pl-3">
@@ -129,7 +132,7 @@ export default async function DemoOverviewPage() {
         ))}
       </ol>
       <p className="mt-12">
-        <Link href="/demo/project" className="font-semibold underline">
+        <Link href="/demo/projects/cafe-photos" className="font-semibold underline">
           {t("Open the project page")}
         </Link>
         <span className="ml-2 text-ink-muted">({t("Try it: accept one quote.")})</span>

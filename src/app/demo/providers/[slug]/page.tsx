@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pill } from "@/components/ui";
-import { pick, providerBySlug, providers } from "@/lib/demo/fixtures";
+import { categoryName, pick, providerBySlug, providers } from "@/lib/demo/fixtures";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { Avatar, PortfolioGrid, Stars, demoDate } from "../../demo-ui";
 import { QuoteButton } from "./quote-button";
@@ -28,7 +28,7 @@ export default async function DemoProviderPage({ params }: Props) {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
       <p className="mb-6">
-        <Link href="/demo/project" className="text-sm font-medium underline">
+        <Link href="/demo/providers" className="text-sm font-medium underline">
           {t("Back")}
         </Link>
       </p>
@@ -37,7 +37,7 @@ export default async function DemoProviderPage({ params }: Props) {
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">{name}</h1>
           <p className="text-ink-muted">
-            {pick(p.role, locale)} · {pick(p.city, locale)}
+            {pick(p.role, locale)} · {categoryName(p.category, locale)} · {pick(p.city, locale)} · {p.remote ? t("Remote") : t("On site")}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <Stars rating={p.rating} />
