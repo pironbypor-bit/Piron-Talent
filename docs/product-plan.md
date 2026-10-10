@@ -276,3 +276,11 @@ Telegram bot for owner alerts; analytics events written server-side so they are 
 | 7 | Closed beta (April), public web launch (June) | per plan calendar |
 | 8 | Saved providers, rehire, templates, business accounts, payments references, AI scope helper | 4 weeks, Q3 |
 | 9 | Scheduling, analytics, category expansion | Q4 |
+
+## 9. Locked updates
+
+Decisions the owner has taken; build when the trigger is met.
+
+| Update | Decision | Trigger | What it needs to start |
+|---|---|---|---|
+| Identity verification, level 3 (KYC provider) | Locked on 2026-10-10. Replace manual-only review with a KYC provider doing document authenticity, liveness and face match, keeping a human as the final approver and the Identity checked label unchanged. | Before public launch, or when identity checks pass about 100 a month, whichever comes first. Until then: manual review plus the level 2 checks (MRZ checksum, duplicate ID number, live-capture flag). | Owner picks the provider (candidates: Sumsub, Veriff, Onfido, iDenfy; compare Cambodian ID template support and per-check price), creates the account and gives the API key to the Cloudflare secret store. Then: migration adding provider_ref and result fields to identity_checks, a webhook route under /api/kyc, and the queue showing the provider verdict beside the photos. Track CamDigiKey for a government-backed check later. |
