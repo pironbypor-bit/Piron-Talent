@@ -4,7 +4,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { createClient, getUserId } from "@/lib/supabase/server";
 import { fieldErrors, formEntries, providerApplicationSchema, type FormState } from "@/lib/validation";
 
-const KEYS = ["full_name", "contact", "city", "category_id", "skills", "experience_years", "portfolio_url", "website"];
+const KEYS = ["full_name", "contact", "city", "category_id", "skills", "experience_years", "portfolio_url", "source", "website"];
 
 /** Saves a "Join as a provider" application. Works without an account; links the row when someone is signed in. */
 export async function submitProviderApplication(_prev: FormState, formData: FormData): Promise<FormState> {

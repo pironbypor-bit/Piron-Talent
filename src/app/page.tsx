@@ -4,6 +4,7 @@ import { Faq, PilotNote, TrustBlock } from "@/components/home-blocks";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { providers } from "@/lib/demo/fixtures";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { SEGMENTS } from "@/lib/segments";
 import { ProviderCard } from "@/app/demo/demo-ui";
 
 // Homepage ("two doors", chosen by the owner on 2026-10-10 from the proposals under /design).
@@ -78,6 +79,14 @@ export default async function Home() {
         <Link href="/demo" className="text-sm font-medium underline">
           {t("See a sample project")}
         </Link>
+      </p>
+
+      <p className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-muted">
+        {SEGMENTS.map((s) => (
+          <Link key={s.slug} href={`/for/${s.slug}`} className="underline hover:text-ink">
+            {t(s.kicker)}
+          </Link>
+        ))}
       </p>
 
       <div className="mt-12">

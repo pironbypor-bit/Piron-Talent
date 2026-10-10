@@ -8,7 +8,7 @@ import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 import { submitProviderApplication } from "./actions";
 
-export function ProviderForm({ categories }: { categories: Category[] }) {
+export function ProviderForm({ categories, initial }: { categories: Category[]; initial?: { category_id?: string; source?: string } }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(submitProviderApplication, idle);
@@ -25,11 +25,12 @@ export function ProviderForm({ categories }: { categories: Category[] }) {
   }
 
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
-  const val = (k: string, fallback = "") => state.values?.[k] ?? fallback;
+  const val = (k: string, fallback = "") => state.values?.[k] ?? (initial as Record<string, string | undefined> | undefined)?.[k] ?? fallback;
 
   return (
     <form action={action} noValidate className="space-y-5">
       {state.message && <Notice tone="error">{t(state.message)}</Notice>}
+      {val("source") && <input type="hidden" name="source" value={val("source")} />}
 
       <Field label={t("Full name")} error={err("full_name")}>
         <input name="full_name" defaultValue={val("full_name")} autoComplete="name" className={inputClass} aria-invalid={!!err("full_name")} />

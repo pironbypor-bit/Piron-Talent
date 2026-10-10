@@ -8,7 +8,7 @@ import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 import { submitProjectRequest } from "./actions";
 
-export function ProjectForm({ categories, initial }: { categories: Category[]; initial?: { details?: string; category_id?: string } }) {
+export function ProjectForm({ categories, initial }: { categories: Category[]; initial?: { details?: string; category_id?: string; source?: string } }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(submitProjectRequest, idle);
@@ -30,6 +30,7 @@ export function ProjectForm({ categories, initial }: { categories: Category[]; i
   return (
     <form action={action} noValidate className="space-y-5">
       {state.message && <Notice tone="error">{t(state.message)}</Notice>}
+      {val("source") && <input type="hidden" name="source" value={val("source")} />}
 
       <Field label={t("Your name")} error={err("contact_name")}>
         <input name="contact_name" defaultValue={val("contact_name")} autoComplete="name" className={inputClass} aria-invalid={!!err("contact_name")} />

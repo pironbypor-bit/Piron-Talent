@@ -17,6 +17,7 @@ export type ProjectRequest = {
   needed_by: string | null;
   locale: string;
   status: RequestStatus;
+  source: string | null;
   admin_note: string | null;
   created_at: string;
 };
@@ -31,6 +32,7 @@ export type ProviderApplication = {
   experience_years: number | null;
   portfolio_url: string | null;
   status: ApplicantStatus;
+  source: string | null;
   admin_note: string | null;
   created_at: string;
 };

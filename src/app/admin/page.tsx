@@ -53,6 +53,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                   <p className="text-sm text-ink-muted">
                     {formatDate(r.created_at, locale)}
                     {category(r.category_id) ? ` · ${category(r.category_id)}` : ""} · {r.contact}
+                    {r.source ? ` · ${t("from")} ${r.source}` : ""}
                   </p>
                   <p className="mt-1 line-clamp-2 text-sm">{r.details}</p>
                 </div>
@@ -78,6 +79,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                     {formatDate(a.created_at, locale)}
                     {category(a.category_id) ? ` · ${category(a.category_id)}` : ""} · {a.contact}
                     {a.experience_years !== null ? ` · ${t("{n} years", { n: a.experience_years })}` : ""}
+                    {a.source ? ` · ${t("from")} ${a.source}` : ""}
                   </p>
                   <p className="mt-1 text-sm">{a.skills}</p>
                   {a.portfolio_url && (

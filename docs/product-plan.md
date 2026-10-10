@@ -44,9 +44,9 @@ Status: done, next (this phase), later. "Server" names where the state change li
 | Admin lists, match, record completed job | Run the pilot by hand | pilot_jobs, admin_* functions | security definer functions | done |
 | Demo walkthrough and marketplace preview | Sales visits, provider recruitment | fixtures only | none | done |
 | Owner notification on new request or application | Reply within one working day | none | Telegram bot or email from a database webhook | next |
-| Request source and loss reason fields | The CRM the plan asks for (section 7) | project_requests.source, closed_reason | admin_set_request | next |
+| Request source and loss reason fields | The CRM the plan asks for (section 7) | project_requests.source, closed_reason | admin_set_request | source done (0008); loss reason next |
 | KPI counters on /admin | Weekly report: qualified requests, fill rate, response time, completed jobs, repeat | views over pilot tables | SQL views | next |
-| Three segment landing pages | Paid acquisition tests: online sellers, cafes and retail, student freelancers | static copy + same forms with source set | none | next |
+| Three segment landing pages | Paid acquisition tests: online sellers, cafes and retail, student freelancers | static copy + same forms with source set | none | done 2026-10-10, Khmer copy awaits owner review |
 | Category SEO pages | "hire photographer Phnom Penh" style pages | categories, static copy | none | next |
 | Rate limiting and spam control | Protect anonymous forms | Cloudflare rate limiting rules on /post-project and /join | Cloudflare | next |
 | Analytics events | Measure the funnel (section 3.7 below) | event table or Cloudflare Web Analytics | server action | next |

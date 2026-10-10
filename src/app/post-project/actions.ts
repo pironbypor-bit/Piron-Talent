@@ -4,7 +4,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { createClient, getUserId } from "@/lib/supabase/server";
 import { fieldErrors, formEntries, projectRequestSchema, type FormState } from "@/lib/validation";
 
-const KEYS = ["contact_name", "contact", "business_name", "category_id", "details", "budget_min", "budget_max", "needed_by", "website"];
+const KEYS = ["contact_name", "contact", "business_name", "category_id", "details", "budget_min", "budget_max", "needed_by", "source", "website"];
 
 /** Saves a "Post a project" request. Works without an account; links the row when someone is signed in. */
 export async function submitProjectRequest(_prev: FormState, formData: FormData): Promise<FormState> {

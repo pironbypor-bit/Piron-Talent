@@ -33,6 +33,11 @@ export const projectRequestSchema = z
     budget_min: optionalNumber(0, 1_000_000),
     budget_max: optionalNumber(0, 1_000_000),
     needed_by: optionalText(120),
+    source: z
+      .string()
+      .trim()
+      .max(40)
+      .transform((v) => (/^[a-z0-9-]{1,40}$/.test(v) ? v : null)),
     website: honeypot,
   })
   .refine((d) => d.budget_max === null || d.budget_min === null || d.budget_max >= d.budget_min, {
@@ -53,6 +58,11 @@ export const providerApplicationSchema = z.object({
     .max(300, "Too long.")
     .transform((v) => (v === "" ? null : v))
     .refine((v) => v === null || /^https?:\/\/\S+$/i.test(v) || /^[\w.-]+\.[a-z]{2,}(\/\S*)?$/i.test(v), "Must be a valid link."),
+  source: z
+    .string()
+    .trim()
+    .max(40)
+    .transform((v) => (/^[a-z0-9-]{1,40}$/.test(v) ? v : null)),
   website: honeypot,
 });
 
