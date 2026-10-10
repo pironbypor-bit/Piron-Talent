@@ -19,6 +19,10 @@ export type PostRow = {
   price_text: string | null;
   category_id: number | null;
   created_at: string;
+  deadline: string | null;
+  budget_min: number | null;
+  budget_max: number | null;
+  remote: boolean;
   author: Author;
   cheers: number;
   comments: number;
@@ -82,3 +86,22 @@ export const KIND_LABEL: Record<PostKind, string> = {
   share_knowledge: "Share knowledge",
   hire_shift: "Hire shift",
 };
+
+// Phase 2 core loop
+export type QuoteStatus = "pending" | "accepted" | "declined" | "withdrawn";
+export type QuoteRow = { id: string; post_id: string; provider_id: string; price: number; days: number | null; note: string | null; status: QuoteStatus; created_at: string; provider: Author };
+export type ProjectJobStatus = "accepted" | "delivered" | "confirmed" | "cancelled";
+export type ProjectJobRow = {
+  id: string;
+  post_id: string;
+  quote_id: string;
+  customer_id: string;
+  provider_id: string;
+  agreed_price: number;
+  status: ProjectJobStatus;
+  delivered_at: string | null;
+  confirmed_at: string | null;
+  note: string | null;
+  created_at: string;
+};
+export type ProjectScope = { deliverables: string[]; deadline: string | null; remote: boolean; budget_min: number | null; budget_max: number | null };

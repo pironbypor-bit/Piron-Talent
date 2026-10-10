@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice } from "@/components/ui";
 import { addComment, startConversation } from "@/lib/app/actions";
-import { getMe, getPost } from "@/lib/app/queries";
+import { getMe, getPost, getProjectPanel } from "@/lib/app/queries";
+import { ProjectPanel } from "../project-panel";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../avatar";
@@ -22,6 +23,7 @@ export default async function PostPage({ params, searchParams }: Props) {
   const data = await getPost(id);
   if (!data) notFound();
   const { post, comments } = data;
+  const panel = post.kind === "need_help" ? await getProjectPanel(post.id) : null;
   const comment = addComment.bind(null, post.id);
   const connect = startConversation.bind(null, post.author.id);
   const path = `/app/post/${post.id}`;
@@ -35,6 +37,7 @@ export default async function PostPage({ params, searchParams }: Props) {
         <PostCard post={post} t={t} locale={locale} path={path} me={me?.id ?? null} full />
       </div>
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
+      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} me={me} t={t} locale={locale} />}
 
       {me && me.id !== post.author.id && (
         <section id="connect" className="mt-4 rounded-2xl border border-brand-300 bg-brand-50 p-4">

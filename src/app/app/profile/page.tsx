@@ -81,6 +81,11 @@ export default async function ProfilePage() {
         ))}
       </ul>
 
+      <Link href="/app/profile/jobs" className="card mt-4 flex items-center justify-between px-4 py-3 font-semibold hover:bg-brand-50">
+        {t("My jobs")}
+        <span className="text-ink-muted">›</span>
+      </Link>
+
       <section className="mt-4 card p-4" id="identity">
         <div className="flex items-center justify-between gap-3">
           <div>

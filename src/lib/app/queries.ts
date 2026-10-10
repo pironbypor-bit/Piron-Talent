@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProviderRow } from "./types";
+import type { Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -28,7 +28,7 @@ export async function listPosts(limit = 40): Promise<PostRow[]> {
   const uid = await getUserId();
   const { data } = await supabase
     .from("posts")
-    .select(`id,kind,title,body,place,price_text,category_id,created_at,author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
+    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -59,7 +59,7 @@ export async function getPost(id: string): Promise<{ post: PostRow; comments: Co
   const uid = await getUserId();
   const { data } = await supabase
     .from("posts")
-    .select(`id,kind,title,body,place,price_text,category_id,created_at,author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
+    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
@@ -228,4 +228,45 @@ export async function isAdmin(): Promise<boolean> {
   const supabase = await createClient();
   const { data } = await supabase.from("admins").select("user_id").eq("user_id", uid).maybeSingle();
   return !!data;
+}
+
+// Phase 2 core loop ------------------------------------------------------------------------------------------
+
+/** Everything the project panel on a Job offer post needs. Quotes come back under RLS: the author sees all, a provider sees only their own. */
+export async function getProjectPanel(postId: string) {
+  const supabase = await createClient();
+  const uid = await getUserId();
+  const [{ data: scope }, { data: quotes }, { data: job }, { data: countData }] = await Promise.all([
+    supabase.from("posts").select("deliverables,deadline,remote,budget_min,budget_max").eq("id", postId).maybeSingle(),
+    uid ? supabase.from("quotes").select(`id,post_id,provider_id,price,days,note,status,created_at,provider:profiles!quotes_provider_id_fkey(${AUTHOR})`).eq("post_id", postId).order("created_at") : Promise.resolve({ data: [] }),
+    uid ? supabase.from("project_jobs").select("id,post_id,quote_id,customer_id,provider_id,agreed_price,status,delivered_at,confirmed_at,note,created_at").eq("post_id", postId).in("status", ["accepted", "delivered", "confirmed"]).maybeSingle() : Promise.resolve({ data: null }),
+    supabase.rpc("quote_count", { p_post: postId }),
+  ]);
+  let reviewed = false;
+  if (job && uid) {
+    const { data: r } = await supabase.from("reviews").select("id").eq("project_job_id", (job as { id: string }).id).eq("author_id", uid).maybeSingle();
+    reviewed = !!r;
+  }
+  return {
+    scope: (scope ?? { deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null }) as ProjectScope,
+    quotes: ((quotes ?? []) as unknown as (Omit<QuoteRow, "provider"> & { provider: Author | Author[] })[]).map((q) => ({ ...q, provider: one(q.provider) as Author })),
+    job: (job ?? null) as ProjectJobRow | null,
+    count: typeof countData === "number" ? countData : 0,
+    reviewed,
+  };
+}
+
+/** Jobs I am part of, either side, newest first. */
+export async function myJobs() {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("project_jobs")
+    .select(`id,post_id,customer_id,provider_id,agreed_price,status,created_at,post:posts!project_jobs_post_id_fkey(title),customer:profiles!project_jobs_customer_id_fkey(${AUTHOR}),provider:profiles!project_jobs_provider_id_fkey(${AUTHOR})`)
+    .or(`customer_id.eq.${uid},provider_id.eq.${uid}`)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  type Row = { id: string; post_id: string; customer_id: string; provider_id: string; agreed_price: number; status: string; created_at: string; post: { title: string } | { title: string }[] | null; customer: Author | Author[]; provider: Author | Author[] };
+  return ((data ?? []) as unknown as Row[]).map((r) => ({ ...r, title: one(r.post)?.title ?? "", customer: one(r.customer) as Author, provider: one(r.provider) as Author, mine: r.customer_id === uid ? "customer" : "provider" }));
 }

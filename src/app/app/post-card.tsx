@@ -38,10 +38,17 @@ export function PostCard({ post, t, locale, path, me, full = false }: { post: Po
         {full ? post.title : <Link href={`/app/post/${post.id}`} className="hover:underline">{post.title}</Link>}
       </h2>
       <p className={`mt-1 whitespace-pre-wrap leading-relaxed text-ink ${full ? "" : "line-clamp-4"}`}>{post.body}</p>
-      {(post.place || post.price_text) && (
+      {(post.place || post.price_text || post.budget_min !== null || post.budget_max !== null || post.deadline) && (
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           {post.place && <span className="rounded-full bg-stone-100 px-2.5 py-1">{post.place}</span>}
           {post.price_text && <span className="rounded-full bg-brand-100 px-2.5 py-1 font-semibold text-brand-900">{post.price_text}</span>}
+          {(post.budget_min !== null || post.budget_max !== null) && (
+            <span className="rounded-full bg-brand-100 px-2.5 py-1 font-semibold text-brand-900">
+              {[post.budget_min, post.budget_max].filter((n) => n !== null).map((n) => `${n}`).join(" - ")}
+            </span>
+          )}
+          {post.deadline && <span className="rounded-full bg-stone-100 px-2.5 py-1">{formatDate(post.deadline, locale)}</span>}
+          {post.kind === "need_help" && post.remote && <span className="rounded-full bg-stone-100 px-2.5 py-1">{t("Remote")}</span>}
         </div>
       )}
       <div className="mt-4 flex flex-wrap items-center gap-2">

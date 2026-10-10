@@ -42,22 +42,31 @@ export async function toggleKeepPost(postId: string, path: string) {
   revalidatePath(path);
 }
 
-const postSchema = z.object({
-  kind: z.enum(["need_help", "offer_skill", "share_knowledge"]),
-  title: text(3, 120),
-  body: text(10, 3000),
-  category_id: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().int().positive().nullable()),
-  place: optional(80),
-  price_text: optional(40),
-});
+const money = z.preprocess((v) => (v === "" || v == null ? null : Number(String(v).replace(/,/g, ""))), z.number({ error: "Must be a number." }).min(0).max(1_000_000).nullable());
+const postSchema = z
+  .object({
+    kind: z.enum(["need_help", "offer_skill", "share_knowledge"]),
+    title: text(3, 120),
+    body: text(10, 3000),
+    category_id: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().int().positive().nullable()),
+    place: optional(80),
+    price_text: optional(40),
+    deliverables: z.string().max(2000, "Too long.").transform((v) => v.split(String.fromCharCode(10)).map((x) => x.trim()).filter(Boolean).slice(0, 10)),
+    deadline: z.string().transform((v) => (new RegExp("^[0-9]{4}-[0-9]{2}-[0-9]{2}$").test(v) ? v : null)),
+    remote: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
+    budget_min: money,
+    budget_max: money,
+  })
+  .refine((d) => d.budget_max === null || d.budget_min === null || d.budget_max >= d.budget_min, { path: ["budget_max"], message: "Must not be lower than the first amount." });
 
 export async function createPost(_prev: FormState, formData: FormData): Promise<FormState> {
   const uid = await requireUser("/app/post/new");
-  const values = formEntries(formData, ["kind", "title", "body", "category_id", "place", "price_text"]);
+  const values = formEntries(formData, ["kind", "title", "body", "category_id", "place", "price_text", "deliverables", "deadline", "remote", "budget_min", "budget_max"]);
   const parsed = postSchema.safeParse(values);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error), values, message: "Please check the highlighted fields." };
   const supabase = await createClient();
-  const { data, error } = await supabase.from("posts").insert({ ...parsed.data, author_id: uid, status: "published" }).select("id").single();
+  const scope = parsed.data.kind === "need_help" ? parsed.data : { ...parsed.data, deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null };
+  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published" }).select("id").single();
   if (error || !data) return { ok: false, values, message: "Something went wrong. Please try again." };
   revalidatePath("/app");
   redirect(`/app/post/${data.id}`);
@@ -190,4 +199,69 @@ export async function markNotificationsRead() {
   const supabase = await createClient();
   await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", uid).is("read_at", null);
   revalidatePath("/app/profile");
+}
+
+// Quotes, job record, reviews (Phase 2 core loop) -----------------------------------------------------------
+
+async function rpcThenBack(path: string, fn: string, args: Record<string, unknown>) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc(fn, args);
+  if (error) redirect(`${path}?error=${encodeURIComponent(error.message)}`);
+  revalidatePath(path);
+  revalidatePath("/app");
+  redirect(path);
+}
+
+export async function sendQuote(postId: string, formData: FormData) {
+  if (!uuid.test(postId)) return;
+  const uid = await requireUser(`/app/post/${postId}`);
+  const price = Number(String(formData.get("price") ?? "").replace(/,/g, ""));
+  const daysRaw = String(formData.get("days") ?? "").trim();
+  const days = daysRaw === "" ? null : Number(daysRaw);
+  const note = String(formData.get("note") ?? "").trim().slice(0, 1000) || null;
+  const path = `/app/post/${postId}`;
+  if (!(price >= 0) || (days !== null && !(days >= 1 && days <= 365))) redirect(`${path}?error=${encodeURIComponent("Must be a number.")}`);
+  const supabase = await createClient();
+  const { error } = await supabase.from("quotes").insert({ post_id: postId, provider_id: uid, price, days, note });
+  if (error) redirect(`${path}?error=${encodeURIComponent(error.message)}`);
+  revalidatePath(path);
+  redirect(path);
+}
+
+export async function acceptQuote(postId: string, quoteId: string) {
+  if (!uuid.test(postId) || !uuid.test(quoteId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "accept_quote", { p_quote: quoteId });
+}
+export async function declineQuote(postId: string, quoteId: string) {
+  if (!uuid.test(postId) || !uuid.test(quoteId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "decline_quote", { p_quote: quoteId });
+}
+export async function withdrawQuote(postId: string, quoteId: string) {
+  if (!uuid.test(postId) || !uuid.test(quoteId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "withdraw_quote", { p_quote: quoteId });
+}
+export async function markDelivered(postId: string, jobId: string) {
+  if (!uuid.test(postId) || !uuid.test(jobId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "mark_delivered", { p_job: jobId });
+}
+export async function confirmCompletion(postId: string, jobId: string) {
+  if (!uuid.test(postId) || !uuid.test(jobId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "confirm_completion", { p_job: jobId });
+}
+export async function cancelJob(postId: string, jobId: string, formData: FormData) {
+  if (!uuid.test(postId) || !uuid.test(jobId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "cancel_job", { p_job: jobId, p_note: String(formData.get("note") ?? "").trim().slice(0, 500) || null });
+}
+export async function leaveReview(postId: string, jobId: string, formData: FormData) {
+  if (!uuid.test(postId) || !uuid.test(jobId)) return;
+  await requireUser(`/app/post/${postId}`);
+  const stars = Number(formData.get("stars"));
+  if (!(stars >= 1 && stars <= 5)) return;
+  await rpcThenBack(`/app/post/${postId}`, "leave_review", { p_job: jobId, p_stars: stars, p_comment: String(formData.get("comment") ?? "").trim().slice(0, 1000) });
 }

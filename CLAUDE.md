@@ -31,6 +31,9 @@ Tailwind 4, Cloudflare Workers via OpenNext (npm run deploy), own GitHub repo.
   start_conversation (consent rule), notification triggers, publish_job, set_my_skills. Migration 0005 adds ID details (legal name, type, number, date of birth) and a selfie to identity_checks; /app/profile/identity is the three-step flow, admins compare both photos with the details at /admin/identity. Approval copies legal name and date of birth into profile_private.
 - Anonymous visitors browse; the proxy sends /app/profile, /app/messages, /app/post/new and /app/jobs/new to /login.
 
+## Phase 2 core loop (migration 0006, built 2026-10-10)
+- Job offer posts carry scope (deliverables, deadline, remote, budget). Providers with is_available send quotes (price, days, note) from the post page; the author accepts or declines, providers withdraw. Accepting creates project_jobs; provider marks delivered, customer confirms (completed_jobs +1), either cancels before delivery, customer reviews after confirmation. All through security-definer functions; notifications by triggers. UI: src/app/app/post/project-panel.tsx and job-panel.tsx; /app/profile/jobs lists my jobs.
+
 ## Plan
 Feature, screen and UI plan for 2027: docs/product-plan.md. Mobile app screens from the owner mockup: docs/app-ui-plan.md. Update them when scope changes.
 

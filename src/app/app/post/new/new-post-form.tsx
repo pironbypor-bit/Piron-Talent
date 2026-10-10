@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { createPost } from "@/lib/app/actions";
 import { KIND_LABEL } from "@/lib/app/types";
@@ -14,6 +14,7 @@ export function NewPostForm({ categories, initialKind = "need_help" }: { categor
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(createPost, idle);
+  const [kind, setKind] = useState<(typeof KINDS)[number]>((state.values?.kind as (typeof KINDS)[number]) ?? initialKind);
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
   const val = (k: string, d = "") => state.values?.[k] ?? d;
 
@@ -25,7 +26,7 @@ export function NewPostForm({ categories, initialKind = "need_help" }: { categor
         <div className="flex flex-wrap gap-2">
           {KINDS.map((k) => (
             <label key={k} className="cursor-pointer rounded-full border border-stone-300 px-3 py-1.5 text-sm has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-white">
-              <input type="radio" name="kind" value={k} defaultChecked={val("kind", initialKind) === k} className="sr-only" />
+              <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="sr-only" />
               {t(KIND_LABEL[k])}
             </label>
           ))}
@@ -56,6 +57,31 @@ export function NewPostForm({ categories, initialKind = "need_help" }: { categor
           <input name="price_text" defaultValue={val("price_text")} className={inputClass} />
         </Field>
       </div>
+      {kind === "need_help" && (
+        <fieldset className="card space-y-4 p-4">
+          <legend className="sr-only">{t("Scope")}</legend>
+          <p className="font-semibold">{t("Scope")}</p>
+          <Field label={t("Deliverables")} optional={t("optional")} hint={t("One line per item")} error={err("deliverables")}>
+            <textarea name="deliverables" rows={3} defaultValue={val("deliverables")} className={inputClass} />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("Budget in USD")} optional={t("optional")} error={err("budget_min")}>
+              <input name="budget_min" inputMode="decimal" defaultValue={val("budget_min")} placeholder={t("from")} className={inputClass} aria-invalid={!!err("budget_min")} />
+            </Field>
+            <Field label={t("to")} optional={t("optional")} error={err("budget_max")}>
+              <input name="budget_max" inputMode="decimal" defaultValue={val("budget_max")} placeholder={t("to")} className={inputClass} aria-invalid={!!err("budget_max")} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("Deadline")} optional={t("optional")} error={err("deadline")}>
+              <input type="date" name="deadline" defaultValue={val("deadline")} className={inputClass} />
+            </Field>
+            <label className="flex items-center gap-2 self-end pb-3 text-sm">
+              <input type="checkbox" name="remote" defaultChecked={val("remote") === "on"} /> {t("Remote work")}
+            </label>
+          </div>
+        </fieldset>
+      )}
       <p className="text-xs text-ink-muted">{t("Shift jobs (part-time, short-term) open after the legal review.")}</p>
       <Button type="submit" disabled={pending}>
         {t("Publish")}
