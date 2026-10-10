@@ -60,12 +60,19 @@ const STATUS_TEXT: Record<string, string> = {
   rejected: "Rejected",
   in_progress: "In progress",
   cancelled: "Cancelled",
+  open: "Open@@status",
+  reviewing: "Reviewing",
+  resolved: "Resolved",
+  dismissed: "Dismissed",
+  accepted: "Accepted",
+  delivered: "Delivered",
+  confirmed: "Confirmed",
 };
 
 export const statusLabel = (t: T, status: string) => t(STATUS_TEXT[status] ?? status);
 
 export const statusTone = (status: string): "neutral" | "amber" | "green" | "red" =>
-  status === "new" ? "amber" : status === "completed" || status === "approved" ? "green" : status === "rejected" || status === "cancelled" ? "red" : "neutral";
+  status === "new" || status === "open" ? "amber" : status === "completed" || status === "approved" || status === "resolved" || status === "confirmed" ? "green" : status === "rejected" || status === "cancelled" || status === "dismissed" ? "red" : "neutral";
 
 export { formatDate } from "@/lib/dates";
 

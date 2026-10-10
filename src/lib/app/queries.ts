@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow } from "./types";
+import type { Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -277,9 +277,15 @@ export async function getProjectPanel(postId: string) {
     supabase.rpc("quote_count", { p_post: postId }),
   ]);
   let reviewed = false;
+  let dispute: DisputeRow | null = null;
   if (job && uid) {
-    const { data: r } = await supabase.from("reviews").select("id").eq("project_job_id", (job as { id: string }).id).eq("author_id", uid).maybeSingle();
+    const j = job as { id: string; quote_id: string };
+    const [{ data: r }, { data: d }] = await Promise.all([
+      supabase.from("reviews").select("id").eq("project_job_id", j.id).eq("author_id", uid).maybeSingle(),
+      supabase.from("disputes").select("id,opened_by,status,reason,resolution,created_at").eq("quote_id", j.quote_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    ]);
     reviewed = !!r;
+    dispute = (d ?? null) as DisputeRow | null;
   }
   return {
     scope: (scope ?? { deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null }) as ProjectScope,
@@ -287,6 +293,7 @@ export async function getProjectPanel(postId: string) {
     job: (job ?? null) as ProjectJobRow | null,
     count: typeof countData === "number" ? countData : 0,
     reviewed,
+    dispute,
   };
 }
 

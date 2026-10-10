@@ -105,3 +105,6 @@ export type ProjectJobRow = {
   created_at: string;
 };
 export type ProjectScope = { deliverables: string[]; deadline: string | null; remote: boolean; budget_min: number | null; budget_max: number | null };
+
+export type DisputeStatus = "open" | "reviewing" | "resolved" | "dismissed";
+export type DisputeRow = { id: string; opened_by: string; status: DisputeStatus; reason: string; resolution: string | null; created_at: string };

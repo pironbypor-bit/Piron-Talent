@@ -8,9 +8,10 @@ import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { statusLabel, statusTone } from "@/lib/pilot";
 import { AvatarImg } from "../../avatar";
+import { ReportForm } from "../../report-form";
 import { JOB_TYPE_LABEL, PAY_UNIT_LABEL } from "../page";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; reported?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -18,8 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: data?.job.title ?? "Piron Talent" };
 }
 
-export default async function JobPage({ params }: Props) {
-  const [{ id }, t, locale, me] = await Promise.all([params, getT(), getLocale(), getMe()]);
+export default async function JobPage({ params, searchParams }: Props) {
+  const [{ id }, { error, reported }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
   const data = await getJob(id);
   if (!data) notFound();
   const { job, mine, application, applicants } = data;
@@ -92,6 +93,8 @@ export default async function JobPage({ params }: Props) {
           </Link>
         </p>
       )}
+      {error && <div className="mt-4"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
+      {me && !mine && <ReportForm type="job" id={job.id} path={path} reported={reported === "1"} t={t} />}
     </main>
   );
 }

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Button, Pill, inputClass } from "@/components/ui";
 import { acceptQuote, declineQuote, sendQuote, withdrawQuote } from "@/lib/app/actions";
-import type { MeRow, PostRow, ProjectJobRow, ProjectScope, QuoteRow } from "@/lib/app/types";
+import type { DisputeRow, MeRow, PostRow, ProjectJobRow, ProjectScope, QuoteRow } from "@/lib/app/types";
 import { formatDate } from "@/lib/dates";
 import type { Locale, T } from "@/lib/i18n/core";
 import { AvatarImg } from "../avatar";
 import { JobPanel } from "./job-panel";
 
-type Props = { post: PostRow; scope: ProjectScope; quotes: QuoteRow[]; job: ProjectJobRow | null; count: number; reviewed: boolean; me: MeRow | null; t: T; locale: Locale };
+type Props = { post: PostRow; scope: ProjectScope; quotes: QuoteRow[]; job: ProjectJobRow | null; count: number; reviewed: boolean; dispute: DisputeRow | null; me: MeRow | null; t: T; locale: Locale };
 
 export const QUOTE_TONE: Record<string, "amber" | "green" | "neutral" | "red"> = { pending: "amber", accepted: "green", declined: "neutral", withdrawn: "neutral" };
 export const QUOTE_LABEL: Record<string, string> = { pending: "Pending", accepted: "Accepted", declined: "Declined", withdrawn: "Withdrawn" };
@@ -15,7 +15,7 @@ export const QUOTE_LABEL: Record<string, string> = { pending: "Pending", accepte
 const days = (t: T, n: number | null) => (n === null ? null : n === 1 ? t("Delivery in 1 day") : t("Delivery in {n} days", { n }));
 
 /** Scope, quotes and the job record under a Job offer post. Who sees what follows the database policies. */
-export function ProjectPanel({ post, scope, quotes, job, count, reviewed, me, t, locale }: Props) {
+export function ProjectPanel({ post, scope, quotes, job, count, reviewed, dispute, me, t, locale }: Props) {
   const isAuthor = !!me && me.id === post.author.id;
   const myQuote = me ? quotes.find((q) => q.provider_id === me.id) : undefined;
   const path = `/app/post/${post.id}`;
@@ -43,7 +43,7 @@ export function ProjectPanel({ post, scope, quotes, job, count, reviewed, me, t,
       )}
 
       {job ? (
-        <JobPanel job={job} post={post} quotes={quotes} reviewed={reviewed} me={me} t={t} locale={locale} />
+        <JobPanel job={job} post={post} quotes={quotes} reviewed={reviewed} dispute={dispute} me={me} t={t} locale={locale} />
       ) : (
         <section className="card p-4">
           <div className="flex items-center justify-between">

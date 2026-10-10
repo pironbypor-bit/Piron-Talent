@@ -5,12 +5,13 @@ import { Button, inputClass, Notice } from "@/components/ui";
 import { addComment, startConversation } from "@/lib/app/actions";
 import { getMe, getPost, getProjectPanel } from "@/lib/app/queries";
 import { ProjectPanel } from "../project-panel";
+import { ReportForm } from "../../report-form";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../avatar";
 import { PostCard } from "../../post-card";
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; reported?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PostPage({ params, searchParams }: Props) {
-  const [{ id }, { error }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
+  const [{ id }, { error, reported }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
   const data = await getPost(id);
   if (!data) notFound();
   const { post, comments } = data;
@@ -37,7 +38,7 @@ export default async function PostPage({ params, searchParams }: Props) {
         <PostCard post={post} t={t} locale={locale} path={path} me={me?.id ?? null} full />
       </div>
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
-      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} me={me} t={t} locale={locale} />}
+      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} me={me} t={t} locale={locale} />}
 
       {me && me.id !== post.author.id && (
         <section id="connect" className="mt-4 rounded-2xl border border-brand-300 bg-brand-50 p-4">
@@ -85,6 +86,7 @@ export default async function PostPage({ params, searchParams }: Props) {
           </form>
         )}
       </section>
+      {me && me.id !== post.author.id && <ReportForm type="post" id={post.id} path={path} reported={reported === "1"} t={t} />}
     </main>
   );
 }

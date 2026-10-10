@@ -8,11 +8,12 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../avatar";
+import { ReportForm } from "../../report-form";
 import { Stars } from "@/app/demo/demo-ui";
 
 /* eslint-disable @next/next/no-img-element */
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; reported?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProviderPage({ params, searchParams }: Props) {
-  const [{ id }, { error }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
+  const [{ id }, { error, reported }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
   const data = await getProvider(id);
   if (!data) notFound();
   const { provider: p, portfolio, reviews } = data;
@@ -132,6 +133,7 @@ export default async function ProviderPage({ params, searchParams }: Props) {
           </ul>
         )}
       </section>
+      {me && me.id !== p.id && <ReportForm type="user" id={p.id} path={path} reported={reported === "1"} t={t} />}
     </main>
   );
 }

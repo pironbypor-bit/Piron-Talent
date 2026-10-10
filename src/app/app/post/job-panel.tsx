@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Button, Notice, Stepper, inputClass } from "@/components/ui";
-import { cancelJob, confirmCompletion, leaveReview, markDelivered } from "@/lib/app/actions";
-import type { MeRow, PostRow, ProjectJobRow, QuoteRow } from "@/lib/app/types";
+import { cancelJob, confirmCompletion, leaveReview, markDelivered, openDispute } from "@/lib/app/actions";
+import type { DisputeRow, MeRow, PostRow, ProjectJobRow, QuoteRow } from "@/lib/app/types";
 import { formatDate } from "@/lib/dates";
 import type { Locale, T } from "@/lib/i18n/core";
 import { AvatarImg } from "../avatar";
 
-type Props = { job: ProjectJobRow; post: PostRow; quotes: QuoteRow[]; reviewed: boolean; me: MeRow | null; t: T; locale: Locale };
+type Props = { job: ProjectJobRow; post: PostRow; quotes: QuoteRow[]; reviewed: boolean; dispute: DisputeRow | null; me: MeRow | null; t: T; locale: Locale };
 
 /** The job record after a quote is accepted: stepper, the next action for whoever is looking, review at the end. */
-export function JobPanel({ job, post, quotes, reviewed, me, t, locale }: Props) {
+export function JobPanel({ job, post, quotes, reviewed, dispute, me, t, locale }: Props) {
   const isCustomer = !!me && me.id === job.customer_id;
   const isProvider = !!me && me.id === job.provider_id;
   const provider = quotes.find((q) => q.id === job.quote_id)?.provider ?? post.author;
@@ -93,6 +93,29 @@ export function JobPanel({ job, post, quotes, reviewed, me, t, locale }: Props) 
                 </form>
               )}
               {isCustomer && reviewed && <p className="text-sm text-ink-muted">{t("Review sent. Thank you.")}</p>}
+            </div>
+          )}
+
+          {(isCustomer || isProvider) && (
+            <div className="mt-4">
+              {dispute && (dispute.status === "open" || dispute.status === "reviewing") ? (
+                <Notice tone="info">
+                  {dispute.opened_by === me?.id ? t("You opened a dispute. We will contact both sides.") : t("The other side opened a dispute. We will contact both sides.")}
+                </Notice>
+              ) : dispute && dispute.resolution ? (
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm">
+                  <p className="font-semibold">{dispute.status === "resolved" ? t("Dispute resolved") : t("Dispute dismissed")}</p>
+                  <p className="mt-1">{dispute.resolution}</p>
+                </div>
+              ) : (
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-ink-muted hover:text-ink">{t("Problem with this job? Open a dispute")}</summary>
+                  <form action={openDispute.bind(null, post.id, job.id)} className="mt-2 space-y-2">
+                    <textarea name="reason" rows={3} required minLength={3} maxLength={2000} className={inputClass} placeholder={t("What happened?")} />
+                    <Button type="submit" variant="secondary" className="px-3 py-1.5 text-sm">{t("Open a dispute")}</Button>
+                  </form>
+                </details>
+              )}
             </div>
           )}
         </>

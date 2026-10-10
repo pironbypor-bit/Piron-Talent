@@ -39,3 +39,9 @@ Feature, screen and UI plan for 2027: docs/product-plan.md. Mobile app screens f
 
 ## Order of work (business plan, section 5)
 Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual matching, 20 paid projects before the full marketplace.
+
+## Phase 2, step 2: search, portfolio, reports, disputes (2026-10-10)
+- Services: search by name / role line / about / skill (ilike, skills via profile_skills join), remote filter, sort (rated | completed | newest); rating comes from reviews joined on `reviews_subject_id_fkey`.
+- Edit profile: Portfolio section (PortfolioEditor in src/app/app/profile/uploads.tsx), max 12 images in the public `portfolio` bucket under `<uid>/`, rows in portfolio_items via addPortfolioItem / removePortfolioItem.
+- Migration 0007_reports_disputes.sql (applied): reports.note/resolved_by/resolved_at, admin read policy, `file_report`, `admin_set_report_status`, `open_dispute` (anchored on the job quote), `admin_resolve_dispute` (notifies both sides).
+- App: ReportForm (src/app/app/report-form.tsx) on post, provider and job pages; dispute block in job-panel.tsx; admin queues at /admin/reports and /admin/disputes.

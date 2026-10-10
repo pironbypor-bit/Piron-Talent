@@ -291,3 +291,24 @@ export async function leaveReview(postId: string, jobId: string, formData: FormD
   if (!(stars >= 1 && stars <= 5)) return;
   await rpcThenBack(`/app/post/${postId}`, "leave_review", { p_job: jobId, p_stars: stars, p_comment: String(formData.get("comment") ?? "").trim().slice(0, 1000) });
 }
+
+// Reports and disputes (Phase 2) ------------------------------------------------------------------------------
+
+const REPORT_TYPES = ["post", "comment", "user", "job", "message"] as const;
+export type ReportType = (typeof REPORT_TYPES)[number];
+
+/** Report a post, comment, job, message or person. One open report per target per person; the admin queue takes it from there. */
+export async function fileReport(type: ReportType, targetId: string, path: string, formData: FormData) {
+  if (!REPORT_TYPES.includes(type) || !uuid.test(targetId) || !path.startsWith("/app/")) return;
+  await requireUser(path);
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 1000);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("file_report", { p_type: type, p_id: targetId, p_reason: reason });
+  redirect(error ? `${path}?error=${encodeURIComponent(error.message)}` : `${path}?reported=1`);
+}
+
+export async function openDispute(postId: string, jobId: string, formData: FormData) {
+  if (!uuid.test(postId) || !uuid.test(jobId)) return;
+  await requireUser(`/app/post/${postId}`);
+  await rpcThenBack(`/app/post/${postId}`, "open_dispute", { p_job: jobId, p_reason: String(formData.get("reason") ?? "").trim().slice(0, 2000) });
+}
