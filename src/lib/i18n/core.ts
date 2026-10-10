@@ -16,13 +16,13 @@ export const makeT = (messages: Messages | null): T => (text, vars) => translate
 /** The cookie that keeps the language this person chose on this device. */
 export const LANG_COOKIE = "lang";
 
-export const ALL_LANGUAGES = ["en", "km"] as const;
+export const ALL_LANGUAGES = ["km", "en"] as const;
 export type Locale = (typeof ALL_LANGUAGES)[number];
+/** Cambodia first: a browser we cannot place gets Khmer. */
+export const DEFAULT_LOCALE: Locale = "km";
 
-/** The language to show: this device's choice, else the browser's first language, else English. */
-export function resolveLocale(cookie: string | null | undefined, acceptLanguage: string | null | undefined): Locale {
-  const ready = (l: string | null | undefined): l is Locale => !!l && (ALL_LANGUAGES as readonly string[]).includes(l);
-  if (ready(cookie)) return cookie;
-  const first = acceptLanguage?.split(",")[0]?.trim().slice(0, 2).toLowerCase();
-  return ready(first) ? first : "en";
+/** The language to show: this device's choice, else Khmer. Browsers in Cambodia are often set to English, so the
+ * browser language is not used; one tap on EN in the header is remembered on the device. */
+export function resolveLocale(cookie: string | null | undefined): Locale {
+  return !!cookie && (ALL_LANGUAGES as readonly string[]).includes(cookie) ? (cookie as Locale) : DEFAULT_LOCALE;
 }

@@ -8,9 +8,9 @@ test("falls back to English and fills values", () => {
   assert.equal(translate(null, "Open@@status"), "Open");
 });
 
-test("locale: cookie, then browser language, then English", () => {
-  assert.equal(resolveLocale("km", "en-US"), "km");
-  assert.equal(resolveLocale(null, "km-KH,en;q=0.8"), "km");
-  assert.equal(resolveLocale(null, "th-TH"), "en");
-  assert.equal(resolveLocale("fr", null), "en");
+test("locale: the device's cookie, else Khmer", () => {
+  assert.equal(resolveLocale("km"), "km");
+  assert.equal(resolveLocale("en"), "en");
+  assert.equal(resolveLocale(null), "km");
+  assert.equal(resolveLocale("fr"), "km");
 });
