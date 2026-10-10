@@ -17,7 +17,7 @@ const KINDS: { key: PostKind | "all"; label: string }[] = [
 const KIND_TONE: Record<PostKind, "amber" | "green" | "neutral"> = { need_help: "amber", offer_skill: "green", share_knowledge: "neutral" };
 
 /** The Workspace board: a chronological list with Cheer, Keep and Connect. Reactions live in this tab only. */
-export function Board({ locale }: { locale: Locale }) {
+export function Board({ locale, compact = false }: { locale: Locale; compact?: boolean }) {
   const t = useT();
   const [kind, setKind] = useState<PostKind | "all">("all");
   const [category, setCategory] = useState("");
@@ -31,7 +31,7 @@ export function Board({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={`flex items-center gap-2 ${compact ? "overflow-x-auto pb-1" : "flex-wrap"}`}>
         {KINDS.map((k) => (
           <button
             key={k.key}
@@ -43,7 +43,7 @@ export function Board({ locale }: { locale: Locale }) {
             {t(k.label)}
           </button>
         ))}
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-full border border-stone-300 px-3 py-1.5 text-sm" aria-label={t("Category")}>
+        <select value={category} onChange={(e) => setCategory(e.target.value)} className={`rounded-full border border-stone-300 px-3 py-1.5 text-sm ${compact ? "hidden" : ""}`} aria-label={t("Category")}>
           <option value="">{t("All categories")}</option>
           {DEMO_CATEGORIES.map((c) => (
             <option key={c.slug} value={c.slug}>
