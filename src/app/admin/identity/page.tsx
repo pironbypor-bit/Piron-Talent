@@ -22,7 +22,7 @@ export default async function IdentityReviewPage({ searchParams }: { searchParam
       </main>
     );
   }
-  const { data } = await supabase.from("identity_checks").select("id,user_id,image_path,selfie_path,legal_name,id_type,id_number,date_of_birth,status,note,created_at,profiles(display_name)").order("created_at", { ascending: false }).limit(100);
+  const { data } = await supabase.from("identity_checks").select("id,user_id,image_path,selfie_path,legal_name,id_type,id_number,date_of_birth,status,note,created_at,profiles!identity_checks_user_id_fkey(display_name)").order("created_at", { ascending: false }).limit(100);
   const rows = (data ?? []) as unknown as Row[];
   const pending = rows.filter((r) => r.status === "pending");
   const signed = await Promise.all(pending.map((r) => supabase.storage.from("identity").createSignedUrl(r.image_path, 3600)));
