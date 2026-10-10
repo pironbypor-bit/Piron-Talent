@@ -1,0 +1,121 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Bell, FileCheck, MessageCircle, Settings, Sparkles, type LucideIcon } from "lucide-react";
+import { Button, Pill } from "@/components/ui";
+import { markNotificationsRead } from "@/lib/app/actions";
+import { getMe, listNotifications, myCounters, myIdentityStatus } from "@/lib/app/queries";
+import { formatDate } from "@/lib/dates";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { logOut } from "@/app/auth/actions";
+import { setLocale } from "@/app/actions/locale";
+import { ALL_LANGUAGES } from "@/lib/i18n/core";
+import { AvatarImg } from "../avatar";
+import { AvatarUpload, IdentityUpload } from "./uploads";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t("Profile") };
+}
+
+const ICONS: Record<string, LucideIcon> = { "New message": MessageCircle, "New comment": Sparkles, "New application": FileCheck, "Identity checked": FileCheck, "Identity check rejected": FileCheck };
+
+export default async function ProfilePage() {
+  const [t, locale, me, counters, identity, notifications] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), listNotifications()]);
+  if (!me) return null; // the proxy redirects anonymous visitors to /login
+  const unread = notifications.filter((n) => !n.read_at).length;
+
+  return (
+    <main className="px-4 py-4">
+      <div className="flex items-start justify-between gap-3 rounded-3xl bg-brand-100 p-4">
+        <div className="flex items-center gap-3">
+          <AvatarImg name={me.display_name} url={me.avatar_url} size={14} />
+          <div>
+            <h1 className="text-xl font-bold">{t("Hello, {name}!", { name: me.display_name })}</h1>
+            <p className="text-sm text-brand-900">{me.role_line ?? t("Build your record, one job at a time.")}</p>
+            {me.identity_checked && <span className="mt-1 inline-block"><Pill tone="green">{t("Identity checked")}</Pill></span>}
+          </div>
+        </div>
+        <Link href="/app/profile/edit" aria-label={t("Edit profile")} className="rounded-full bg-white p-2 text-ink-muted hover:text-ink">
+          <Settings className="size-4" />
+        </Link>
+      </div>
+
+      <ul className="mt-4 grid grid-cols-4 gap-2">
+        {([[t("Saved posts"), counters.savedPosts], [t("Saved providers"), counters.savedProviders], [t("My applications"), counters.applications], [t("Projects"), counters.posts]] as [string, number][]).map(([label, n]) => (
+          <li key={label} className="rounded-2xl bg-white p-2 text-center shadow-sm">
+            <p className="text-xl font-bold">{n}</p>
+            <p className="text-[11px] leading-tight text-ink-muted">{label}</p>
+          </li>
+        ))}
+      </ul>
+
+      <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold">{t("Identity check")}</p>
+            <p className="text-sm text-ink-muted">{identity === "none" ? t("Not started") : identity === "pending" ? t("Pending") : identity === "checked" ? t("Checked") : t("Rejected")}</p>
+          </div>
+          {identity === "pending" && <Pill tone="amber">{t("Pending")}</Pill>}
+          {identity === "checked" && <Pill tone="green">{t("Checked")}</Pill>}
+        </div>
+        {(identity === "none" || identity === "rejected") && <IdentityUpload userId={me.id} />}
+      </section>
+
+      <section className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+        <p className="font-semibold">{t("Avatar")}</p>
+        <AvatarUpload userId={me.id} />
+      </section>
+
+      <section className="mt-4" id="notifications">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">
+            {t("Notifications")} {unread > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs">{unread}</span>}
+          </h2>
+          {unread > 0 && (
+            <form action={markNotificationsRead}>
+              <button type="submit" className="text-xs underline">{t("Mark all read")}</button>
+            </form>
+          )}
+        </div>
+        {notifications.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-muted">{t("Nothing yet.")}</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-stone-200 rounded-2xl bg-white shadow-sm">
+            {notifications.map((n) => {
+              const Icon = ICONS[n.title] ?? Bell;
+              const inner = (
+                <>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-800"><Icon className="size-4" /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm ${n.read_at ? "font-medium" : "font-bold"}`}>{t(n.title)}</p>
+                    {n.body && <p className="truncate text-sm text-ink-muted">{n.body}</p>}
+                  </div>
+                  <span className="shrink-0 text-xs text-ink-muted">{formatDate(n.created_at, locale)}</span>
+                </>
+              );
+              return (
+                <li key={n.id}>
+                  {n.link_path ? <Link href={n.link_path} className="flex items-start gap-3 px-3 py-3 hover:bg-stone-50">{inner}</Link> : <div className="flex items-start gap-3 px-3 py-3">{inner}</div>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <form action={setLocale} className="flex overflow-hidden rounded-lg border border-stone-300 bg-white">
+          {ALL_LANGUAGES.map((l) => (
+            <button key={l} type="submit" name="lang" value={l} aria-pressed={locale === l} className={`px-3 py-1.5 text-sm font-medium ${locale === l ? "bg-ink text-white" : ""}`}>
+              {l === "km" ? "ខ្មែរ" : "EN"}
+            </button>
+          ))}
+        </form>
+        <form action={logOut}>
+          <Button type="submit" variant="secondary" className="px-3 py-1.5 text-sm">{t("Log out")}</Button>
+        </form>
+        {me && <Link href="/admin" className="text-sm text-ink-muted underline">Admin</Link>}
+      </div>
+    </main>
+  );
+}

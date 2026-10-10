@@ -1,0 +1,65 @@
+"use client";
+
+import { useActionState } from "react";
+import { Button, Field, Notice, inputClass } from "@/components/ui";
+import { createPost } from "@/lib/app/actions";
+import { KIND_LABEL } from "@/lib/app/types";
+import { categoryLabel, type Category } from "@/lib/category-label";
+import { useLocale, useT } from "@/lib/i18n/client";
+import { idle } from "@/lib/validation";
+
+const KINDS = ["need_help", "offer_skill", "share_knowledge"] as const;
+
+export function NewPostForm({ categories }: { categories: Category[] }) {
+  const t = useT();
+  const locale = useLocale();
+  const [state, action, pending] = useActionState(createPost, idle);
+  const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
+  const val = (k: string, d = "") => state.values?.[k] ?? d;
+
+  return (
+    <form action={action} noValidate className="space-y-4">
+      {state.message && !state.ok && <Notice tone="error">{t(state.message)}</Notice>}
+      <fieldset>
+        <legend className="mb-1.5 text-sm font-medium">{t("Post type")}</legend>
+        <div className="flex flex-wrap gap-2">
+          {KINDS.map((k) => (
+            <label key={k} className="cursor-pointer rounded-full border border-stone-300 px-3 py-1.5 text-sm has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-white">
+              <input type="radio" name="kind" value={k} defaultChecked={val("kind", "need_help") === k} className="sr-only" />
+              {t(KIND_LABEL[k])}
+            </label>
+          ))}
+        </div>
+        {err("kind") && <p className="mt-1 text-sm text-red-700">{err("kind")}</p>}
+      </fieldset>
+      <Field label={t("Title")} error={err("title")}>
+        <input name="title" defaultValue={val("title")} className={inputClass} aria-invalid={!!err("title")} />
+      </Field>
+      <Field label={t("Text")} error={err("body")}>
+        <textarea name="body" rows={5} defaultValue={val("body")} className={inputClass} aria-invalid={!!err("body")} />
+      </Field>
+      <Field label={t("Category")} optional={t("optional")} error={err("category_id")}>
+        <select name="category_id" defaultValue={val("category_id")} className={inputClass}>
+          <option value="">{t("Choose a category")}</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {categoryLabel(c, locale)}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={t("Place")} optional={t("optional")} error={err("place")}>
+          <input name="place" defaultValue={val("place")} className={inputClass} />
+        </Field>
+        <Field label={t("Price or budget")} optional={t("optional")} hint={t("For example: $40 - $60")} error={err("price_text")}>
+          <input name="price_text" defaultValue={val("price_text")} className={inputClass} />
+        </Field>
+      </div>
+      <p className="text-xs text-ink-muted">{t("Shift jobs (part-time, short-term) open after the legal review.")}</p>
+      <Button type="submit" disabled={pending}>
+        {t("Publish")}
+      </Button>
+    </form>
+  );
+}

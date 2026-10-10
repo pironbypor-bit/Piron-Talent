@@ -23,6 +23,14 @@ Tailwind 4, Cloudflare Workers via OpenNext (npm run deploy), own GitHub repo.
 - Demo: /demo, /demo/projects, /demo/workspace (the board: Job offer, Skill offer, Share knowledge), /demo/providers/[slug] use fixtures in src/lib/demo/fixtures.ts only. Nothing there is real; keep the "Sample" ribbon.
 - Language: Khmer by default for everyone; the header switch sets the "lang" cookie. Browser language is ignored.
 
+## App release 1 (/app, built 2026-10-10)
+- Real five-tab app on the database: /app (Workspace posts, Cheer, Keep, comments, Connect), /app/services (providers with
+  is_available), /app/providers/[id], /app/jobs (freelance and project only; shifts hidden until legal review), /app/messages,
+  /app/profile (edit, avatar, identity check upload, notifications). Reads in src/lib/app/queries.ts, writes in src/lib/app/actions.ts.
+- Migration 0004: public read policies, profile fields, saved_providers, avatars and identity buckets, identity_checks,
+  start_conversation (consent rule), notification triggers, publish_job, set_my_skills. Admin reviews IDs at /admin/identity.
+- Anonymous visitors browse; the proxy sends /app/profile, /app/messages, /app/post/new and /app/jobs/new to /login.
+
 ## Plan
 Feature, screen and UI plan for 2027: docs/product-plan.md. Mobile app screens from the owner mockup: docs/app-ui-plan.md. Update them when scope changes.
 

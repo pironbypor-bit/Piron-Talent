@@ -17,7 +17,7 @@ const TABS = [
   { key: "profile", label: "Profile", Icon: User },
 ];
 
-export function TopBar({ base, name }: { base: string; name: string }) {
+export function TopBar({ base, name, unread = 1, signedIn = true }: { base: string; name: string; unread?: number; signedIn?: boolean }) {
   const t = useT();
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between border-b border-stone-200 bg-white/95 px-4 py-3 backdrop-blur">
@@ -30,11 +30,17 @@ export function TopBar({ base, name }: { base: string; name: string }) {
       <div className="flex items-center gap-3">
         <Link href={`${base}/profile#notifications`} aria-label={t("Notifications")} className="relative rounded-full p-1.5 hover:bg-stone-100">
           <Bell className="size-5" />
-          <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand-500" aria-hidden="true" />
+          {unread > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand-500" aria-hidden="true" />}
         </Link>
-        <Link href={`${base}/profile`} aria-label={t("Profile")} className="flex size-8 items-center justify-center rounded-full bg-brand-200 text-sm font-bold text-brand-900">
-          {name.charAt(0)}
-        </Link>
+        {signedIn ? (
+          <Link href={`${base}/profile`} aria-label={t("Profile")} className="flex size-8 items-center justify-center rounded-full bg-brand-200 text-sm font-bold text-brand-900">
+            {name.charAt(0) || "?"}
+          </Link>
+        ) : (
+          <Link href={`/login?next=${encodeURIComponent(base + "/profile")}`} className="rounded-full bg-brand-500 px-3 py-1 text-sm font-semibold text-ink hover:bg-brand-400">
+            {t("Log in")}
+          </Link>
+        )}
       </div>
     </header>
   );

@@ -32,6 +32,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     <main className="mx-auto max-w-5xl px-4 py-12">
       <PageTitle lead={t("Completed jobs: {n}", { n: completed ?? 0 })}>Admin</PageTitle>
       {error && <div className="mb-6"><Notice tone="error">{t("Something went wrong. Please try again.")}</Notice></div>}
+      <p className="mb-8"><Link href="/admin/identity" className="font-medium underline">{t("Identity review")}</Link></p>
 
       <section className="mb-12">
         <h2 className="text-xl font-bold">{t("Project requests")}</h2>
