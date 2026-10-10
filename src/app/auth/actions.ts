@@ -1,6 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { credentialsSchema, fieldErrors, formEntries, signupSchema, type FormState } from "@/lib/validation";
 
@@ -35,7 +37,7 @@ export async function logIn(_prev: FormState, formData: FormData): Promise<FormS
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { ok: false, message: "Wrong email or password.", values: echo };
+  if (error) return { ok: false, message: loginMessage(error.message), values: echo };
   redirect(safeNext(values.next));
 }
 
@@ -43,4 +45,40 @@ export async function logOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+/** Supabase Auth error text to the key the form shows. */
+function loginMessage(raw: string): string {
+  const m = raw.toLowerCase();
+  if (m.includes("not confirmed")) return "Please confirm your email first. Check your inbox for the link.";
+  if (m.includes("rate limit") || m.includes("too many")) return "Too many attempts. Wait a minute and try again.";
+  return "Wrong email or password.";
+}
+
+/** The site's own origin, for links in emails. */
+async function origin() {
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  return proto + "://" + host;
+}
+
+export async function forgotPassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const parsed = z.email().safeParse(email);
+  if (!parsed.success) return { ok: false, errors: { email: "Please fill in this field." }, values: { email } };
+  const supabase = await createClient();
+  await supabase.auth.resetPasswordForEmail(parsed.data, { redirectTo: (await origin()) + "/auth/callback?next=/reset-password" });
+  // Always the same answer, so the form does not reveal which emails have accounts.
+  return { ok: true, message: "If that email has an account, a reset link is on its way." };
+}
+
+export async function resetPassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) return { ok: false, errors: { password: "At least 8 characters" } };
+  if (password.length > 200) return { ok: false, errors: { password: "Too long." } };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { ok: false, message: "This link has expired. Request a new one." };
+  return { ok: true, message: "Password updated. You are logged in." };
 }

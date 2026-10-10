@@ -35,6 +35,13 @@ export function AuthForm({ mode, next }: { mode: "signup" | "login"; next?: stri
           aria-invalid={!!err("password")}
         />
       </Field>
+      {mode === "login" && (
+        <p className="-mt-2 text-sm">
+          <Link href="/forgot-password" className="text-ink-muted underline">
+            {t("Forgot password?")}
+          </Link>
+        </p>
+      )}
       {next && <input type="hidden" name="next" value={next} />}
       <Button type="submit" disabled={pending}>
         {mode === "signup" ? t("Create account") : t("Log in")}
