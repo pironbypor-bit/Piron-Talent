@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { CITIES, HAS_DISTRICTS } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
 import { fieldErrors, formEntries, type FormState } from "@/lib/validation";
 import { z } from "zod";
@@ -160,7 +161,8 @@ const profileSchema = z.object({
   display_name: text(1, 80),
   role_line: optional(80),
   bio: optional(1000),
-  city: optional(80),
+  city: z.preprocess((v) => (v === "" || v == null ? null : v), z.enum(CITIES).nullable()),
+  district: optional(60),
   is_available: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
   primary_category_id: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().int().positive().nullable()),
   price_from: optional(40),
@@ -170,10 +172,11 @@ const profileSchema = z.object({
 
 export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
   const uid = await requireUser("/app/profile/edit");
-  const values = formEntries(formData, ["display_name", "role_line", "bio", "city", "is_available", "primary_category_id", "price_from", "remote", "skills"]);
+  const values = formEntries(formData, ["display_name", "role_line", "bio", "city", "district", "is_available", "primary_category_id", "price_from", "remote", "skills"]);
   const parsed = profileSchema.safeParse(values);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error), values, message: "Please check the highlighted fields." };
   const { skills, ...profile } = parsed.data;
+  if (profile.city !== HAS_DISTRICTS) profile.district = null;
   const supabase = await createClient();
   const { error } = await supabase.from("profiles").update(profile).eq("id", uid);
   if (error) return { ok: false, values, message: "Something went wrong. Please try again." };

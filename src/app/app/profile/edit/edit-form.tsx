@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { updateProfile } from "@/lib/app/actions";
 import type { MeRow } from "@/lib/app/types";
 import { categoryLabel, type Category } from "@/lib/category-label";
+import { CITIES, HAS_DISTRICTS } from "@/lib/cities";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 
@@ -15,6 +16,7 @@ export function EditProfileForm({ me, categories }: { me: MeRow; categories: Cat
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
   const val = (k: string, d: string) => state.values?.[k] ?? d;
   const checked = (k: string, d: boolean) => (state.values ? state.values[k] === "on" : d);
+  const [city, setCity] = useState(val("city", me.city ?? "Phnom Penh"));
 
   return (
     <form action={action} noValidate className="space-y-4">
@@ -28,9 +30,23 @@ export function EditProfileForm({ me, categories }: { me: MeRow; categories: Cat
       <Field label={t("About")} optional={t("optional")} error={err("bio")}>
         <textarea name="bio" rows={4} defaultValue={val("bio", me.bio ?? "")} className={inputClass} />
       </Field>
-      <Field label={t("City")} optional={t("optional")} error={err("city")}>
-        <input name="city" defaultValue={val("city", me.city ?? "Phnom Penh")} className={inputClass} />
-      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={t("City")} error={err("city")}>
+          <select name="city" value={city} onChange={(e) => setCity(e.target.value)} className={inputClass}>
+            <option value="">{t("Choose a city")}</option>
+            {CITIES.map((c) => (
+              <option key={c} value={c}>
+                {t(c)}
+              </option>
+            ))}
+          </select>
+        </Field>
+        {city === HAS_DISTRICTS && (
+          <Field label={t("District")} optional={t("optional")} hint={t("For example: Toul Kork")} error={err("district")}>
+            <input name="district" defaultValue={val("district", me.district ?? "")} maxLength={60} className={inputClass} />
+          </Field>
+        )}
+      </div>
 
       <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm">
         <input type="checkbox" name="is_available" defaultChecked={checked("is_available", me.is_available)} className="mt-1" />

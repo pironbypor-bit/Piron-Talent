@@ -34,6 +34,7 @@ export type CommentRow = { id: string; body: string; created_at: string; author:
 
 export type ProviderRow = Author & {
   city: string | null;
+  district: string | null;
   bio: string | null;
   price_from: string | null;
   remote: boolean;
@@ -71,6 +72,7 @@ export type NotificationRow = { id: string; title: string; body: string | null; 
 export type MeRow = Author & {
   bio: string | null;
   city: string | null;
+  district: string | null;
   is_available: boolean;
   price_from: string | null;
   remote: boolean;

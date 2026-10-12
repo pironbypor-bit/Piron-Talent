@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
 import type { Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
@@ -15,7 +16,7 @@ export const getMe = cache(async (): Promise<MeRow | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select(`${AUTHOR},bio,city,is_available,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
+    .select(`${AUTHOR},bio,city,district,is_available,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
     .eq("id", uid)
     .maybeSingle();
   if (!data) return null;
@@ -79,7 +80,7 @@ const withSkills = <T extends SkillJoin>(row: T) => ({ ...row, skills: row.profi
 
 export type ProviderSort = "rated" | "completed" | "newest";
 
-export async function listProviders(opts: { categoryId?: number; q?: string; remote?: boolean; sort?: ProviderSort } = {}): Promise<(ProviderRow & { rating: number | null; reviews: number })[]> {
+export async function listProviders(opts: { categoryId?: number; q?: string; remote?: boolean; city?: string; sort?: ProviderSort } = {}): Promise<(ProviderRow & { rating: number | null; reviews: number })[]> {
   const supabase = await createClient();
   const uid = await getUserId();
   const term = (opts.q ?? "").trim().slice(0, 60);
@@ -91,11 +92,12 @@ export async function listProviders(opts: { categoryId?: number; q?: string; rem
   }
   let query = supabase
     .from("profiles")
-    .select(`${AUTHOR},city,bio,price_from,remote,completed_jobs,primary_category_id,created_at,profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
+    .select(`${AUTHOR},city,district,bio,price_from,remote,completed_jobs,primary_category_id,created_at,profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
     .eq("is_available", true)
     .limit(60);
   if (opts.categoryId) query = query.eq("primary_category_id", opts.categoryId);
   if (opts.remote) query = query.eq("remote", true);
+  if (opts.city && isCity(opts.city)) query = query.or(`city.eq.${opts.city},remote.eq.true`);
   if (term) {
     const safe = term.replace(/[%,()]/g, " ");
     const parts = [`display_name.ilike.%${safe}%`, `role_line.ilike.%${safe}%`, `bio.ilike.%${safe}%`];

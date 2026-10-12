@@ -6,6 +6,7 @@ import { EmptyIllustration } from "@/components/illustrations";
 import { toggleKeepProvider } from "@/lib/app/actions";
 import { listProviders, type ProviderSort } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
+import { CITIES, isCity } from "@/lib/cities";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
 
@@ -26,19 +27,20 @@ const TILES: Record<string, { Icon: LucideIcon; tone: string; review?: boolean }
 const GRID = ["finance", "documents", "legal", "technology", "electrical", "beauty", "creative"];
 
 /** Services tab: category grid from the categories table, then providers who marked themselves available. */
-type Params = { category?: string; q?: string; remote?: string; sort?: string };
+type Params = { category?: string; q?: string; remote?: string; city?: string; sort?: string };
 
 export default async function ServicesPage({ searchParams }: { searchParams: Promise<Params> }) {
   const [t, locale, categories, params] = await Promise.all([getT(), getLocale(), getCategories(), searchParams]);
   const selected = categories.find((c) => String(c.id) === params.category) ?? null;
   const q = (params.q ?? "").trim().slice(0, 60);
   const remote = params.remote === "1";
+  const city = isCity(params.city) ? params.city : "";
   const sort: ProviderSort = params.sort === "completed" || params.sort === "newest" ? params.sort : "rated";
-  const providers = await listProviders({ categoryId: selected?.id, q, remote, sort });
-  const searching = Boolean(q || remote || params.sort);
+  const providers = await listProviders({ categoryId: selected?.id, q, remote, city, sort });
+  const searching = Boolean(q || remote || city || params.sort);
   const qs = (over: Partial<Params>) => {
     const p = new URLSearchParams();
-    const merged: Params = { category: selected ? String(selected.id) : undefined, q: q || undefined, remote: remote ? "1" : undefined, sort: params.sort, ...over };
+    const merged: Params = { category: selected ? String(selected.id) : undefined, q: q || undefined, remote: remote ? "1" : undefined, city: city || undefined, sort: params.sort, ...over };
     for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
     const str = p.toString();
     return str ? `/app/services?${str}` : "/app/services";
@@ -50,7 +52,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
     <main className="px-4 pb-24 pt-4">
       <section className="hero-amber rounded-3xl p-4">
         <h1 className="text-xl font-bold">{t("Find professional services")}</h1>
-        <p className="text-sm text-brand-900">{t("Skilled people. Checked identity. Phnom Penh.")}</p>
+        <p className="text-sm text-brand-900">{t("Skilled people. Checked identity.")}</p>
       </section>
 
       <ul className="mt-4 grid grid-cols-4 gap-2">
@@ -84,6 +86,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
       <form action="/app/services" method="get" className="mt-5 space-y-2">
         {selected && <input type="hidden" name="category" value={selected.id} />}
         {remote && <input type="hidden" name="remote" value="1" />}
+        {city && <input type="hidden" name="city" value={city} />}
         <label className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-brand-500">
           <Search className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
           <span className="sr-only">{t("Search providers")}</span>
@@ -104,8 +107,18 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
           </select>
         </div>
       </form>
+      <div className="mt-2 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label={t("City")}>
+        <Link href={qs({ city: undefined })} aria-pressed={!city} className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${!city ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
+          {t("All cities")}
+        </Link>
+        {CITIES.map((c) => (
+          <Link key={c} href={qs({ city: city === c ? undefined : c })} aria-pressed={city === c} className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${city === c ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
+            {t(c)}
+          </Link>
+        ))}
+      </div>
 
-      <h2 className="mt-5 text-lg font-bold">{selected ? categoryLabel(selected, locale) : searching ? t("Results") : t("Popular providers")}</h2>
+      <h2 className="mt-5 text-lg font-bold">{selected && city ? t("{category} providers in {city}", { category: categoryLabel(selected, locale), city: t(city) }) : selected ? categoryLabel(selected, locale) : city ? t("Providers in {city}", { city: t(city) }) : searching ? t("Results") : t("Popular providers")}</h2>
       {providers.length === 0 ? (
         <div className="mt-3">
           <EmptyState
@@ -132,7 +145,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
                   </Link>
                   <p className="truncate text-sm text-ink-muted">
                     {p.display_name}
-                    {p.city ? ` · ${p.city}` : ""}
+                    {p.city ? ` · ${t(p.city)}${p.district ? ` · ${p.district}` : ""}` : ""}
                     {p.remote ? ` · ${t("Remote")}` : ""}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">

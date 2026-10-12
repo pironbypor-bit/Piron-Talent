@@ -76,6 +76,9 @@ export default async function Home() {
         <Link href="/app" className="inline-block">
           <Button type="button">{t("Open the app")}</Button>
         </Link>
+        <Link href="/providers" className="text-sm font-medium underline">
+          {t("Browse providers")}
+        </Link>
         <Link href="/demo" className="text-sm font-medium underline">
           {t("See a sample project")}
         </Link>
