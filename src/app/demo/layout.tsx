@@ -11,6 +11,7 @@ export default async function DemoLayout({ children }: { children: React.ReactNo
     ["/demo/providers", t("Providers")],
     ["/demo/messages", t("Messages")],
     ["/demo/dashboard", t("Dashboard")],
+    ["/demo/business", t("Business")],
     ["/demo/app", t("App preview")],
   ];
   return (
