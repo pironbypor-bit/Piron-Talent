@@ -29,7 +29,7 @@ export async function listPosts(limit = 40): Promise<PostRow[]> {
   const uid = await getUserId();
   const { data } = await supabase
     .from("posts")
-    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
+    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,deliverables,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -61,7 +61,7 @@ export async function getPost(id: string): Promise<{ post: PostRow; comments: Co
   const uid = await getUserId();
   const { data } = await supabase
     .from("posts")
-    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
+    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,deliverables,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
@@ -192,13 +192,14 @@ export async function listConversations(): Promise<ConversationRow[]> {
   const uid = await getUserId();
   if (!uid) return [];
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("conversations")
     .select(`id,created_at,conversation_members(user_id,profiles(${AUTHOR})),messages(body,created_at,sender_id)`)
     .order("created_at", { ascending: false, referencedTable: "messages" })
     .limit(1, { referencedTable: "messages" })
     .order("created_at", { ascending: false })
     .limit(50);
+  if (error) console.error("listConversations:", error.message);
   type Row = { id: string; conversation_members: { user_id: string; profiles: Author | Author[] | null }[]; messages: { body: string; created_at: string; sender_id: string }[] };
   const rows = ((data ?? []) as unknown as Row[]).map((c) => {
     const otherMember = c.conversation_members.find((m) => m.user_id !== uid);

@@ -28,7 +28,7 @@ export function NewPostForm({ categories, initialKind = "need_help", rehire }: {
         category_id: old.category_id ? String(old.category_id) : "",
         place: old.place ?? "",
         price_text: old.price_text ?? "",
-        deliverables: ((old as unknown as { deliverables?: string[] }).deliverables ?? []).join(String.fromCharCode(10)),
+        deliverables: (old.deliverables ?? []).join(String.fromCharCode(10)),
         budget_min: old.budget_min !== null ? String(old.budget_min) : "",
         budget_max: old.budget_max !== null ? String(old.budget_max) : "",
         remote: old.remote ? "on" : "",

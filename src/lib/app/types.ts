@@ -23,6 +23,7 @@ export type PostRow = {
   budget_min: number | null;
   budget_max: number | null;
   remote: boolean;
+  deliverables: string[];
   invited_provider_id: string | null;
   opens_at: string | null;
   invited: Author | null;
