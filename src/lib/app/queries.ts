@@ -29,11 +29,11 @@ export async function listPosts(limit = 40): Promise<PostRow[]> {
   const uid = await getUserId();
   const { data } = await supabase
     .from("posts")
-    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
+    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit);
-  const rows = (data ?? []) as unknown as (Omit<PostRow, "cheers" | "comments" | "cheered" | "kept" | "author"> & { author: Author | Author[]; post_reactions: unknown; post_comments: unknown })[];
+  const rows = (data ?? []) as unknown as (Omit<PostRow, "cheers" | "comments" | "cheered" | "kept" | "author" | "invited"> & { author: Author | Author[]; invited: Author | Author[] | null; post_reactions: unknown; post_comments: unknown })[];
   let mine = new Set<string>();
   let kept = new Set<string>();
   if (uid && rows.length) {
@@ -48,6 +48,7 @@ export async function listPosts(limit = 40): Promise<PostRow[]> {
   return rows.map((r) => ({
     ...r,
     author: one(r.author) as Author,
+    invited: one(r.invited),
     cheers: count(r.post_reactions),
     comments: count(r.post_comments),
     cheered: mine.has(r.id),
@@ -60,18 +61,18 @@ export async function getPost(id: string): Promise<{ post: PostRow; comments: Co
   const uid = await getUserId();
   const { data } = await supabase
     .from("posts")
-    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
+    .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
-  const r = data as unknown as Omit<PostRow, "cheers" | "comments" | "cheered" | "kept" | "author"> & { author: Author | Author[]; post_reactions: unknown; post_comments: unknown };
+  const r = data as unknown as Omit<PostRow, "cheers" | "comments" | "cheered" | "kept" | "author" | "invited"> & { author: Author | Author[]; invited: Author | Author[] | null; post_reactions: unknown; post_comments: unknown };
   const [{ data: comments }, mine, kept] = await Promise.all([
     supabase.from("post_comments").select(`id,body,created_at,author:profiles!post_comments_author_id_fkey(${AUTHOR})`).eq("post_id", id).order("created_at"),
     uid ? supabase.from("post_reactions").select("post_id").eq("user_id", uid).eq("post_id", id).maybeSingle() : Promise.resolve({ data: null }),
     uid ? supabase.from("saved_posts").select("post_id").eq("user_id", uid).eq("post_id", id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   return {
-    post: { ...r, author: one(r.author) as Author, cheers: count(r.post_reactions), comments: count(r.post_comments), cheered: !!mine.data, kept: !!kept.data },
+    post: { ...r, author: one(r.author) as Author, invited: one(r.invited), cheers: count(r.post_reactions), comments: count(r.post_comments), cheered: !!mine.data, kept: !!kept.data },
     comments: ((comments ?? []) as unknown as (Omit<CommentRow, "author"> & { author: Author | Author[] })[]).map((c) => ({ ...c, author: one(c.author) as Author })),
   };
 }
@@ -306,6 +307,15 @@ export async function getProjectPanel(postId: string) {
     reviewed,
     dispute,
   };
+}
+
+/** The post of my latest confirmed job with this provider, as customer; the seed for "Hire again". */
+export async function lastConfirmedJobWith(providerId: string): Promise<string | null> {
+  const uid = await getUserId();
+  if (!uid || uid === providerId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.from("project_jobs").select("post_id").eq("customer_id", uid).eq("provider_id", providerId).eq("status", "confirmed").order("confirmed_at", { ascending: false }).limit(1).maybeSingle();
+  return data?.post_id ?? null;
 }
 
 /** Jobs I am part of, either side, newest first. */

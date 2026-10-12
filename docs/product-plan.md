@@ -76,7 +76,7 @@ Status: done, next (this phase), later. "Server" names where the state change li
 
 | Feature | Purpose | Data | Server | Status |
 |---|---|---|---|---|
-| Saved providers and one-tap rehire | 90-day repeat is the validation target | new: saved_providers | insert policy | saved done; rehire later |
+| Saved providers and one-tap rehire | 90-day repeat is the validation target | new: saved_providers | insert policy | done (rehire 2026-10-12, migration 0011) |
 | Request templates | "Same as last month" | new: request_templates | owner policies | later |
 | Business accounts, seats, roles | Business and Business Pro | businesses, business_members, plans, business_subscriptions | admin or webhook functions | later |
 | Payments through a licensed Cambodian provider | Record references and status only, no custody | payment_records | webhook handler with signature check | later |

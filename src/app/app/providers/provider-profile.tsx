@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice, Pill } from "@/components/ui";
 import { startConversation, toggleKeepProvider } from "@/lib/app/actions";
-import { getMe, getProvider } from "@/lib/app/queries";
+import { getMe, getProvider, lastConfirmedJobWith } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -14,7 +14,7 @@ import { Stars } from "@/app/demo/demo-ui";
 
 /** One provider profile. `base` is "/app" inside the app and "" on the public site; everything else is the same. */
 export async function ProviderProfile({ id, base, error, reported }: { id: string; base: "/app" | ""; error?: string; reported?: string }) {
-  const [t, locale, me] = await Promise.all([getT(), getLocale(), getMe()]);
+  const [t, locale, me, rehireFrom] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id)]);
   const data = await getProvider(id);
   if (!data) notFound();
   const { provider: p, portfolio, reviews } = data;
@@ -50,6 +50,11 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {p.price_from && <span className="rounded-full bg-brand-100 px-3 py-1.5 text-sm font-semibold text-brand-900">{t("From {price}", { price: p.price_from })}</span>}
+        {rehireFrom && (
+          <Link href={`/app/post/new?rehire=${rehireFrom}&to=${p.id}`} className="rounded-full bg-brand-500 px-3 py-1.5 text-sm font-semibold text-ink hover:bg-brand-400">
+            {t("Hire again")}
+          </Link>
+        )}
         <form action={keep}>
           <button type="submit" aria-pressed={p.saved} className={`rounded-full border px-3 py-1.5 text-sm font-medium ${p.saved ? "border-brand-400 bg-brand-100" : "border-stone-300 bg-white hover:bg-stone-50"}`}>
             {p.saved ? t("Kept") : t("Keep")}

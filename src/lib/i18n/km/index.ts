@@ -453,6 +453,8 @@ const km: Messages = {
   "{n} reviews": "ការវាយតម្លៃ {n}",
   "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
   "Search": "ស្វែងរក",
+  "Invited: {name}. Opens to other providers on {date}.": "បានអញ្ជើញ៖ {name}។ បើកដល់អ្នកផ្តល់សេវាផ្សេងទៀតនៅ {date}។",
+  "Project invitation": "ការអញ្ជើញឱ្យធ្វើគម្រោង",
   "Same scope as last time. Change anything, then send.": "វិសាលភាពដូចលើកមុន។ កែអ្វីក៏បាន រួចផ្ញើ។",
   "Goes to {name} first": "ទៅ {name} មុនគេ",
   "Last time: ${price}, finished {date}": "លើកមុន៖ ${price} បញ្ចប់ {date}",

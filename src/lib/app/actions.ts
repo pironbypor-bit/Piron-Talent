@@ -57,17 +57,23 @@ const postSchema = z
     remote: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
     budget_min: money,
     budget_max: money,
+    invited_provider_id: z.string().transform((v) => (uuid.test(v) ? v : null)),
+    open_now: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
   })
   .refine((d) => d.budget_max === null || d.budget_min === null || d.budget_max >= d.budget_min, { path: ["budget_max"], message: "Must not be lower than the first amount." });
 
 export async function createPost(_prev: FormState, formData: FormData): Promise<FormState> {
   const uid = await requireUser("/app/post/new");
-  const values = formEntries(formData, ["kind", "title", "body", "category_id", "place", "price_text", "deliverables", "deadline", "remote", "budget_min", "budget_max"]);
+  const values = formEntries(formData, ["kind", "title", "body", "category_id", "place", "price_text", "deliverables", "deadline", "remote", "budget_min", "budget_max", "invited_provider_id", "open_now"]);
   const parsed = postSchema.safeParse(values);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error), values, message: "Please check the highlighted fields." };
   const supabase = await createClient();
-  const scope = parsed.data.kind === "need_help" ? parsed.data : { ...parsed.data, deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null };
-  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published" }).select("id").single();
+  const { invited_provider_id, open_now, ...fields } = parsed.data;
+  const scope = fields.kind === "need_help" ? fields : { ...fields, deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null };
+  // A rehire goes to one provider first; it opens to everyone after 24 hours unless the author opens it now.
+  const invited = fields.kind === "need_help" && invited_provider_id && invited_provider_id !== uid ? invited_provider_id : null;
+  const opens_at = invited && !open_now ? new Date(Date.now() + 24 * 3600 * 1000).toISOString() : null;
+  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published", invited_provider_id: invited, opens_at }).select("id").single();
   if (error || !data) return { ok: false, values, message: "Something went wrong. Please try again." };
   revalidatePath("/app");
   redirect(`/app/post/${data.id}`);

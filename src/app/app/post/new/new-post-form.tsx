@@ -3,25 +3,61 @@
 import { useActionState, useState } from "react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { createPost } from "@/lib/app/actions";
-import { KIND_LABEL } from "@/lib/app/types";
+import { KIND_LABEL, type Author, type PostRow } from "@/lib/app/types";
+import { AvatarImg } from "../../avatar";
 import { categoryLabel, type Category } from "@/lib/category-label";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 
 const KINDS = ["need_help", "offer_skill", "share_knowledge"] as const;
 
-export function NewPostForm({ categories, initialKind = "need_help" }: { categories: Category[]; initialKind?: (typeof KINDS)[number] }) {
+type Rehire = { post: PostRow; provider: Author };
+
+export function NewPostForm({ categories, initialKind = "need_help", rehire }: { categories: Category[]; initialKind?: (typeof KINDS)[number]; rehire?: Rehire }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(createPost, idle);
   const [kind, setKind] = useState<(typeof KINDS)[number]>((state.values?.kind as (typeof KINDS)[number]) ?? initialKind);
+  const [openNow, setOpenNow] = useState(false);
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
-  const val = (k: string, d = "") => state.values?.[k] ?? d;
+  const old = rehire?.post;
+  const seed: Record<string, string> = old
+    ? {
+        title: old.title,
+        body: old.body,
+        category_id: old.category_id ? String(old.category_id) : "",
+        place: old.place ?? "",
+        price_text: old.price_text ?? "",
+        deliverables: ((old as unknown as { deliverables?: string[] }).deliverables ?? []).join(String.fromCharCode(10)),
+        budget_min: old.budget_min !== null ? String(old.budget_min) : "",
+        budget_max: old.budget_max !== null ? String(old.budget_max) : "",
+        remote: old.remote ? "on" : "",
+      }
+    : {};
+  const val = (k: string, d = "") => state.values?.[k] ?? seed[k] ?? d;
+  const who = rehire?.provider.display_name ?? "";
 
   return (
     <form action={action} noValidate className="space-y-4">
       {state.message && !state.ok && <Notice tone="error">{t(state.message)}</Notice>}
-      <fieldset>
+      {rehire && (
+        <div className="rounded-2xl border border-brand-300 bg-brand-50 p-4">
+          <input type="hidden" name="invited_provider_id" value={rehire.provider.id} />
+          <div className="flex items-center gap-3">
+            <AvatarImg name={who} url={rehire.provider.avatar_url} />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">{t("Goes to {name} first", { name: who })}</p>
+              {rehire.provider.role_line && <p className="text-sm text-ink-muted">{rehire.provider.role_line}</p>}
+            </div>
+          </div>
+          <label className="mt-3 flex items-start gap-3 text-sm">
+            <input type="checkbox" name="open_now" checked={openNow} onChange={(e) => setOpenNow(e.target.checked)} className="mt-1" />
+            <span>{t("Also show to other providers now")}</span>
+          </label>
+          {!openNow && <p className="mt-1 pl-7 text-xs text-ink-muted">{t("Opens to other providers after 24 hours if there is no reply.")}</p>}
+        </div>
+      )}
+      <fieldset className={rehire ? "hidden" : ""}>
         <legend className="mb-1.5 text-sm font-medium">{t("Post type")}</legend>
         <div className="flex flex-wrap gap-2">
           {KINDS.map((k) => (
@@ -84,7 +120,7 @@ export function NewPostForm({ categories, initialKind = "need_help" }: { categor
       )}
       <p className="text-xs text-ink-muted">{t("Shift jobs (part-time, short-term) open after the legal review.")}</p>
       <Button type="submit" disabled={pending}>
-        {t("Publish")}
+        {rehire ? t("Send to {name}", { name: who }) : t("Publish")}
       </Button>
     </form>
   );

@@ -26,6 +26,11 @@ export function ProjectPanel({ post, scope, quotes, job, count, reviewed, disput
     <div className="mt-4 space-y-4">
       {(scope.deliverables.length > 0 || scope.deadline || budget) && (
         <section className="card p-4">
+          {post.invited && post.opens_at && new Date(post.opens_at) > new Date() && (
+            <p className="mb-3 rounded-xl bg-brand-50 px-3 py-2 text-sm text-brand-900">
+              {t("Invited: {name}. Opens to other providers on {date}.", { name: post.invited.display_name, date: formatDate(post.opens_at, locale) })}
+            </p>
+          )}
           <h2 className="font-semibold">{t("Scope")}</h2>
           {scope.deliverables.length > 0 && (
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">

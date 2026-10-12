@@ -48,6 +48,11 @@ export default async function MyJobsPage() {
                   <div className="text-right">
                     <p className="font-bold">${j.agreed_price}</p>
                     <Pill tone={TONE[j.status]}>{t(LABEL[j.status])}</Pill>
+                    {j.mine === "customer" && j.status === "confirmed" && (
+                      <Link href={`/app/post/new?rehire=${j.post_id}&to=${j.provider_id}`} className="mt-1 block text-sm font-medium underline">
+                        {t("Hire again")}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </li>
