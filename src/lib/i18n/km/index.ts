@@ -453,6 +453,8 @@ const km: Messages = {
   "{n} reviews": "ការវាយតម្លៃ {n}",
   "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
   "Search": "ស្វែងរក",
+  "Email notifications": "ការជូនដំណឹងតាមអ៊ីមែល",
+  "Quotes, messages and job updates. At most one email every 15 minutes.": "សម្រង់តម្លៃ សារ និងព័ត៌មានការងារ។ យ៉ាងច្រើនមួយអ៊ីមែលរៀងរាល់ 15 នាទី។",
   "Phnom Penh": "ភ្នំពេញ",
   "Siem Reap": "សៀមរាប",
   "Battambang": "បាត់ដំបង",

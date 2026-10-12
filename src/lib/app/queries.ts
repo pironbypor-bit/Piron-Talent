@@ -258,6 +258,15 @@ export async function myIdentityStatus(): Promise<"none" | "pending" | "checked"
   return (data?.status as "pending" | "checked" | "rejected" | undefined) ?? "none";
 }
 
+/** Email switch from Settings. No private row yet means on. */
+export async function myEmailNotifications(): Promise<boolean> {
+  const uid = await getUserId();
+  if (!uid) return true;
+  const supabase = await createClient();
+  const { data } = await supabase.from("profile_private").select("email_notifications").eq("user_id", uid).maybeSingle();
+  return data?.email_notifications ?? true;
+}
+
 export async function isAdmin(): Promise<boolean> {
   const uid = await getUserId();
   if (!uid) return false;

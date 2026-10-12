@@ -65,7 +65,7 @@ Status: done, next (this phase), later. "Server" names where the state change li
 | Delivery and confirmation | Provider marks delivered, customer confirms, job becomes completed | project_jobs | functions mark_delivered, confirm_completion | done |
 | Reviews after completion only | Reputation that cannot be bought | reviews (extend to project_jobs) | function leave_review | done |
 | Messaging with consent | Conversation opens only when a quote exists or the customer invites | conversations, conversation_members, messages | function open_conversation | done |
-| Notifications | New quote, accepted, delivered, message, review | notifications | written by the functions above | done (in-app only) |
+| Notifications | New quote, accepted, delivered, message, review | notifications | written by the functions above | done; email through Brevo from a trigger (0010), needs the Vault key |
 | Search and filters | Find providers by category, skill, city, remote, rating | profiles, profile_skills, services | SQL + indexes | done (city filter and public directory 2026-10-12) |
 | Reports and moderation queue | Unlawful requests, fake profiles, abuse | reports | admin functions | done |
 | Disputes | Either party opens, admin resolves | disputes | insert policy exists; admin functions | done |

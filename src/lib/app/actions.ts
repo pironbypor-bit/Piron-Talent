@@ -223,6 +223,14 @@ export async function removePortfolioItem(id: string) {
   revalidatePath(`/app/providers/${uid}`);
 }
 
+export async function setEmailNotifications(formData: FormData) {
+  await requireUser("/app/settings");
+  const on = String(formData.get("on") ?? "") === "1";
+  const supabase = await createClient();
+  await supabase.rpc("set_email_notifications", { p_on: on });
+  revalidatePath("/app/settings");
+}
+
 export async function markNotificationsRead() {
   const uid = await requireUser("/app/profile");
   const supabase = await createClient();

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, Globe, LogOut, Shield, UserPen } from "lucide-react";
+import { Bell, ChevronRight, Globe, LogOut, Shield, UserPen } from "lucide-react";
 import { Button } from "@/components/ui";
-import { getMe, isAdmin } from "@/lib/app/queries";
+import { setEmailNotifications } from "@/lib/app/actions";
+import { getMe, isAdmin, myEmailNotifications } from "@/lib/app/queries";
 import { ALL_LANGUAGES } from "@/lib/i18n/core";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { logOut } from "@/app/auth/actions";
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Settings behind the gear on the profile tab: edit profile, language, admin tools, log out. */
 export default async function SettingsPage() {
-  const [t, locale, me, admin] = await Promise.all([getT(), getLocale(), getMe(), isAdmin()]);
+  const [t, locale, me, admin, emailOn] = await Promise.all([getT(), getLocale(), getMe(), isAdmin(), myEmailNotifications()]);
   if (!me) return null;
   return (
     <main className="px-4 pb-24 pt-4">
@@ -61,6 +62,24 @@ export default async function SettingsPage() {
                 {l === "km" ? "ខ្មែរ" : "EN"}
               </button>
             ))}
+          </form>
+        </div>
+      </section>
+
+      <section className="card mt-4 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-brand-100 text-brand-800">
+            <Bell className="size-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">{t("Email notifications")}</span>
+            <span className="block text-sm text-ink-muted">{t("Quotes, messages and job updates. At most one email every 15 minutes.")}</span>
+          </span>
+          <form action={setEmailNotifications}>
+            <input type="hidden" name="on" value={emailOn ? "0" : "1"} />
+            <button type="submit" role="switch" aria-checked={emailOn} aria-label={t("Email notifications")} className={`relative h-6 w-11 rounded-full transition ${emailOn ? "bg-brand-500" : "bg-stone-300"}`}>
+              <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${emailOn ? "left-[22px]" : "left-0.5"}`} />
+            </button>
           </form>
         </div>
       </section>
