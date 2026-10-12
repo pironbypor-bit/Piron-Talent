@@ -61,7 +61,14 @@ export function DashboardView({ locale }: { locale: Locale }) {
                       {pick(provider.name, locale)} · ${job.price}
                     </p>
                   </div>
-                  <Pill tone={done ? "green" : "amber"}>{t(STEP_TEXT[job.step])}</Pill>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <Pill tone={done ? "green" : "amber"}>{t(STEP_TEXT[job.step])}</Pill>
+                    {done && (
+                      <Link href={`/demo/new-project?rehire=${id}&provider=${job.provider}`} className="text-sm font-medium underline">
+                        {t("Hire again")}
+                      </Link>
+                    )}
+                  </div>
                 </li>
               );
             })}
@@ -94,9 +101,9 @@ export function DashboardView({ locale }: { locale: Locale }) {
                 locale={locale}
                 t={t}
                 action={
-                  <Link href={`/demo/providers/${p.slug}`} className="shrink-0">
+                  <Link href={p.slug === story.outcome?.acceptedProvider ? `/demo/new-project?rehire=${story.id}&provider=${p.slug}` : `/demo/providers/${p.slug}`} className="shrink-0">
                     <Button type="button" variant="secondary" className="px-3 py-1.5 text-sm">
-                      {t("Hire again")}
+                      {p.slug === story.outcome?.acceptedProvider ? t("Hire again") : t("View profile")}
                     </Button>
                   </Link>
                 }

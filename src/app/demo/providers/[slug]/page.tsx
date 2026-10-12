@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pill } from "@/components/ui";
-import { categoryName, pick, providerBySlug, providers } from "@/lib/demo/fixtures";
+import { Button, Pill } from "@/components/ui";
+import { categoryName, pick, providerBySlug, providers, story } from "@/lib/demo/fixtures";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { Avatar, PortfolioGrid, Stars, demoDate } from "../../demo-ui";
 import { QuoteButton } from "./quote-button";
@@ -48,8 +48,13 @@ export default async function DemoProviderPage({ params }: Props) {
         </div>
       </header>
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         <QuoteButton name={name} />
+        {story.outcome?.acceptedProvider === p.slug && (
+          <Link href={`/demo/new-project?rehire=${story.id}&provider=${p.slug}`} className="inline-block">
+            <Button type="button" variant="secondary">{t("Hire again")}</Button>
+          </Link>
+        )}
       </div>
 
       <section className="mt-10">
