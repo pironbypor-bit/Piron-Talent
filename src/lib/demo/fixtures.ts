@@ -4,12 +4,16 @@ import type { Locale } from "@/lib/i18n/core";
 export type L = { en: string; km: string };
 export const pick = (l: L, locale: Locale) => (locale === "km" ? l.km : l.en);
 
+export type CityKey = "phnom-penh" | "siem-reap" | "battambang" | "other";
+
 export type DemoProvider = {
   slug: string;
   name: L;
   role: L;
   category: string; // slug from public.categories
   city: L;
+  cityKey: CityKey;
+  district?: L; // Phnom Penh only
   remote: boolean;
   years: number;
   completedJobs: number;
@@ -52,11 +56,26 @@ export const categoryName = (slug: string, locale: Locale) => {
 };
 
 const PP = { en: "Phnom Penh", km: "ភ្នំពេញ" };
+const SR = { en: "Siem Reap", km: "សៀមរាប" };
+const BB = { en: "Battambang", km: "បាត់ដំបង" };
+export const DEMO_CITIES: { key: CityKey; name: L }[] = [
+  { key: "phnom-penh", name: PP },
+  { key: "siem-reap", name: SR },
+  { key: "battambang", name: BB },
+  { key: "other", name: { en: "Other", km: "ផ្សេងទៀត" } },
+];
+const D = {
+  toulKork: { en: "Toul Kork", km: "ទួលគោក" },
+  bkk: { en: "BKK", km: "បឹងកេងកង" },
+  senSok: { en: "Sen Sok", km: "សែនសុខ" },
+  russianMarket: { en: "Russian Market", km: "ផ្សារទួលទំពូង" },
+  chbarAmpov: { en: "Chbar Ampov", km: "ច្បារអំពៅ" },
+};
 
 export const providers: DemoProvider[] = [
   {
     slug: "dara-vann", name: { en: "Dara Vann", km: "វ៉ាន់ ដារ៉ា" }, role: { en: "Product photographer", km: "អ្នកថតរូបផលិតផល" },
-    category: "creative", city: PP, remote: false, years: 4, completedJobs: 14, rating: 4.9, identityChecked: true,
+    category: "creative", city: PP, cityKey: "phnom-penh", district: D.toulKork, remote: false, years: 4, completedJobs: 14, rating: 4.9, identityChecked: true,
     skills: [{ en: "Product photography", km: "ថតរូបផលិតផល" }, { en: "Photo editing", km: "កែរូបថត" }, { en: "Menu and catalogue shoots", km: "ថតមុខម្ហូប និងកាតាឡុក" }],
     about: { en: "I shoot food and products for cafes and online shops. Simple setups, consistent light, files ready for Facebook and delivery apps.", km: "ខ្ញុំថតអាហារ និងផលិតផលសម្រាប់ហាងកាហ្វេ និងហាងអនឡាញ។ ការរៀបចំសាមញ្ញ ពន្លឺស្មើ ឯកសាររួចរាល់សម្រាប់ Facebook និងកម្មវិធីដឹកជញ្ជូន។" },
     portfolio: [
@@ -74,7 +93,7 @@ export const providers: DemoProvider[] = [
   },
   {
     slug: "lina-sok", name: { en: "Lina Sok", km: "សុខ លីណា" }, role: { en: "Content creator", km: "អ្នកបង្កើតមាតិកា" },
-    category: "creative", city: PP, remote: true, years: 2, completedJobs: 6, rating: 4.7, identityChecked: true,
+    category: "creative", city: PP, cityKey: "phnom-penh", district: D.bkk, remote: true, years: 2, completedJobs: 6, rating: 4.7, identityChecked: true,
     skills: [{ en: "Phone photography", km: "ថតរូបដោយទូរស័ព្ទ" }, { en: "Short video for Reels and TikTok", km: "វីដេអូខ្លីសម្រាប់ Reels និង TikTok" }, { en: "Captions in Khmer and English", km: "ចំណងជើងជាភាសាខ្មែរ និងអង់គ្លេស" }],
     about: { en: "Student freelancer. I make simple, bright content for small shops and cafes, mostly on a phone.", km: "និស្សិតធ្វើការឯករាជ្យ។ ខ្ញុំបង្កើតមាតិកាសាមញ្ញ ភ្លឺស្អាត សម្រាប់ហាងតូចៗ និងហាងកាហ្វេ ភាគច្រើនដោយទូរស័ព្ទ។" },
     portfolio: [
@@ -86,7 +105,7 @@ export const providers: DemoProvider[] = [
   },
   {
     slug: "pisey-chan", name: { en: "Pisey Chan", km: "ចាន់ ពិសី" }, role: { en: "Studio photographer", km: "អ្នកថតរូបស្ទូឌីយោ" },
-    category: "creative", city: PP, remote: false, years: 7, completedJobs: 31, rating: 5, identityChecked: true,
+    category: "creative", city: PP, cityKey: "phnom-penh", district: D.senSok, remote: false, years: 7, completedJobs: 31, rating: 5, identityChecked: true,
     skills: [{ en: "Studio lighting", km: "ពន្លឺស្ទូឌីយោ" }, { en: "Packaging and product shots", km: "ថតវេចខ្ចប់ និងផលិតផល" }, { en: "Retouching", km: "កែលម្អរូបភាព" }],
     about: { en: "Small studio near Russian Market. Packaging, jewellery and food. Same-day delivery for small sets.", km: "ស្ទូឌីយោតូចនៅជិតផ្សារទួលទំពូង។ វេចខ្ចប់ គ្រឿងអលង្ការ និងអាហារ។ ប្រគល់ក្នុងថ្ងៃតែមួយសម្រាប់ឈុតតូច។" },
     portfolio: [
@@ -99,7 +118,7 @@ export const providers: DemoProvider[] = [
   },
   {
     slug: "sokha-lim", name: { en: "Sokha Lim", km: "លឹម សុខា" }, role: { en: "Khmer-English translator", km: "អ្នកបកប្រែខ្មែរ-អង់គ្លេស" },
-    category: "documents", city: PP, remote: true, years: 6, completedJobs: 22, rating: 4.8, identityChecked: true,
+    category: "documents", city: PP, cityKey: "phnom-penh", district: D.russianMarket, remote: true, years: 6, completedJobs: 22, rating: 4.8, identityChecked: true,
     skills: [{ en: "Contracts and business documents", km: "កិច្ចសន្យា និងឯកសារអាជីវកម្ម" }, { en: "Website and menu translation", km: "បកប្រែគេហទំព័រ និងមុខម្ហូប" }, { en: "Proofreading", km: "កែអក្ខរាវិរុទ្ធ" }],
     about: { en: "Former NGO translator. Business and legal documents, clear and on time. Remote only.", km: "អតីតអ្នកបកប្រែអង្គការ។ ឯកសារអាជីវកម្ម និងច្បាប់ ច្បាស់លាស់ និងទាន់ពេល។ ធ្វើពីចម្ងាយតែប៉ុណ្ណោះ។" },
     portfolio: [
@@ -111,7 +130,7 @@ export const providers: DemoProvider[] = [
   },
   {
     slug: "vanna-keo", name: { en: "Vanna Keo", km: "កែវ វណ្ណា" }, role: { en: "Excel and data entry", km: "Excel និងបញ្ចូលទិន្នន័យ" },
-    category: "documents", city: PP, remote: true, years: 3, completedJobs: 9, rating: 4.6, identityChecked: true,
+    category: "documents", city: PP, cityKey: "phnom-penh", district: D.chbarAmpov, remote: true, years: 3, completedJobs: 9, rating: 4.6, identityChecked: true,
     skills: [{ en: "Inventory sheets", km: "តារាងស្តុក" }, { en: "Excel formulas and dashboards", km: "រូបមន្ត Excel និងផ្ទាំងទិន្នន័យ" }, { en: "Data cleaning", km: "សម្អាតទិន្នន័យ" }],
     about: { en: "I build simple spreadsheets that shop owners can keep using without me.", km: "ខ្ញុំបង្កើតតារាងសាមញ្ញដែលម្ចាស់ហាងអាចបន្តប្រើដោយគ្មានខ្ញុំ។" },
     portfolio: [
@@ -122,7 +141,7 @@ export const providers: DemoProvider[] = [
   },
   {
     slug: "rithy-phan", name: { en: "Rithy Phan", km: "ផាន់ រិទ្ធី" }, role: { en: "IT support and websites", km: "ជំនួយ IT និងគេហទំព័រ" },
-    category: "technology", city: PP, remote: false, years: 5, completedJobs: 17, rating: 4.9, identityChecked: true,
+    category: "technology", city: PP, cityKey: "phnom-penh", district: D.toulKork, remote: false, years: 5, completedJobs: 17, rating: 4.9, identityChecked: true,
     skills: [{ en: "POS and printer setup", km: "ដំឡើង POS និងម៉ាស៊ីនបោះពុម្ព" }, { en: "Wi-Fi and cameras", km: "Wi-Fi និងកាមេរ៉ា" }, { en: "Simple shop websites", km: "គេហទំព័រហាងសាមញ្ញ" }],
     about: { en: "On-site IT help for shops and cafes in Phnom Penh. Fixed prices for common jobs.", km: "ជំនួយ IT នៅទីកន្លែងសម្រាប់ហាង និងហាងកាហ្វេនៅភ្នំពេញ។ តម្លៃថេរសម្រាប់ការងារធម្មតា។" },
     portfolio: [
@@ -130,6 +149,29 @@ export const providers: DemoProvider[] = [
       { caption: { en: "Four-camera setup for a minimart", km: "ដំឡើងកាមេរ៉ាបួនសម្រាប់មីនីម៉ាត" }, tone: "bg-brand-100" },
     ],
     reviews: [{ customer: { en: "Toul Kork Minimart", km: "មីនីម៉ាតទួលគោក" }, stars: 5, text: { en: "Came the same day, explained everything.", km: "មកថ្ងៃតែមួយ ពន្យល់គ្រប់យ៉ាង។" }, date: "2027-02-01" }],
+  },
+  {
+    slug: "chanthy-ros", name: { en: "Chanthy Ros", km: "រស់ ចន្ធី" }, role: { en: "Hotel and event photographer", km: "អ្នកថតរូបសណ្ឋាគារ និងព្រឹត្តិការណ៍" },
+    category: "creative", city: SR, cityKey: "siem-reap", remote: false, years: 6, completedJobs: 19, rating: 4.8, identityChecked: true,
+    skills: [{ en: "Hotel and restaurant photos", km: "រូបថតសណ្ឋាគារ និងភោជនីយដ្ឋាន" }, { en: "Event photography", km: "ថតរូបព្រឹត្តិការណ៍" }, { en: "Drone shots", km: "ថតពីដ្រូន" }],
+    about: { en: "Based in Siem Reap. I photograph guesthouses, restaurants and events for booking sites and Facebook.", km: "មានមូលដ្ឋាននៅសៀមរាប។ ខ្ញុំថតផ្ទះសំណាក់ ភោជនីយដ្ឋាន និងព្រឹត្តិការណ៍សម្រាប់គេហទំព័រកក់ និង Facebook។" },
+    portfolio: [
+      { caption: { en: "Boutique guesthouse, 24 rooms", km: "ផ្ទះសំណាក់ប៊ូទិក 24 បន្ទប់" }, tone: "bg-brand-200" },
+      { caption: { en: "Riverside restaurant at dusk", km: "ភោជនីយដ្ឋានមាត់ទន្លេពេលល្ងាច" }, tone: "bg-stone-200" },
+      { caption: { en: "Wedding at Wat Bo", km: "អាពាហ៍ពិពាហ៍នៅវត្តបូព៌" }, tone: "bg-brand-100" },
+    ],
+    reviews: [{ customer: { en: "Angkor Lane Guesthouse", km: "ផ្ទះសំណាក់ អង្គរឡេន" }, stars: 5, text: { en: "Bookings went up after the new photos.", km: "ការកក់កើនឡើងបន្ទាប់ពីរូបថតថ្មី។" }, date: "2027-02-10" }],
+  },
+  {
+    slug: "sreymom-ouk", name: { en: "Sreymom Ouk", km: "អ៊ុក ស្រីមុំ" }, role: { en: "Bookkeeper, Excel and reports", km: "អ្នកកាន់បញ្ជី Excel និងរបាយការណ៍" },
+    category: "documents", city: BB, cityKey: "battambang", remote: true, years: 8, completedJobs: 12, rating: 4.9, identityChecked: true,
+    skills: [{ en: "Monthly bookkeeping", km: "គណនេយ្យប្រចាំខែ" }, { en: "Excel reports", km: "របាយការណ៍ Excel" }, { en: "Tax filing preparation", km: "រៀបចំលិខិតប្រកាសពន្ធ" }],
+    about: { en: "Remote bookkeeping for small shops anywhere in Cambodia. Send receipts by Telegram, get a clean monthly report.", km: "គណនេយ្យពីចម្ងាយសម្រាប់ហាងតូចៗគ្រប់ទីកន្លែងក្នុងកម្ពុជា។ ផ្ញើវិក្កយបត្រតាម Telegram ទទួលបានរបាយការណ៍ប្រចាំខែស្អាត។" },
+    portfolio: [
+      { caption: { en: "Monthly report for a rice shop", km: "របាយការណ៍ប្រចាំខែសម្រាប់ហាងអង្ករ" }, tone: "bg-stone-200" },
+      { caption: { en: "Stock sheet, 120 products", km: "តារាងស្តុក 120 មុខ" }, tone: "bg-brand-100" },
+    ],
+    reviews: [{ customer: { en: "Battambang Rice Supply", km: "បាត់ដំបង ផ្គត់ផ្គង់អង្ករ" }, stars: 5, text: { en: "Reports arrive on the first of the month, every month.", km: "របាយការណ៍មកដល់ថ្ងៃទីមួយនៃខែ រាល់ខែ។" }, date: "2027-02-03" }],
   },
 ];
 

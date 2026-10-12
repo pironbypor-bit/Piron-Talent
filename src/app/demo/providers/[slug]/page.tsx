@@ -37,7 +37,7 @@ export default async function DemoProviderPage({ params }: Props) {
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">{name}</h1>
           <p className="text-ink-muted">
-            {pick(p.role, locale)} · {categoryName(p.category, locale)} · {pick(p.city, locale)} · {p.remote ? t("Remote") : t("On site")}
+            {pick(p.role, locale)} · {categoryName(p.category, locale)} · {pick(p.city, locale)}{p.district ? ` · ${pick(p.district, locale)}` : ""} · {p.remote ? t("Remote") : t("On site")}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <Stars rating={p.rating} />
