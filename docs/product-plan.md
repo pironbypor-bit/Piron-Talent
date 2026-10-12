@@ -56,19 +56,19 @@ Status: done, next (this phase), later. "Server" names where the state change li
 
 | Feature | Purpose | Data (exists unless noted) | Server | Status |
 |---|---|---|---|---|
-| Roles: customer, provider, both | Right dashboard and actions per person | profiles, profile_private | profile edit policy | later |
-| Provider profile and portfolio | Proof of work, the plan's main trust signal | profiles, profile_skills, portfolio_items, "portfolio" bucket | owner policies exist | later |
-| Identity check | "Identity checked" label after manual review of an ID photo | new: identity_checks (private bucket, status, reviewed_by) | admin function | later |
-| Project post with structured scope | Title, category, deliverables, budget range, deadline, on-site or remote | posts (kind need_help) + new columns: deliverables, deadline, remote | posts policies exist; publish via server | later |
-| Quotes | Price, days, note; one per provider per post | quotes | insert policy exists; accept, decline, withdraw via new functions | later |
-| Accept quote and start job | Turns a quote into a work record | new: project_jobs (post, quote, status, agreed price, delivered_at, confirmed_at) | function accept_quote | later |
-| Delivery and confirmation | Provider marks delivered, customer confirms, job becomes completed | project_jobs | functions mark_delivered, confirm_completion | later |
-| Reviews after completion only | Reputation that cannot be bought | reviews (extend to project_jobs) | function leave_review | later |
-| Messaging with consent | Conversation opens only when a quote exists or the customer invites | conversations, conversation_members, messages | function open_conversation | later |
-| Notifications | New quote, accepted, delivered, message, review | notifications | written by the functions above | later |
-| Search and filters | Find providers by category, skill, city, remote, rating | profiles, profile_skills, services | SQL + indexes | later |
-| Reports and moderation queue | Unlawful requests, fake profiles, abuse | reports | admin functions | later |
-| Disputes | Either party opens, admin resolves | disputes | insert policy exists; admin functions | later |
+| Roles: customer, provider, both | Right dashboard and actions per person | profiles, profile_private | profile edit policy | done (is_available flag; no separate role screens) |
+| Provider profile and portfolio | Proof of work, the plan's main trust signal | profiles, profile_skills, portfolio_items, "portfolio" bucket | owner policies exist | done |
+| Identity check | "Identity checked" label after manual review of an ID photo | new: identity_checks (private bucket, status, reviewed_by) | admin function | done (manual review, level 1) |
+| Project post with structured scope | Title, category, deliverables, budget range, deadline, on-site or remote | posts (kind need_help) + new columns: deliverables, deadline, remote | posts policies exist; publish via server | done |
+| Quotes | Price, days, note; one per provider per post | quotes | insert policy exists; accept, decline, withdraw via new functions | done |
+| Accept quote and start job | Turns a quote into a work record | new: project_jobs (post, quote, status, agreed price, delivered_at, confirmed_at) | function accept_quote | done |
+| Delivery and confirmation | Provider marks delivered, customer confirms, job becomes completed | project_jobs | functions mark_delivered, confirm_completion | done |
+| Reviews after completion only | Reputation that cannot be bought | reviews (extend to project_jobs) | function leave_review | done |
+| Messaging with consent | Conversation opens only when a quote exists or the customer invites | conversations, conversation_members, messages | function open_conversation | done |
+| Notifications | New quote, accepted, delivered, message, review | notifications | written by the functions above | done (in-app only) |
+| Search and filters | Find providers by category, skill, city, remote, rating | profiles, profile_skills, services | SQL + indexes | done (no city filter yet) |
+| Reports and moderation queue | Unlawful requests, fake profiles, abuse | reports | admin functions | done |
+| Disputes | Either party opens, admin resolves | disputes | insert policy exists; admin functions | done |
 | Business dashboard (basic) | Owner sees the business's projects and spend | businesses, business_members | existing policies | later |
 | Admin KPIs | Section 12 metrics by week and cohort | views | SQL views | later |
 
@@ -76,7 +76,7 @@ Status: done, next (this phase), later. "Server" names where the state change li
 
 | Feature | Purpose | Data | Server | Status |
 |---|---|---|---|---|
-| Saved providers and one-tap rehire | 90-day repeat is the validation target | new: saved_providers | insert policy | later |
+| Saved providers and one-tap rehire | 90-day repeat is the validation target | new: saved_providers | insert policy | saved done; rehire later |
 | Request templates | "Same as last month" | new: request_templates | owner policies | later |
 | Business accounts, seats, roles | Business and Business Pro | businesses, business_members, plans, business_subscriptions | admin or webhook functions | later |
 | Payments through a licensed Cambodian provider | Record references and status only, no custody | payment_records | webhook handler with signature check | later |
