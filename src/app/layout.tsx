@@ -31,6 +31,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SiteFooter />
           </HideOn>
         </I18nProvider>
+        {process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN && (
+          // eslint-disable-next-line @next/next/no-sync-scripts
+          <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token": "${process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN}"}`} />
+        )}
       </body>
     </html>
   );

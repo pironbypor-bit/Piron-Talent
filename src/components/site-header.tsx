@@ -52,9 +52,14 @@ export async function SiteFooter() {
   const t = await getT();
   return (
     <footer className="mt-16 border-t border-stone-200">
-      <p className="mx-auto max-w-3xl px-4 py-8 text-sm text-ink-muted">
-        {t("Piron Talent is run from Phnom Penh. Questions: {email}", { email: CONTACT_EMAIL })}
-      </p>
+      <div className="mx-auto max-w-3xl px-4 py-8 text-sm text-ink-muted">
+        <p>{t("Piron Talent is run from Phnom Penh. Questions: {email}", { email: CONTACT_EMAIL })}</p>
+        <p className="mt-2 flex flex-wrap gap-4">
+          <Link href="/privacy" className="underline hover:text-ink">{t("Privacy")}</Link>
+          <Link href="/terms" className="underline hover:text-ink">{t("Terms of use")}</Link>
+          <Link href="/providers" className="underline hover:text-ink">{t("Providers")}</Link>
+        </p>
+      </div>
     </footer>
   );
 }
