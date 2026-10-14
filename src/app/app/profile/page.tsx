@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, Bookmark, Briefcase, FileCheck, FileText, MessageCircle, Settings, Sparkles, Users, type LucideIcon } from "lucide-react";
+import { Bell, Bookmark, Briefcase, FileText, Settings, Users, type LucideIcon } from "lucide-react";
 import { AngkorSilhouette } from "@/components/brand";
 import { CheckedPill, Pill } from "@/components/ui";
-import { markNotificationsRead } from "@/lib/app/actions";
 import { setAvailableThisWeek } from "@/lib/app/actions";
-import { getMe, listNotifications, myCounters, myIdentityStatus } from "@/lib/app/queries";
+import { countUnread, getMe, myCounters, myIdentityStatus } from "@/lib/app/queries";
 import { isAvailableNow } from "@/components/signals";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -17,12 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("Profile") };
 }
 
-const ICONS: Record<string, LucideIcon> = { "New message": MessageCircle, "New comment": Sparkles, "New application": FileCheck, "Identity checked": FileCheck, "Identity check rejected": FileCheck };
-
 export default async function ProfilePage() {
-  const [t, locale, me, counters, identity, notifications] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), listNotifications()]);
+  const [t, locale, me, counters, identity, unread] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), countUnread()]);
   if (!me) return null; // the proxy redirects anonymous visitors to /login
-  const unread = notifications.filter((n) => !n.read_at).length;
 
   return (
     <main className="px-4 pb-24 pt-4">
@@ -127,42 +123,14 @@ export default async function ProfilePage() {
         <AvatarUpload userId={me.id} />
       </section>
 
-      <section className="mt-4" id="notifications">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold">
-            {t("Notifications")} {unread > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs">{unread}</span>}
-          </h2>
-          {unread > 0 && (
-            <form action={markNotificationsRead}>
-              <button type="submit" className="text-xs underline">{t("Mark all read")}</button>
-            </form>
-          )}
-        </div>
-        {notifications.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-muted">{t("Nothing yet.")}</p>
-        ) : (
-          <ul className="mt-2 card divide-y divide-stone-100">
-            {notifications.map((n) => {
-              const Icon = ICONS[n.title] ?? Bell;
-              const inner = (
-                <>
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-800"><Icon className="size-4" /></span>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm ${n.read_at ? "font-medium" : "font-bold"}`}>{t(n.title)}</p>
-                    {n.body && <p className="truncate text-sm text-ink-muted">{n.body}</p>}
-                  </div>
-                  <span className="shrink-0 text-xs text-ink-muted">{formatDate(n.created_at, locale)}</span>
-                </>
-              );
-              return (
-                <li key={n.id}>
-                  {n.link_path ? <Link href={n.link_path} className="flex items-start gap-3 px-3 py-3 hover:bg-stone-50">{inner}</Link> : <div className="flex items-start gap-3 px-3 py-3">{inner}</div>}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+      <Link href="/app/notifications" className="card mt-4 flex items-center gap-3 px-4 py-3 hover:bg-brand-50">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-brand-100 text-brand-800"><Bell className="size-4" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">{t("Notifications")}</span>
+          <span className="block text-sm text-ink-muted">{unread > 0 ? t("{n} unread", { n: unread }) : t("All caught up.")}</span>
+        </span>
+        {unread > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-ink">{unread}</span>}
+      </Link>
 
     </main>
   );

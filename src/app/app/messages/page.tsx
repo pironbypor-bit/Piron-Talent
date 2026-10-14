@@ -35,11 +35,14 @@ export default async function MessagesPage() {
                   <AvatarImg name={name} url={c.other?.avatar_url ?? null} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate font-semibold">{name}</p>
+                      <p className={`truncate ${c.unread ? "font-bold" : "font-semibold"}`}>
+                        {c.unread && <span className="mr-1.5 inline-block size-2 rounded-full bg-brand-500 align-middle" aria-label={t("Unread")} />}
+                        {name}
+                      </p>
                       {c.last && <span className="shrink-0 text-xs text-ink-muted">{formatDate(c.last.created_at, locale)}</span>}
                     </div>
                     {c.last && (
-                      <p className="truncate text-sm text-ink-muted">
+                      <p className={`truncate text-sm ${c.unread ? "font-medium text-ink" : "text-ink-muted"}`}>
                         {mine ? `${t("You")}: ` : ""}
                         {c.last.body}
                       </p>

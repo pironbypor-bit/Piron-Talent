@@ -68,6 +68,7 @@ export type ConversationRow = {
   id: string;
   other: Author | null;
   last: { body: string; created_at: string; sender_id: string } | null;
+  unread: boolean;
 };
 
 export type MessageRow = { id: string; body: string; created_at: string; sender_id: string };

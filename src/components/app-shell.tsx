@@ -6,6 +6,7 @@ import { Bell, Briefcase, Home, LayoutGrid, MessageCircle, User } from "lucide-r
 import { APP_NAME } from "@/lib/brand";
 import { useT } from "@/lib/i18n/client";
 import { BrandMark } from "./brand";
+import { useLiveCounts } from "./live-counts";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -20,8 +21,10 @@ const TABS = [
   { key: "profile", label: "Profile", Icon: User },
 ];
 
-export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = null }: { base: string; name: string; unread?: number; signedIn?: boolean; avatarUrl?: string | null }) {
+export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = null, notificationsHref }: { base: string; name: string; unread?: number; signedIn?: boolean; avatarUrl?: string | null; notificationsHref?: string }) {
   const t = useT();
+  const live = useLiveCounts();
+  const n = live?.unread ?? unread;
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-100 bg-white/90 px-4 py-2.5 backdrop-blur">
       <Link href={base} className="flex items-center gap-2 font-bold tracking-tight">
@@ -29,11 +32,11 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
         {APP_NAME}
       </Link>
       <div className="flex items-center gap-2">
-        <Link href={`${base}/profile#notifications`} aria-label={t("Notifications")} className="relative rounded-full p-2 hover:bg-brand-50">
+        <Link href={notificationsHref ?? `${base}/profile#notifications`} aria-label={t("Notifications")} className="relative rounded-full p-2 hover:bg-brand-50">
           <Bell className="size-5" />
-          {unread > 0 && (
+          {n > 0 && (
             <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-ink">
-              {unread > 9 ? "9+" : unread}
+              {n > 9 ? "9+" : n}
             </span>
           )}
         </Link>
@@ -54,6 +57,8 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
 export function TabBar({ base }: { base: string }) {
   const t = useT();
   const path = usePathname();
+  const live = useLiveCounts();
+  const badge = (key: string) => (key === "messages" ? live?.unreadMessages ?? 0 : 0);
   return (
     <nav className="sticky bottom-0 z-10 grid grid-cols-5 border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label={t("App preview")}>
       {TABS.map(({ key, label, Icon }) => {
@@ -62,8 +67,13 @@ export function TabBar({ base }: { base: string }) {
         return (
           <Link key={key} href={href} aria-current={active ? "page" : undefined} className={`relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${active ? "text-brand-700" : "text-ink-muted hover:text-ink"}`}>
             {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-brand-500" aria-hidden="true" />}
-            <span className={`rounded-xl px-3 py-0.5 ${active ? "bg-brand-100" : ""}`}>
+            <span className={`relative rounded-xl px-3 py-0.5 ${active ? "bg-brand-100" : ""}`}>
               <Icon className="size-5" strokeWidth={active ? 2.5 : 2} fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.15 : 0} />
+              {badge(key) > 0 && (
+                <span className="absolute -top-1 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-ink">
+                  {badge(key) > 9 ? "9+" : badge(key)}
+                </span>
+              )}
             </span>
             {t(label)}
           </Link>

@@ -251,6 +251,7 @@ export async function markNotificationsRead() {
   const supabase = await createClient();
   await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", uid).is("read_at", null);
   revalidatePath("/app/profile");
+  revalidatePath("/app/notifications");
 }
 
 // Quotes, job record, reviews (Phase 2 core loop) -----------------------------------------------------------

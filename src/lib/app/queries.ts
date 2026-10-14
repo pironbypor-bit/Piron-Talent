@@ -206,16 +206,19 @@ export async function listConversations(): Promise<ConversationRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conversations")
-    .select(`id,created_at,conversation_members(user_id,profiles(${AUTHOR})),messages(body,created_at,sender_id)`)
+    .select(`id,created_at,conversation_members(user_id,last_read_at,profiles(${AUTHOR})),messages(body,created_at,sender_id)`)
     .order("created_at", { ascending: false, referencedTable: "messages" })
     .limit(1, { referencedTable: "messages" })
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) console.error("listConversations:", error.message);
-  type Row = { id: string; conversation_members: { user_id: string; profiles: Author | Author[] | null }[]; messages: { body: string; created_at: string; sender_id: string }[] };
+  type Row = { id: string; conversation_members: { user_id: string; last_read_at: string | null; profiles: Author | Author[] | null }[]; messages: { body: string; created_at: string; sender_id: string }[] };
   const rows = ((data ?? []) as unknown as Row[]).map((c) => {
     const otherMember = c.conversation_members.find((m) => m.user_id !== uid);
-    return { id: c.id, other: otherMember ? one(otherMember.profiles) : null, last: c.messages[0] ?? null };
+    const me = c.conversation_members.find((m) => m.user_id === uid);
+    const last = c.messages[0] ?? null;
+    const unread = !!last && last.sender_id !== uid && new Date(last.created_at) > new Date(me?.last_read_at ?? 0);
+    return { id: c.id, other: otherMember ? one(otherMember.profiles) : null, last, unread };
   });
   return rows.sort((a, b) => (b.last?.created_at ?? "").localeCompare(a.last?.created_at ?? ""));
 }
@@ -227,6 +230,7 @@ export async function getConversation(id: string): Promise<{ other: Author | nul
   const [{ data: members }, { data: messages }] = await Promise.all([
     supabase.from("conversation_members").select(`user_id,profiles(${AUTHOR})`).eq("conversation_id", id),
     supabase.from("messages").select("id,body,created_at,sender_id").eq("conversation_id", id).order("created_at").limit(200),
+    supabase.rpc("mark_conversation_read", { p_conv: id }), // opening the conversation clears its unread mark
   ]);
   if (!members || members.length === 0) return null;
   const otherMember = (members as unknown as { user_id: string; profiles: Author | Author[] | null }[]).find((m) => m.user_id !== uid);
@@ -239,6 +243,15 @@ export async function listNotifications(limit = 30): Promise<NotificationRow[]> 
   const supabase = await createClient();
   const { data } = await supabase.from("notifications").select("id,title,body,link_path,read_at,created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit);
   return (data ?? []) as NotificationRow[];
+}
+
+/** Conversations with a message from the other person since I last opened them. */
+export async function countUnreadConversations(): Promise<number> {
+  const uid = await getUserId();
+  if (!uid) return 0;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("unread_conversations");
+  return (data as number | null) ?? 0;
 }
 
 export async function countUnread(): Promise<number> {

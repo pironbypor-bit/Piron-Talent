@@ -73,7 +73,7 @@ export default async function SettingsPage() {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-semibold">{t("Email notifications")}</span>
-            <span className="block text-sm text-ink-muted">{t("Quotes, messages and job updates. At most one email every 15 minutes.")}</span>
+            <span className="block text-sm text-ink-muted">{t("A quiet backup: an email only when a quote is accepted or work is delivered. Everything else stays in the app.")}</span>
           </span>
           <form action={setEmailNotifications}>
             <input type="hidden" name="on" value={emailOn ? "0" : "1"} />
