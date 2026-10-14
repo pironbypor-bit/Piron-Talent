@@ -84,6 +84,29 @@ export default async function CompanyPage({ params }: Props) {
         </>
       )}
 
+      <h2 className="mt-5 text-sm font-semibold text-ink-muted">{t("Organisation chart")}</h2>
+      <section className="card mt-2 space-y-3 p-4">
+        {(["owner", "manager", "member"] as const).map((tier) => {
+          const row = b.team.filter((m) => m.role === tier);
+          if (row.length === 0) return null;
+          return (
+            <div key={tier} className="flex flex-wrap justify-center gap-2">
+              {row.map((m) => (
+                <div key={m.user_id} className={`min-w-28 rounded-xl border px-3 py-2 text-center ${tier === "owner" ? "border-brand-400 bg-brand-50" : "border-stone-200 bg-white"}`}>
+                  <p className="text-sm font-semibold">{m.display_name}</p>
+                  <p className="text-xs text-ink-muted">{m.job_title ?? t(ROLE[m.role])}</p>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </section>
+
+      <Link href={`/app/profile/companies/${b.id}/terms`} className="card mt-3 flex items-center justify-between px-4 py-3 font-semibold hover:bg-brand-50">
+        {t("Terms and pay")}
+        <span className="text-xs font-normal text-ink-muted">{isOwner ? t("Private: you and each person") : t("Private: you and the owner")}</span>
+      </Link>
+
       <h2 className="mt-5 text-sm font-semibold text-ink-muted">{t("Team")} · {b.team.length}</h2>
       <ul className="card mt-2 divide-y divide-stone-100">
         {b.team.map((m) => (
@@ -91,7 +114,7 @@ export default async function CompanyPage({ params }: Props) {
             <AvatarImg name={m.display_name} url={m.avatar_url} />
             <span className="min-w-0 flex-1">
               <Link href={`/app/providers/${m.user_id}`} className="block truncate text-sm font-medium hover:underline">{m.display_name}{m.user_id === me.id ? ` (${t("You")})` : ""}</Link>
-              <span className="text-xs text-ink-muted">{t(ROLE[m.role])}</span>
+              <span className="text-xs text-ink-muted">{m.job_title ? `${m.job_title} · ` : ""}{t(ROLE[m.role])}</span>
             </span>
             {isOwner && m.role !== "owner" && (
               <>
@@ -130,6 +153,17 @@ export default async function CompanyPage({ params }: Props) {
                 ))}
               </ul>
               <input type="hidden" name="role" value="member" />
+              <p className="text-xs font-medium text-ink-muted">{t("Terms of work (optional, private to you and them)")}</p>
+              <input name="job_title" maxLength={80} placeholder={t("Job title")} className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm" />
+              <textarea name="duties" maxLength={1000} rows={2} placeholder={t("Duties: one line each")} className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm" />
+              <div className="flex gap-2">
+                <input name="rate" type="number" step="0.01" min="0" placeholder={t("Rate")} className="w-24 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm" />
+                <select name="rate_unit" defaultValue="hour" className="flex-1 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
+                  <option value="hour">{t("per hour")}</option>
+                  <option value="day">{t("per day")}</option>
+                  <option value="month">{t("per month")}</option>
+                </select>
+              </div>
               <Button type="submit" className="px-4 py-2 text-sm">{t("Send invitations")}</Button>
             </form>
           )}

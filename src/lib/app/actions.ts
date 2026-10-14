@@ -490,9 +490,14 @@ export async function inviteToBusiness(businessId: string, formData: FormData) {
   if (!uuid.test(businessId)) return;
   await requireUser(`/app/profile/companies/${businessId}`);
   const role = String(formData.get("role") ?? "member") === "manager" ? "manager" : "member";
+  const title = String(formData.get("job_title") ?? "").trim().slice(0, 80);
+  const duties = String(formData.get("duties") ?? "").trim().slice(0, 1000);
+  const rateRaw = String(formData.get("rate") ?? "").trim();
+  const rate = rateRaw !== "" && Number.isFinite(Number(rateRaw)) && Number(rateRaw) >= 0 ? Number(rateRaw) : null;
+  const unit = ["hour", "day", "month"].includes(String(formData.get("rate_unit"))) ? String(formData.get("rate_unit")) : "hour";
   const supabase = await createClient();
   for (const id of formData.getAll("people").map(String).filter((v) => uuid.test(v)).slice(0, 10)) {
-    await supabase.rpc("invite_to_business", { p_business: businessId, p_user: id, p_role: role });
+    await supabase.rpc("invite_to_business", { p_business: businessId, p_user: id, p_role: role, p_title: title || null, p_duties: duties || null, p_rate: rate, p_unit: unit });
   }
   revalidatePath(`/app/profile/companies/${businessId}`);
 }
@@ -519,6 +524,50 @@ export async function setBusinessRole(businessId: string, userId: string, role: 
   await requireUser(`/app/profile/companies/${businessId}`);
   await (await createClient()).rpc("set_business_role", { p_business: businessId, p_user: userId, p_role: role });
   revalidatePath(`/app/profile/companies/${businessId}`);
+}
+
+// Terms of work and pay records (migration 0032): private to the owner and the person --------------------------
+
+export async function setMemberTerms(businessId: string, userId: string, formData: FormData) {
+  if (!uuid.test(businessId) || !uuid.test(userId)) return;
+  await requireUser(`/app/profile/companies/${businessId}/terms`);
+  const rateRaw = String(formData.get("rate") ?? "").trim();
+  const rate = rateRaw !== "" && Number.isFinite(Number(rateRaw)) && Number(rateRaw) >= 0 ? Number(rateRaw) : null;
+  const unit = ["hour", "day", "month"].includes(String(formData.get("rate_unit"))) ? String(formData.get("rate_unit")) : "hour";
+  await (await createClient()).rpc("set_member_terms", {
+    p_business: businessId, p_user: userId,
+    p_title: String(formData.get("job_title") ?? "").trim().slice(0, 80), p_duties: String(formData.get("duties") ?? "").trim().slice(0, 1000),
+    p_rate: rate, p_unit: unit,
+  });
+  revalidatePath(`/app/profile/companies/${businessId}/terms`);
+  revalidatePath(`/app/profile/companies/${businessId}`);
+}
+
+export async function addPayRecord(businessId: string, userId: string, formData: FormData) {
+  if (!uuid.test(businessId) || !uuid.test(userId)) return;
+  await requireUser(`/app/profile/companies/${businessId}/terms`);
+  const date = (k: string) => (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(formData.get(k) ?? "")) ? String(formData.get(k)) : null);
+  const from = date("from");
+  const to = date("to");
+  const quantity = Number(String(formData.get("quantity") ?? ""));
+  if (!from || !to || !(quantity > 0)) return;
+  await (await createClient()).rpc("add_pay_record", { p_business: businessId, p_user: userId, p_from: from, p_to: to, p_quantity: quantity, p_note: String(formData.get("note") ?? "").trim().slice(0, 300) });
+  revalidatePath(`/app/profile/companies/${businessId}/terms`);
+}
+
+export async function markPayPaid(businessId: string, recordId: string, formData: FormData) {
+  if (!uuid.test(businessId) || !uuid.test(recordId)) return;
+  await requireUser(`/app/profile/companies/${businessId}/terms`);
+  const paidOn = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(formData.get("paid_on") ?? "")) ? String(formData.get("paid_on")) : null;
+  await (await createClient()).rpc("mark_pay_paid", { p_record: recordId, p_paid_on: paidOn, p_note: String(formData.get("note") ?? "").trim().slice(0, 300) });
+  revalidatePath(`/app/profile/companies/${businessId}/terms`);
+}
+
+export async function deletePayRecord(businessId: string, recordId: string) {
+  if (!uuid.test(businessId) || !uuid.test(recordId)) return;
+  await requireUser(`/app/profile/companies/${businessId}/terms`);
+  await (await createClient()).rpc("delete_pay_record", { p_record: recordId });
+  revalidatePath(`/app/profile/companies/${businessId}/terms`);
 }
 
 export async function openBusinessChat(businessId: string) {

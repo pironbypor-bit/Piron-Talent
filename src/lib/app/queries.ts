@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -484,6 +484,27 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
     jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })),
     posts: (posts ?? []) as BusinessDetail["posts"],
   };
+}
+
+/** Terms of work: the owner gets everyone's, a member only their own (migration 0032). Private. */
+export async function businessTerms(businessId: string): Promise<MemberTerms[]> {
+  const uid = await getUserId();
+  if (!uid || !/^[0-9a-f-]{36}$/i.test(businessId)) return [];
+  const { data } = await (await createClient()).rpc("business_terms", { p_business: businessId });
+  return ((data ?? []) as (Omit<MemberTerms, "rate"> & { rate: number | string | null })[]).map((r) => ({ ...r, rate: r.rate === null ? null : Number(r.rate) }));
+}
+
+/** Pay records: the owner sees all of the company's, a member only their own. */
+export async function businessPay(businessId: string): Promise<PayRecordRow[]> {
+  const uid = await getUserId();
+  if (!uid || !/^[0-9a-f-]{36}$/i.test(businessId)) return [];
+  const { data } = await (await createClient())
+    .from("pay_records")
+    .select("id,user_id,period_from,period_to,quantity,unit,rate,amount,status,paid_on,note")
+    .eq("business_id", businessId)
+    .order("period_from", { ascending: false })
+    .limit(200);
+  return ((data ?? []) as (Omit<PayRecordRow, "quantity" | "rate" | "amount"> & { quantity: number | string; rate: number | string; amount: number | string })[]).map((r) => ({ ...r, quantity: Number(r.quantity), rate: Number(r.rate), amount: Number(r.amount) }));
 }
 
 /** People this company invited who have not answered yet (visible to whoever invited them). */

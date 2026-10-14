@@ -139,7 +139,10 @@ export type DisputeRow = { id: string; opened_by: string; status: DisputeStatus;
 
 export type BusinessRole = "owner" | "manager" | "member";
 export type BusinessRow = { id: string; name: string; description: string | null; city: string | null; created_at: string; conversation_id: string | null; role: BusinessRole; jobs: number; projects: number };
-export type TeamMember = { user_id: string; display_name: string; avatar_url: string | null; role: BusinessRole };
+export type TeamMember = { user_id: string; display_name: string; avatar_url: string | null; role: BusinessRole; job_title: string | null };
+export type RateUnit = "hour" | "day" | "month";
+export type MemberTerms = { user_id: string; job_title: string | null; duties: string | null; rate: number | null; rate_unit: RateUnit | null; starts_on: string | null };
+export type PayRecordRow = { id: string; user_id: string; period_from: string; period_to: string; quantity: number; unit: RateUnit; rate: number; amount: number; status: "owed" | "paid"; paid_on: string | null; note: string | null };
 export type BusinessInvitationRow = { id: string; business_id: string; business_name: string; role: "manager" | "member"; inviter: string; created_at: string };
 export type BusinessDetail = Omit<BusinessRow, "jobs" | "projects"> & {
   team: TeamMember[];

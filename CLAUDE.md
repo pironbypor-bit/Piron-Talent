@@ -135,3 +135,8 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 
 ## Team demo (2026-10-14, not built for real)
 - /demo/app/team (src/app/demo/app/team/view.tsx, src/lib/demo/team-fixtures.ts): clickable demo of the four missing team features: schedule with clock in and out and attendance, tasks, pay records (hours × rate, mark as paid; no money moves; flagged for legal review), and the public company page plus a member's "works at" line with a per-person switch. "View as" switches between owner and member. State is local to the page.
+
+## Terms of work, private pay records, org chart (migration 0032, built 2026-10-15)
+- business_members gained job_title (shown to the whole team, feeds the org chart), duties, rate, rate_unit, starts_on (private). business_invitations carry the same fields; accepting copies them. invite_to_business now takes title, duties, rate and unit. business_team returns job_title; business_terms(business) returns everyone's terms to the owner and only your own to anyone else; set_member_terms is owner-only and notifies 'Terms updated'.
+- pay_records (owner and the person only; policy uses is_business_owner): add_pay_record(business, user, from, to, quantity, note) snapshots rate and unit and computes the amount, notifies 'Pay recorded'; mark_pay_paid(record, paid_on, note) notifies 'Pay marked as paid'; delete_pay_record only while owed. No money moves; no tax, social security or overtime (needs a legal review first).
+- UI: /app/profile/companies/[id]/terms (owner: terms form, pay records, add and mark paid; member: own terms and pay, read only), org chart section and a "Terms and pay" link on the company page, optional terms on the invite form.
