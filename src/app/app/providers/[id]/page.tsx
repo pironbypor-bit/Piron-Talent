@@ -7,7 +7,7 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const data = await getProvider(id);
-  return { title: data?.provider.display_name ?? "Piron Talent" };
+  return { title: data?.provider.display_name ?? "Piron Work" };
 }
 
 export default async function ProviderPage({ params, searchParams }: Props) {

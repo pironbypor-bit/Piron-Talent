@@ -3,7 +3,7 @@ import { TabBar, TopBar } from "@/components/app-shell";
 import { getMe } from "@/lib/app/queries";
 import { countUnread } from "@/lib/app/queries";
 
-export const metadata: Metadata = { title: { default: "Piron Talent", template: "%s - Piron Talent" } };
+export const metadata: Metadata = { title: { default: "Piron Work", template: "%s - Piron Work" } };
 
 /** The real app: same shell as the preview, full width on phones, a phone-wide column on desktop. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

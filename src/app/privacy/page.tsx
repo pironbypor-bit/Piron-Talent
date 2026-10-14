@@ -13,7 +13,7 @@ const SECTIONS: [string, string[]][] = [
     "What we collect",
     [
       "Your name, email, phone or Telegram, city and what you post in the app.",
-      "If you ask for an identity check: the ID photo, selfie, legal name, ID number and date of birth. Only Piron Talent staff can see these, and they are never shown on your profile."
+      "If you ask for an identity check: the ID photo, selfie, legal name, ID number and date of birth. Only Piron Work staff can see these, and they are never shown on your profile."
     ]
   ],
   [
@@ -28,7 +28,7 @@ const SECTIONS: [string, string[]][] = [
     [
       "Your public profile shows your display name, role, city, skills, portfolio, completed jobs and reviews.",
       "Quotes are private between you and the other side. Messages are private to the conversation.",
-      "Reports and disputes are seen by the two sides and Piron Talent staff."
+      "Reports and disputes are seen by the two sides and Piron Work staff."
     ]
   ],
   [
@@ -46,7 +46,7 @@ const SECTIONS: [string, string[]][] = [
   [
     "Contact",
     [
-      "Piron Talent, Phnom Penh. Questions about privacy: {email}."
+      "Piron Work, Phnom Penh. Questions about privacy: {email}."
     ]
   ]
 ];

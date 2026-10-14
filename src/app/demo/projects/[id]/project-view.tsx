@@ -58,7 +58,7 @@ export function ProjectView({ project, locale, posted = false }: { project: Demo
           <p><span className="text-ink-muted">{t("Where")}:</span> {project.remote ? t("Remote") : t("On site")}</p>
         </div>
       </dl>
-      <p className="mt-4 text-xs text-ink-muted">{t("Cancellation is free before the work starts. After that both sides agree, and Piron Talent support handles disputes.")}</p>
+      <p className="mt-4 text-xs text-ink-muted">{t("Cancellation is free before the work starts. After that both sides agree, and Piron Work support handles disputes.")}</p>
 
       <section className="mt-10">
         <div className="flex items-center justify-between gap-4">

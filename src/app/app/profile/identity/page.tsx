@@ -19,7 +19,7 @@ export default async function IdentityPage() {
         {t("Back")}
       </Link>
       <div className="mt-3">
-        <PageTitle lead={t("Only Piron Talent staff can see these photos and details. They are never shown on your profile.")}>{t("Identity check")}</PageTitle>
+        <PageTitle lead={t("Only Piron Work staff can see these photos and details. They are never shown on your profile.")}>{t("Identity check")}</PageTitle>
       </div>
       {status === "pending" ? (
         <Notice tone="info">{t("Pending review")}</Notice>

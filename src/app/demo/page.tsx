@@ -119,7 +119,7 @@ export default async function DemoOverviewPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <PageTitle lead={t("A cafe in Toul Kork needs product photos. Here is what happens, step by step.")}>{t("How one project runs on Piron Talent")}</PageTitle>
+      <PageTitle lead={t("A cafe in Toul Kork needs product photos. Here is what happens, step by step.")}>{t("How one project runs on Piron Work")}</PageTitle>
       <ol className="space-y-10">
         {steps.map((s, i) => (
           <li key={s.title} className="grid gap-3 sm:grid-cols-[2.5rem_1fr]">

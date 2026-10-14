@@ -8,7 +8,7 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [{ id }, t] = await Promise.all([params, getT()]);
   const data = await getProvider(id);
-  if (!data) return { title: "Piron Talent" };
+  if (!data) return { title: "Piron Work" };
   const p = data.provider;
   const title = [p.display_name, p.role_line, p.city ? t(p.city) : null].filter(Boolean).join(" · ");
   return {

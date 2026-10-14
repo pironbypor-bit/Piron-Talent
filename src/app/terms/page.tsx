@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const SECTIONS: [string, string[]][] = [
   [
-    "What Piron Talent is",
+    "What Piron Work is",
     [
-      "A place where people in Cambodia post work and checked providers send quotes. You agree the price with the provider and pay them directly. Piron Talent is not a party to the work and does not hold money."
+      "A place where people in Cambodia post work and checked providers send quotes. You agree the price with the provider and pay them directly. Piron Work is not a party to the work and does not hold money."
     ]
   ],
   [
@@ -24,7 +24,7 @@ const SECTIONS: [string, string[]][] = [
   [
     "Identity check",
     [
-      "The Identity checked label means a Piron Talent staff member looked at an ID photo and a selfie. It is not a guarantee of skill, licence or conduct."
+      "The Identity checked label means a Piron Work staff member looked at an ID photo and a selfie. It is not a guarantee of skill, licence or conduct."
     ]
   ],
   [
@@ -36,7 +36,7 @@ const SECTIONS: [string, string[]][] = [
   [
     "Problems",
     [
-      "If something goes wrong, open a dispute on the job. Piron Talent staff will contact both sides and record an outcome, but cannot force payment or refunds."
+      "If something goes wrong, open a dispute on the job. Piron Work staff will contact both sides and record an outcome, but cannot force payment or refunds."
     ]
   ],
   [
@@ -48,7 +48,7 @@ const SECTIONS: [string, string[]][] = [
   [
     "Contact",
     [
-      "Piron Talent, Phnom Penh. Questions: {email}."
+      "Piron Work, Phnom Penh. Questions: {email}."
     ]
   ]
 ];
@@ -58,7 +58,7 @@ export default async function TermsPage() {
   const t = await getT();
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
-      <PageTitle lead={t("The rules for using Piron Talent, in plain words.")}>{t("Terms of use")}</PageTitle>
+      <PageTitle lead={t("The rules for using Piron Work, in plain words.")}>{t("Terms of use")}</PageTitle>
       <div className="space-y-8">
         {SECTIONS.map(([heading, paras]) => (
           <section key={heading}>

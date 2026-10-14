@@ -16,7 +16,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [{ segment }, t] = await Promise.all([params, getT()]);
   const s = segmentBySlug(segment);
-  return { title: s ? t(s.kicker) : "Piron Talent", description: s ? t(s.lead) : undefined };
+  return { title: s ? t(s.kicker) : "Piron Work", description: s ? t(s.lead) : undefined };
 }
 
 /** Segment landing page: one audience, its three points, example tasks that prefill the form, and the same trust blocks as home. */

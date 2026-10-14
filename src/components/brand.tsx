@@ -1,4 +1,4 @@
-/** The Piron Talent mark: a warm yellow "play" shape, as on the mockup. Inline SVG so it needs no asset file. */
+/** The Piron Work mark: a warm yellow "play" shape, as on the mockup. Inline SVG so it needs no asset file. */
 export function BrandMark({ className = "size-8" }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 40" className={className} aria-hidden="true">

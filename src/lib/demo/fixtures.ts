@@ -1,6 +1,6 @@
 import type { Locale } from "@/lib/i18n/core";
 
-// Sample data for /demo. Nobody here is real; the pages show how Piron Talent works.
+// Sample data for /demo. Nobody here is real; the pages show how Piron Work works.
 export type L = { en: string; km: string };
 export const pick = (l: L, locale: Locale) => (locale === "km" ? l.km : l.en);
 

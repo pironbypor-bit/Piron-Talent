@@ -16,7 +16,7 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const data = await getPost(id);
-  return { title: data?.post.title ?? "Piron Talent" };
+  return { title: data?.post.title ?? "Piron Work" };
 }
 
 export default async function PostPage({ params, searchParams }: Props) {

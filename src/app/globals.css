@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Piron Talent: warm golden/yellow accents, high-contrast dark text, plenty of white space (business plan, section 6). */
+/* Piron Work: warm golden/yellow accents, high-contrast dark text, plenty of white space (business plan, section 6). */
 @theme {
   --color-brand-50: #fffbeb;
   --color-brand-100: #fef3c7;

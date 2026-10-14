@@ -107,7 +107,7 @@ export function JobView({ project, locale }: { project: DemoProject; locale: Loc
         )}
         {disputeNote && (
           <div className="mt-3">
-            <Notice tone="info">{t("In the live product this opens a dispute with Piron Talent support.")}</Notice>
+            <Notice tone="info">{t("In the live product this opens a dispute with Piron Work support.")}</Notice>
           </div>
         )}
       </section>

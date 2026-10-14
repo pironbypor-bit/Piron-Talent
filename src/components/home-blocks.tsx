@@ -24,7 +24,7 @@ export function Faq({ t }: { t: T }) {
     [t("How much does it cost?"), t("Posting a project is free. You agree a price with the provider and pay them directly.")],
     [t("How fast?"), t("We reply within one working day with two or three suitable providers.")],
     [t("Who are the providers?"), t("Freelancers and small studios in Phnom Penh. We check identity and record each completed job. We do not verify professional licences.")],
-    [t("What if something goes wrong?"), t("Tell us. During the pilot a person from Piron Talent follows every job and helps both sides agree.")],
+    [t("What if something goes wrong?"), t("Tell us. During the pilot a person from Piron Work follows every job and helps both sides agree.")],
   ];
   return (
     <section>
@@ -44,7 +44,7 @@ export function Faq({ t }: { t: T }) {
 export function PilotNote({ t }: { t: T }) {
   return (
     <p className="rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-900">
-      <span className="font-semibold">{t("Pilot programme, 2027")}.</span> {t("First 20 projects are matched by hand by the Piron Talent team.")} {t("Phnom Penh only for now.")}
+      <span className="font-semibold">{t("Pilot programme, 2027")}.</span> {t("First 20 projects are matched by hand by the Piron Work team.")} {t("Phnom Penh only for now.")}
     </p>
   );
 }
