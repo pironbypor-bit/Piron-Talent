@@ -453,6 +453,7 @@ const km: Messages = {
   "{n} reviews": "ការវាយតម្លៃ {n}",
   "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
   "Search": "ស្វែងរក",
+  "All provinces and cities": "គ្រប់ខេត្ត និងទីក្រុង",
   "Province or city": "ខេត្ត ឬទីក្រុង",
   "Banteay Meanchey": "បន្ទាយមានជ័យ",
   "Kampong Chhnang": "កំពង់ឆ្នាំង",

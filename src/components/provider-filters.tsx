@@ -1,12 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Search } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 
 // Search and filters for the provider lists (Services tab and the public directory). Plain GET form, so every
-// result has a shareable URL. Selects apply on change; the province box is a text field with suggestions, and a
-// typed name only filters when it matches a known province or city.
+// result has a shareable URL. The category and province dropdowns list every option and apply on change.
 
 export type FilterOption = { value: string; label: string };
 type Props = { action: string; q: string; category: string; categories: FilterOption[]; city: string; cities: FilterOption[]; remote: boolean; sort: string };
@@ -16,17 +15,7 @@ const select = "w-full rounded-full border border-stone-200 bg-white px-3 py-2 t
 export function ProviderFilters({ action, q, category, categories, city, cities, remote, sort }: Props) {
   const t = useT();
   const form = useRef<HTMLFormElement>(null);
-  const hidden = useRef<HTMLInputElement>(null);
-  const [cityText, setCityText] = useState(cities.find((c) => c.value === city)?.label ?? "");
   const submit = () => form.current?.requestSubmit();
-
-  const onCity = (text: string) => {
-    setCityText(text);
-    const norm = text.trim().toLowerCase();
-    const hit = norm ? cities.find((c) => c.label.toLowerCase() === norm || c.value.toLowerCase() === norm) : undefined;
-    if (hidden.current) hidden.current.value = hit?.value ?? "";
-    if (hit || !norm) submit();
-  };
 
   return (
     <form ref={form} action={action} method="get" className="space-y-2">
@@ -51,13 +40,12 @@ export function ProviderFilters({ action, q, category, categories, city, cities,
         </label>
         <label className="block">
           <span className="sr-only">{t("Province or city")}</span>
-          <input list="city-options" value={cityText} onChange={(e) => onCity(e.target.value)} placeholder={t("Province or city")} autoComplete="off" className={select} />
-          <datalist id="city-options">
+          <select name="city" defaultValue={city} onChange={submit} className={select}>
+            <option value="">{t("All provinces and cities")}</option>
             {cities.map((c) => (
-              <option key={c.value} value={c.label} />
+              <option key={c.value} value={c.value}>{c.label}</option>
             ))}
-          </datalist>
-          <input ref={hidden} type="hidden" name="city" defaultValue={city} />
+          </select>
         </label>
       </div>
 
