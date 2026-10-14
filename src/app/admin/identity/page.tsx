@@ -10,7 +10,8 @@ import { reviewIdentity } from "./actions";
 
 export const metadata: Metadata = { title: "Admin" };
 
-type Row = { id: string; user_id: string; image_path: string; selfie_path: string | null; legal_name: string | null; id_type: string | null; id_number: string | null; date_of_birth: string | null; status: string; note: string | null; created_at: string; profiles: { display_name: string } | { display_name: string }[] | null };
+type Checks = { format_ok?: boolean | null; mrz?: "ok" | "bad_checksum" | "mismatch" | "unreadable" | null; duplicate_user_ids?: string[] };
+type Row = { id: string; user_id: string; image_path: string; selfie_path: string | null; legal_name: string | null; id_type: string | null; id_number: string | null; date_of_birth: string | null; mrz_line: string | null; id_live: boolean | null; selfie_live: boolean | null; checks: Checks; status: string; note: string | null; created_at: string; profiles: { display_name: string } | { display_name: string }[] | null };
 
 /** Identity review queue: the photo (signed link, one hour), the name, approve or reject with a note. */
 export default async function IdentityReviewPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -22,13 +23,26 @@ export default async function IdentityReviewPage({ searchParams }: { searchParam
       </main>
     );
   }
-  const { data } = await supabase.from("identity_checks").select("id,user_id,image_path,selfie_path,legal_name,id_type,id_number,date_of_birth,status,note,created_at,profiles!identity_checks_user_id_fkey(display_name)").order("created_at", { ascending: false }).limit(100);
+  const { data } = await supabase.from("identity_checks").select("id,user_id,image_path,selfie_path,legal_name,id_type,id_number,date_of_birth,mrz_line,id_live,selfie_live,checks,status,note,created_at,profiles!identity_checks_user_id_fkey(display_name)").order("created_at", { ascending: false }).limit(100);
   const rows = (data ?? []) as unknown as Row[];
   const pending = rows.filter((r) => r.status === "pending");
   const signed = await Promise.all(pending.map((r) => supabase.storage.from("identity").createSignedUrl(r.image_path, 3600)));
   const signedSelfie = await Promise.all(pending.map((r) => (r.selfie_path ? supabase.storage.from("identity").createSignedUrl(r.selfie_path, 3600) : Promise.resolve({ data: null }))));
   const ID_TYPE: Record<string, string> = { national_id: "National ID card", passport: "Passport", other: "Other" };
   const name = (r: Row) => (Array.isArray(r.profiles) ? r.profiles[0]?.display_name : r.profiles?.display_name) ?? r.user_id;
+  // Names of the other accounts that used the same ID number, for the duplicate line.
+  const dupIds = [...new Set(pending.flatMap((r) => r.checks?.duplicate_user_ids ?? []))];
+  const dupNames = new Map<string, string>();
+  if (dupIds.length) {
+    const { data: dp } = await supabase.from("profiles").select("id,display_name").in("id", dupIds);
+    for (const p of (dp ?? []) as { id: string; display_name: string }[]) dupNames.set(p.id, p.display_name);
+  }
+  const MRZ: Record<string, { tone: "green" | "red" | "amber"; text: string }> = {
+    ok: { tone: "green", text: "MRZ checksum OK, matches the typed details" },
+    bad_checksum: { tone: "red", text: "MRZ checksum failed" },
+    mismatch: { tone: "red", text: "MRZ does not match the typed number or birth date" },
+    unreadable: { tone: "amber", text: "MRZ line not readable" },
+  };
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
@@ -56,8 +70,30 @@ export default async function IdentityReviewPage({ searchParams }: { searchParam
                 <dt className="text-ink-muted">{t("ID type")}</dt><dd>{r.id_type ? t(ID_TYPE[r.id_type] ?? r.id_type) : "-"}</dd>
                 <dt className="text-ink-muted">{t("ID number")}</dt><dd>{r.id_number ?? "-"}</dd>
                 <dt className="text-ink-muted">{t("Date of birth")}</dt><dd>{r.date_of_birth ?? "-"}</dd>
+                {r.mrz_line && <><dt className="text-ink-muted">{t("Machine-readable line")}</dt><dd className="break-all font-mono text-xs">{r.mrz_line}</dd></>}
               </dl>
             )}
+            <ul className="mt-3 flex flex-wrap gap-1.5 text-xs">
+              {(r.checks?.duplicate_user_ids?.length ?? 0) > 0 ? (
+                <li>
+                  <Pill tone="red">
+                    {t("Same ID number as")}{" "}
+                    {r.checks.duplicate_user_ids!.map((id, j) => (
+                      <span key={id}>
+                        {j > 0 && ", "}
+                        <Link href={`/app/providers/${id}`} className="underline">{dupNames.get(id) ?? id.slice(0, 8)}</Link>
+                      </span>
+                    ))}
+                  </Pill>
+                </li>
+              ) : (
+                <li><Pill tone="green">{t("ID number not seen before")}</Pill></li>
+              )}
+              {r.checks?.mrz ? <li><Pill tone={MRZ[r.checks.mrz].tone}>{t(MRZ[r.checks.mrz].text)}</Pill></li> : <li><Pill>{t("No MRZ line given")}</Pill></li>}
+              {r.checks?.format_ok === false && <li><Pill tone="amber">{t("Number format unusual for this ID type")}</Pill></li>}
+              {r.id_live !== null && <li><Pill tone={r.id_live ? "green" : "amber"}>{r.id_live ? t("ID photo taken live") : t("ID photo from gallery")}</Pill></li>}
+              {r.selfie_live !== null && <li><Pill tone={r.selfie_live ? "green" : "amber"}>{r.selfie_live ? t("Selfie taken live") : t("Selfie from gallery")}</Pill></li>}
+            </ul>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {signed[i]?.data?.signedUrl && (
                 <figure>

@@ -6,16 +6,23 @@ import { Camera } from "lucide-react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
+import { checkMrz, normaliseMrz } from "@/lib/mrz";
 
 /* eslint-disable @next/next/no-img-element */
 
 // Three steps: details as written on the ID, a photo of the ID front taken with the camera, a selfie holding the ID.
 // Photos go straight from the browser to the private "identity" bucket under the person's own folder; the row in
 // identity_checks carries the details. Only the person and admins can read any of it.
+// Level 2 (migration 0016): an optional machine-readable line is checked against the typed number and birth date,
+// and each photo carries a flag saying whether it was taken just now (live) or picked from the gallery.
 
-type Details = { legal_name: string; id_type: "national_id" | "passport" | "other"; id_number: string; date_of_birth: string };
+type Details = { legal_name: string; id_type: "national_id" | "passport" | "other"; id_number: string; date_of_birth: string; mrz: string };
+type Shot = { file: File; live: boolean };
 
-function Capture({ label, hint, facing, file, onFile }: { label: string; hint: string; facing: "environment" | "user"; file: File | null; onFile: (f: File | null) => void }) {
+/** What the browser observed: a file saved within the last two minutes came from the camera, not the gallery. */
+const isLive = (file: File) => Date.now() - file.lastModified < 2 * 60 * 1000;
+
+function Capture({ label, hint, facing, file, onFile }: { label: string; hint: string; facing: "environment" | "user"; file: Shot | null; onFile: (f: Shot | null) => void }) {
   const t = useT();
   const [preview, setPreview] = useState<string | null>(null);
   return (
@@ -37,7 +44,7 @@ function Capture({ label, hint, facing, file, onFile }: { label: string; hint: s
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;
-            onFile(f);
+            onFile(f ? { file: f, live: isLive(f) } : null);
             setPreview(f ? URL.createObjectURL(f) : null);
           }}
         />
@@ -53,13 +60,16 @@ export function IdentityFlow({ userId, defaultName }: { userId: string; defaultN
   const t = useT();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [d, setD] = useState<Details>({ legal_name: defaultName, id_type: "national_id", id_number: "", date_of_birth: "" });
-  const [idFile, setIdFile] = useState<File | null>(null);
-  const [selfie, setSelfie] = useState<File | null>(null);
+  const [d, setD] = useState<Details>({ legal_name: defaultName, id_type: "national_id", id_number: "", date_of_birth: "", mrz: "" });
+  const [idFile, setIdFile] = useState<Shot | null>(null);
+  const [selfie, setSelfie] = useState<Shot | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const detailsOk = d.legal_name.trim().length > 0 && d.id_number.trim().length >= 3 && d.date_of_birth !== "";
+  const mrz = normaliseMrz(d.mrz);
+  const mrzResult = mrz ? checkMrz(mrz, d.id_number, d.date_of_birth) : null;
+  const MRZ_TEXT: Record<string, string> = { ok: "Checksum OK.", bad_checksum: "Checksum does not match. Check each character.", mismatch: "The line does not match the number or birth date above.", unreadable: "Not a full line yet." };
 
   const submit = async () => {
     if (!idFile || !selfie) return;
@@ -68,10 +78,10 @@ export function IdentityFlow({ userId, defaultName }: { userId: string; defaultN
     const supabase = createClient();
     const stamp = Date.now();
     const ext = (f: File) => (f.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-    const idPath = `${userId}/${stamp}-id.${ext(idFile)}`;
-    const selfiePath = `${userId}/${stamp}-selfie.${ext(selfie)}`;
-    const up1 = await supabase.storage.from("identity").upload(idPath, idFile, { contentType: idFile.type });
-    const up2 = up1.error ? null : await supabase.storage.from("identity").upload(selfiePath, selfie, { contentType: selfie.type });
+    const idPath = `${userId}/${stamp}-id.${ext(idFile.file)}`;
+    const selfiePath = `${userId}/${stamp}-selfie.${ext(selfie.file)}`;
+    const up1 = await supabase.storage.from("identity").upload(idPath, idFile.file, { contentType: idFile.file.type });
+    const up2 = up1.error ? null : await supabase.storage.from("identity").upload(selfiePath, selfie.file, { contentType: selfie.file.type });
     if (up1.error || !up2 || up2.error) {
       setBusy(false);
       return setError("Upload failed.");
@@ -84,6 +94,9 @@ export function IdentityFlow({ userId, defaultName }: { userId: string; defaultN
       id_type: d.id_type,
       id_number: d.id_number.trim(),
       date_of_birth: d.date_of_birth,
+      mrz_line: mrz || null,
+      id_live: idFile.live,
+      selfie_live: selfie.live,
     });
     setBusy(false);
     if (insertError) return setError("Something went wrong. Please try again.");
@@ -123,6 +136,15 @@ export function IdentityFlow({ userId, defaultName }: { userId: string; defaultN
           <Field label={t("Date of birth")}>
             <input type="date" value={d.date_of_birth} onChange={(e) => setD({ ...d, date_of_birth: e.target.value })} className={inputClass} max={new Date().toISOString().slice(0, 10)} />
           </Field>
+          {d.id_type !== "other" && (
+            <Field
+              label={t("Machine-readable line")}
+              optional={t("optional")}
+              hint={mrzResult ? t(MRZ_TEXT[mrzResult]) : d.id_type === "passport" ? t("The bottom line of the two lines of letters, digits and < at the foot of the photo page.") : t("The first of the three lines of letters, digits and < on the back of the card.")}
+            >
+              <input value={d.mrz} onChange={(e) => setD({ ...d, mrz: e.target.value })} className={`${inputClass} font-mono uppercase`} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={60} placeholder={d.id_type === "passport" ? "N12345678<3KHM..." : "IDKHM123456789<..."} />
+            </Field>
+          )}
           <Button type="submit" disabled={!detailsOk}>
             {t("Next")}
           </Button>
