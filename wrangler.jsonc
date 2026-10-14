@@ -9,5 +9,12 @@
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "piron-talent" }],
   "placement": { "mode": "smart" },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Public hostnames. Custom domains create their own DNS records and certificates in the piron.tech zone.
+  "routes": [
+    { "pattern": "app.piron.tech", "custom_domain": true },
+    { "pattern": "piron.tech", "custom_domain": true }
+  ],
+  // Public, non-secret runtime variables. Secrets stay in the dashboard.
+  "vars": { "NEXT_PUBLIC_SITE_URL": "https://app.piron.tech" }
 }
