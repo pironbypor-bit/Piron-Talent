@@ -105,6 +105,32 @@ export async function startConversation(userId: string, formData: FormData) {
   redirect(`/app/messages/${data}`);
 }
 
+/** "Say hello": one short request to someone who has not opened messages (migration 0022). */
+export async function sendHello(userId: string, formData: FormData) {
+  const back = String(formData.get("back") ?? "/app");
+  if (!uuid.test(userId)) return;
+  await requireUser(back);
+  const body = String(formData.get("body") ?? "").trim().slice(0, 300);
+  if (!body) return;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("send_hello", { p_user: userId, p_body: body });
+  const sep = back.includes("?") ? "&" : "?";
+  if (error) redirect(`${back}${sep}error=${error.message.includes("too many") ? "limit" : encodeURIComponent(error.message)}`);
+  revalidatePath(back);
+  redirect(`${back}${sep}hello=1`);
+}
+
+/** Answer a request from the Messages tab: accept opens the conversation, decline is silent. */
+export async function answerHello(requestId: string, accept: boolean) {
+  if (!uuid.test(requestId)) return;
+  await requireUser("/app/messages");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("answer_hello", { p_request: requestId, p_accept: accept });
+  revalidatePath("/app/messages");
+  if (!error && accept && data) redirect(`/app/messages/${data}`);
+  redirect("/app/messages");
+}
+
 export async function sendMessage(conversationId: string, formData: FormData) {
   if (!uuid.test(conversationId)) return;
   const uid = await requireUser(`/app/messages/${conversationId}`);

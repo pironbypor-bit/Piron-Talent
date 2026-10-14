@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EmptyState } from "@/components/ui";
+import { Button, EmptyState } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
-import { getMe, listConversations } from "@/lib/app/queries";
+import { answerHello } from "@/lib/app/actions";
+import { getMe, listConversations, myMessageRequests } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
@@ -13,13 +14,45 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MessagesPage() {
-  const [t, locale, me, conversations] = await Promise.all([getT(), getLocale(), getMe(), listConversations()]);
+  const [t, locale, me, conversations, requests] = await Promise.all([getT(), getLocale(), getMe(), listConversations(), myMessageRequests()]);
   return (
     <main className="px-4 pb-24 pt-4">
       <section className="hero-amber rounded-3xl p-4">
         <h1 className="text-xl font-bold">{t("Messages")}</h1>
-        <p className="text-sm text-brand-900">{t("Messaging opens only after a quote or an invitation, so nobody receives unwanted messages.")}</p>
+        <p className="text-sm text-brand-900">{t("Messaging opens after a quote or an invitation, or when you accept a request. Nobody receives unwanted messages.")}</p>
       </section>
+      {requests.incoming.length > 0 && (
+        <section className="mt-4">
+          <h2 className="text-sm font-semibold text-ink-muted">{t("Message requests")} · {requests.incoming.length}</h2>
+          <ul className="card mt-2 divide-y divide-stone-100">
+            {requests.incoming.map((r) => (
+              <li key={r.id} className="px-3 py-3">
+                <div className="flex items-center gap-3">
+                  <AvatarImg name={r.other.display_name} url={r.other.avatar_url} />
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/app/providers/${r.other.id}`} className="block truncate font-semibold hover:underline">{r.other.display_name}</Link>
+                    <span className="text-xs text-ink-muted">{formatDate(r.created_at, locale)}</span>
+                  </div>
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-sm">{r.body}</p>
+                <div className="mt-2 flex gap-2">
+                  <form action={answerHello.bind(null, r.id, true)}>
+                    <Button type="submit" className="px-3 py-1.5 text-sm">{t("Accept")}</Button>
+                  </form>
+                  <form action={answerHello.bind(null, r.id, false)}>
+                    <Button type="submit" variant="secondary" className="px-3 py-1.5 text-sm">{t("Not now")}</Button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {requests.outgoing.length > 0 && (
+        <p className="mt-3 text-xs text-ink-muted">
+          {t("Waiting for an answer")}: {requests.outgoing.map((r) => r.other.display_name).join(", ")}
+        </p>
+      )}
       {conversations.length === 0 ? (
         <div className="mt-6">
           <EmptyState illustration={<EmptyIllustration kind="messages" />}>{t("No messages yet.")}</EmptyState>

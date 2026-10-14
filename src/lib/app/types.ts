@@ -127,3 +127,6 @@ export type BusinessDetail = Omit<BusinessRow, "jobs" | "projects"> & {
 };
 
 export type WorkRecordRow = { job_id: string; title: string; completed_at: string; role: "provider" | "customer"; other_name: string | null; other_id: string | null };
+
+export type ContactState = "anon" | "self" | "conversation" | "open" | "pending" | "incoming" | "declined" | "can_request";
+export type MessageRequestRow = { id: string; body: string; created_at: string; other: Author };

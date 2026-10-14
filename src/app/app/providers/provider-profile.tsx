@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice, Pill } from "@/components/ui";
-import { startConversation, toggleKeepProvider } from "@/lib/app/actions";
-import { getMe, getProvider, lastConfirmedJobWith } from "@/lib/app/queries";
+import { sendHello, startConversation, toggleKeepProvider } from "@/lib/app/actions";
+import { contactState, getMe, getProvider, lastConfirmedJobWith } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -14,8 +14,9 @@ import { Stars } from "@/app/demo/demo-ui";
 /* eslint-disable @next/next/no-img-element */
 
 /** One provider profile. `base` is "/app" inside the app and "" on the public site; everything else is the same. */
-export async function ProviderProfile({ id, base, error, reported }: { id: string; base: "/app" | ""; error?: string; reported?: string }) {
+export async function ProviderProfile({ id, base, error, reported, hello }: { id: string; base: "/app" | ""; error?: string; reported?: string; hello?: string }) {
   const [t, locale, me, rehireFrom] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id)]);
+  const contact = me && me.id !== id ? await contactState(id) : null;
   const data = await getProvider(id);
   if (!data) notFound();
   const { provider: p, portfolio, reviews, record, endorsements } = data;
@@ -49,7 +50,9 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
           </div>
         </div>
       </header>
-      {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
+      {error === "limit" && <div className="mt-3"><Notice tone="error">{t("You sent several requests today. Try again tomorrow.")}</Notice></div>}
+      {error && error !== "limit" && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
+      {hello === "1" && <div className="mt-3"><Notice tone="success">{t("Your request was sent. You will see the answer in your notifications.")}</Notice></div>}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {p.price_from && <span className="rounded-full bg-brand-100 px-3 py-1.5 text-sm font-semibold text-brand-900">{t("From {price}", { price: p.price_from })}</span>}
@@ -117,7 +120,32 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
         </section>
       )}
 
-      {me && me.id !== p.id && (
+      {contact?.state === "conversation" && contact.conversationId && (
+        <section className="mt-6 rounded-2xl border border-brand-300 bg-brand-50 p-4">
+          <p className="text-sm">{t("You are already talking.")}</p>
+          <Link href={`/app/messages/${contact.conversationId}`} className="mt-2 inline-block rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-400">{t("Open conversation")}</Link>
+        </section>
+      )}
+      {contact?.state === "can_request" && (
+        <section className="mt-6 rounded-2xl border border-brand-300 bg-brand-50 p-4">
+          <h2 className="font-semibold">{t("Say hello")}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{t("This person has not opened messages. Send one short request. They can accept or say not now.")}</p>
+          <form action={sendHello.bind(null, p.id)} className="mt-2 space-y-2">
+            <input type="hidden" name="back" value={path} />
+            <textarea name="body" rows={3} maxLength={300} className={inputClass} placeholder={t("Who you are and why you are writing.")} required />
+            <Button type="submit" className="px-4 py-2 text-sm">{t("Send request")}</Button>
+          </form>
+        </section>
+      )}
+      {contact?.state === "pending" && <p className="mt-6 rounded-2xl bg-stone-100 p-4 text-sm">{t("Your request was sent. You will see the answer in your notifications.")}</p>}
+      {contact?.state === "incoming" && (
+        <p className="mt-6 rounded-2xl border border-brand-300 bg-brand-50 p-4 text-sm">
+          {t("{name} sent you a request", { name: p.display_name })}{" "}
+          <Link href="/app/messages" className="font-medium underline">{t("See requests")}</Link>
+        </p>
+      )}
+      {contact?.state === "declined" && <p className="mt-6 rounded-2xl bg-stone-100 p-4 text-sm">{t("{name} is not taking messages right now.", { name: p.display_name })}</p>}
+      {contact?.state === "open" && (
         <section className="mt-6 rounded-2xl border border-brand-300 bg-brand-50 p-4">
           <h2 className="font-semibold">{t("Request a quote")}</h2>
           <form action={connect} className="mt-2 space-y-2">

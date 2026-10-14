@@ -28,6 +28,8 @@ const ICONS: Record<string, LucideIcon> = {
   "Dispute resolved": Gavel,
   "Dispute dismissed": Gavel,
   "Project invitation": UserPlus,
+  "Message request": UserPlus,
+  "Request accepted": CheckCircle2,
   "Identity checked": FileCheck,
   "Identity check rejected": FileCheck,
 };

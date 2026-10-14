@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -410,4 +410,32 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   const { data: apps } = jobRows.length ? await supabase.from("job_applications").select("job_id").in("job_id", jobRows.map((j) => j.id)) : { data: [] };
   const applicants = (apps ?? []) as { job_id: string }[];
   return { ...(b as Omit<BusinessRow, "jobs" | "projects">), jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })), posts: (posts ?? []) as BusinessDetail["posts"] };
+}
+
+// Message requests, "Say hello" (migration 0022) ----------------------------------------------------------------
+
+/** What the profile page offers me for this person: open, already talking, can request, pending... */
+export async function contactState(userId: string): Promise<{ state: ContactState; conversationId: string | null }> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("contact_state", { p_user: userId });
+  const row = (Array.isArray(data) ? data[0] : data) as { state: ContactState; conv_id: string | null } | null;
+  return { state: row?.state ?? "anon", conversationId: row?.conv_id ?? null };
+}
+
+/** Requests waiting for my answer, and the ones I sent that nobody answered yet. */
+export async function myMessageRequests(): Promise<{ incoming: MessageRequestRow[]; outgoing: MessageRequestRow[] }> {
+  const uid = await getUserId();
+  if (!uid) return { incoming: [], outgoing: [] };
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("message_requests")
+    .select(`id,body,created_at,from_user,to_user,from:profiles!message_requests_from_user_fkey(${AUTHOR}),to:profiles!message_requests_to_user_fkey(${AUTHOR})`)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false })
+    .limit(30);
+  type Row = { id: string; body: string; created_at: string; from_user: string; to_user: string; from: Author | Author[]; to: Author | Author[] };
+  const rows = (data ?? []) as unknown as Row[];
+  const incoming = rows.filter((r) => r.to_user === uid).map((r) => ({ id: r.id, body: r.body, created_at: r.created_at, other: one(r.from) as Author }));
+  const outgoing = rows.filter((r) => r.from_user === uid).map((r) => ({ id: r.id, body: r.body, created_at: r.created_at, other: one(r.to) as Author }));
+  return { incoming, outgoing };
 }
