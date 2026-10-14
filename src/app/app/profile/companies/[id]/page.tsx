@@ -95,9 +95,11 @@ export default async function CompanyPage({ params }: Props) {
             </span>
             {isOwner && m.role !== "owner" && (
               <>
-                <form action={setBusinessRole.bind(null, b.id, m.user_id, m.role === "manager" ? "member" : "manager")}>
-                  <button type="submit" className="rounded-full border border-stone-300 px-2.5 py-1 text-xs font-medium hover:bg-brand-50">{m.role === "manager" ? t("Make member") : t("Make manager")}</button>
-                </form>
+                {(m.role === "manager" || b.team.length >= 3) && (
+                  <form action={setBusinessRole.bind(null, b.id, m.user_id, m.role === "manager" ? "member" : "manager")}>
+                    <button type="submit" className="rounded-full border border-stone-300 px-2.5 py-1 text-xs font-medium hover:bg-brand-50">{m.role === "manager" ? t("Make member") : t("Make manager")}</button>
+                  </form>
+                )}
                 <form action={removeBusinessMember.bind(null, b.id, m.user_id)}>
                   <button type="submit" aria-label={t("Remove")} className="rounded-full p-1.5 text-ink-muted hover:bg-stone-100"><X className="size-4" /></button>
                 </form>
@@ -127,14 +129,7 @@ export default async function CompanyPage({ params }: Props) {
                   </li>
                 ))}
               </ul>
-              {isOwner ? (
-                <select name="role" defaultValue="member" aria-label={t("Role")} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
-                  <option value="member">{t("Member")}</option>
-                  <option value="manager">{t("Manager")}</option>
-                </select>
-              ) : (
-                <input type="hidden" name="role" value="member" />
-              )}
+              <input type="hidden" name="role" value="member" />
               <Button type="submit" className="px-4 py-2 text-sm">{t("Send invitations")}</Button>
             </form>
           )}
