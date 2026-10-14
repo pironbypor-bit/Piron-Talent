@@ -45,3 +45,4 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 
 ## How features are built here
 Migration file in supabase/migrations (applied by hand in the SQL editor) → queries in src/lib/app/queries.ts, writes in src/lib/app/actions.ts (server actions, security-definer functions for anything cross-user) → pages under src/app/app → Khmer strings inserted after "Search": "ស្វែងរក", in src/lib/i18n/km/index.ts → a short note appended to CLAUDE.md → build, commit, push, deploy, verify live as POR → report in plain words with what was verified.
+- Email backup: Brevo key "Piron Work 2" is stored in Vault (brevo_api_key) as of 2026-10-15; a Work delivered test returned 201 from Brevo. Sender leangporpo9@gmail.com (Gmail, may hit spam; later authenticate piron.tech). Key expires 2027-10-15 or after 90 days idle. Hostinger piron.site and pirontalent.space show Payment processing with no cancel control; watch the card statement.
