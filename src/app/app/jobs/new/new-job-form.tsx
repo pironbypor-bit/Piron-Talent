@@ -6,7 +6,7 @@ import { createJob } from "@/lib/app/actions";
 import { useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 
-export function NewJobForm({ businessId }: { businessId?: string }) {
+export function NewJobForm({ businessId, categories }: { businessId?: string; categories: { value: string; label: string }[] }) {
   const t = useT();
   const [state, action, pending] = useActionState(createJob, idle);
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
@@ -21,6 +21,12 @@ export function NewJobForm({ businessId }: { businessId?: string }) {
       </Field>
       <Field label={t("Description")} error={err("description")}>
         <textarea name="description" rows={5} defaultValue={val("description")} className={inputClass} aria-invalid={!!err("description")} />
+      </Field>
+      <Field label={t("Category")} optional={t("optional")}>
+        <select name="category_id" defaultValue={val("category_id")} className={inputClass}>
+          <option value="">{t("All categories")}</option>
+          {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+        </select>
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label={t("Job type")} error={err("job_type")}>

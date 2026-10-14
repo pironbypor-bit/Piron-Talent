@@ -265,6 +265,27 @@ export async function unblockUser(userId: string, path: string) {
   revalidatePath("/app/messages");
 }
 
+// Job alerts (migration 0028) --------------------------------------------------------------------------------
+
+export async function addJobAlert(formData: FormData) {
+  await requireUser("/app/jobs/alerts");
+  const cat = Number(formData.get("category") ?? "");
+  const cityRaw = String(formData.get("city") ?? "");
+  const city = (CITIES as readonly string[]).includes(cityRaw) ? cityRaw : "";
+  const category = Number.isInteger(cat) && cat > 0 ? cat : null;
+  if (category === null && !city) redirect("/app/jobs/alerts?error=1");
+  const { error } = await (await createClient()).rpc("add_job_alert", { p_category: category, p_city: city });
+  revalidatePath("/app/jobs/alerts");
+  redirect(`/app/jobs/alerts${error ? "?error=" + (error.message.includes("too many") ? "limit" : "1") : ""}`);
+}
+
+export async function removeJobAlert(id: string) {
+  if (!uuid.test(id)) return;
+  const uid = await requireUser("/app/jobs/alerts");
+  await (await createClient()).from("job_alerts").delete().eq("id", id).eq("user_id", uid);
+  revalidatePath("/app/jobs/alerts");
+}
+
 export async function sendMessage(conversationId: string, formData: FormData) {
   if (!uuid.test(conversationId)) return;
   const uid = await requireUser(`/app/messages/${conversationId}`);
@@ -298,11 +319,12 @@ const jobSchema = z.object({
   pay_unit: z.enum(["hour", "day", "project"]),
   remote_available: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
   business_id: z.string().transform((v) => (uuid.test(v) ? v : null)),
+  category_id: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number().int().positive().nullable()),
 });
 
 export async function createJob(_prev: FormState, formData: FormData): Promise<FormState> {
   const uid = await requireUser("/app/jobs/new");
-  const values = formEntries(formData, ["title", "description", "city", "job_type", "pay_amount", "pay_unit", "remote_available", "business_id"]);
+  const values = formEntries(formData, ["title", "description", "city", "job_type", "pay_amount", "pay_unit", "remote_available", "business_id", "category_id"]);
   const parsed = jobSchema.safeParse(values);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error), values, message: "Please check the highlighted fields." };
   const supabase = await createClient();

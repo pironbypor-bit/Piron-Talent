@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -619,4 +619,13 @@ export async function myBlocks(): Promise<BlockedPerson[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("user_blocks").select(`created_at,user:profiles!user_blocks_blocked_id_fkey(${AUTHOR})`).eq("blocker_id", uid).order("created_at", { ascending: false });
   return ((data ?? []) as unknown as { created_at: string; user: Author | Author[] }[]).map((r) => ({ user: one(r.user) as Author, created_at: r.created_at }));
+}
+
+/** My job alerts (migration 0028), newest first. */
+export async function myJobAlerts(): Promise<JobAlertRow[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("job_alerts").select("id,category_id,city").eq("user_id", uid).order("created_at", { ascending: false });
+  return (data ?? []) as JobAlertRow[];
 }

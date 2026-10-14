@@ -34,6 +34,7 @@ const ICONS: Record<string, LucideIcon> = {
   "Activity spot": CheckCircle2,
   "Activity cancelled": XCircle,
   "Hours confirmed": CheckCircle2,
+  "Job alert": Bell,
   "Quote waiting": Tag,
   "Confirm the work": PackageCheck,
   "Deadline tomorrow": CalendarClock,

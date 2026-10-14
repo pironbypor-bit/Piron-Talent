@@ -171,3 +171,5 @@ export type ActivityRow = {
   mine: ActivityMine;
 };
 export type ActivityVolunteer = { user: Author; status: "joined" | "waitlist" | "confirmed" | "absent"; hours: number | null };
+
+export type JobAlertRow = { id: string; category_id: number | null; city: string | null };
