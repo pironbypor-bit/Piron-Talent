@@ -131,6 +131,47 @@ export async function answerHello(requestId: string, accept: boolean) {
   redirect("/app/messages");
 }
 
+// Group messages (migration 0023) ---------------------------------------------------------------------------
+
+const memberIds = (formData: FormData) => formData.getAll("members").map(String).filter((v) => uuid.test(v));
+
+export async function createGroup(formData: FormData) {
+  await requireUser("/app/messages/new-group");
+  const title = String(formData.get("title") ?? "").trim().slice(0, 80);
+  const post = String(formData.get("post") ?? "");
+  const back = `/app/messages/new-group${uuid.test(post) ? `?post=${post}&` : "?"}error=1`;
+  const members = memberIds(formData);
+  if (title.length < 2 || members.length === 0) redirect(back);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_group", { p_title: title, p_members: members, p_post: uuid.test(post) ? post : null });
+  if (error || !data) redirect(back);
+  revalidatePath("/app/messages");
+  redirect(`/app/messages/${data}`);
+}
+
+export async function addGroupMembers(conversationId: string, formData: FormData) {
+  if (!uuid.test(conversationId)) return;
+  await requireUser(`/app/messages/${conversationId}`);
+  const members = memberIds(formData);
+  if (members.length) await (await createClient()).rpc("add_group_members", { p_conv: conversationId, p_members: members });
+  revalidatePath(`/app/messages/${conversationId}`);
+}
+
+export async function removeGroupMember(conversationId: string, userId: string) {
+  if (!uuid.test(conversationId) || !uuid.test(userId)) return;
+  await requireUser(`/app/messages/${conversationId}`);
+  await (await createClient()).rpc("remove_group_member", { p_conv: conversationId, p_user: userId });
+  revalidatePath(`/app/messages/${conversationId}`);
+}
+
+export async function leaveGroup(conversationId: string) {
+  if (!uuid.test(conversationId)) return;
+  await requireUser(`/app/messages/${conversationId}`);
+  await (await createClient()).rpc("leave_group", { p_conv: conversationId });
+  revalidatePath("/app/messages");
+  redirect("/app/messages");
+}
+
 export async function sendMessage(conversationId: string, formData: FormData) {
   if (!uuid.test(conversationId)) return;
   const uid = await requireUser(`/app/messages/${conversationId}`);

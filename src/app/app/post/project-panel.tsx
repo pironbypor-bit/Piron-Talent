@@ -59,6 +59,10 @@ export function ProjectPanel({ post, scope, quotes, job, count, reviewed, disput
 
           {isAuthor && quotes.filter((q) => q.status === "pending").length > 0 && <QuoteCompare quotes={quotes.filter((q) => q.status === "pending")} postId={post.id} t={t} />}
 
+          {isAuthor && quotes.some((q) => q.status === "pending" || q.status === "accepted") && (
+            <Link href={`/app/messages/new-group?post=${post.id}`} className="mt-3 inline-block text-sm font-medium underline">{t("Start a group chat")}</Link>
+          )}
+
           {isAuthor && quotes.length > 0 && (
             <ul className="mt-3 space-y-3">
               {quotes.map((q) => (

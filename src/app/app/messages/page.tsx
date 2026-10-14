@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Users } from "lucide-react";
 import { Button, EmptyState } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { answerHello } from "@/lib/app/actions";
@@ -20,6 +21,7 @@ export default async function MessagesPage() {
       <section className="hero-amber rounded-3xl p-4">
         <h1 className="text-xl font-bold">{t("Messages")}</h1>
         <p className="text-sm text-brand-900">{t("Messaging opens after a quote or an invitation, or when you accept a request. Nobody receives unwanted messages.")}</p>
+        <Link href="/app/messages/new-group" className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold hover:bg-brand-50"><Users className="size-4" />{t("New group")}</Link>
       </section>
       {requests.incoming.length > 0 && (
         <section className="mt-4">
@@ -60,12 +62,17 @@ export default async function MessagesPage() {
       ) : (
         <ul className="card mt-4 divide-y divide-stone-100">
           {conversations.map((c) => {
-            const name = c.other?.display_name ?? "?";
+            const group = c.kind === "group";
+            const name = group ? (c.title ?? "") : c.other?.display_name ?? "?";
             const mine = c.last?.sender_id === me?.id;
             return (
               <li key={c.id}>
                 <Link href={`/app/messages/${c.id}`} className="flex items-center gap-3 px-3 py-3 hover:bg-stone-50">
-                  <AvatarImg name={name} url={c.other?.avatar_url ?? null} />
+                  {group ? (
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-800"><Users className="size-5" /></span>
+                  ) : (
+                    <AvatarImg name={name} url={c.other?.avatar_url ?? null} />
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className={`truncate ${c.unread ? "font-bold" : "font-semibold"}`}>
@@ -76,7 +83,7 @@ export default async function MessagesPage() {
                     </div>
                     {c.last && (
                       <p className={`truncate text-sm ${c.unread ? "font-medium text-ink" : "text-ink-muted"}`}>
-                        {mine ? `${t("You")}: ` : ""}
+                        {mine ? `${t("You")}: ` : group && c.lastSenderName ? `${c.lastSenderName}: ` : ""}
                         {c.last.body}
                       </p>
                     )}

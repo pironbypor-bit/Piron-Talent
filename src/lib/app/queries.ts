@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -213,35 +213,57 @@ export async function listConversations(): Promise<ConversationRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conversations")
-    .select(`id,created_at,conversation_members(user_id,last_read_at,profiles(${AUTHOR})),messages(body,created_at,sender_id)`)
+    .select(`id,kind,title,created_at,conversation_members(user_id,last_read_at,profiles(${AUTHOR})),messages(body,created_at,sender_id)`)
     .order("created_at", { ascending: false, referencedTable: "messages" })
     .limit(1, { referencedTable: "messages" })
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) console.error("listConversations:", error.message);
-  type Row = { id: string; conversation_members: { user_id: string; last_read_at: string | null; profiles: Author | Author[] | null }[]; messages: { body: string; created_at: string; sender_id: string }[] };
+  type Row = { id: string; kind: "direct" | "group"; title: string | null; conversation_members: { user_id: string; last_read_at: string | null; profiles: Author | Author[] | null }[]; messages: { body: string; created_at: string; sender_id: string }[] };
   const rows = ((data ?? []) as unknown as Row[]).map((c) => {
     const otherMember = c.conversation_members.find((m) => m.user_id !== uid);
     const me = c.conversation_members.find((m) => m.user_id === uid);
     const last = c.messages[0] ?? null;
     const unread = !!last && last.sender_id !== uid && new Date(last.created_at) > new Date(me?.last_read_at ?? 0);
-    return { id: c.id, other: otherMember ? one(otherMember.profiles) : null, last, unread };
+    const sender = last ? c.conversation_members.find((m) => m.user_id === last.sender_id) : undefined;
+    return {
+      id: c.id,
+      kind: c.kind,
+      title: c.title,
+      memberCount: c.conversation_members.length,
+      other: c.kind === "direct" && otherMember ? one(otherMember.profiles) : null,
+      last,
+      lastSenderName: sender ? one(sender.profiles)?.display_name ?? null : null,
+      unread,
+    };
   });
   return rows.sort((a, b) => (b.last?.created_at ?? "").localeCompare(a.last?.created_at ?? ""));
 }
 
-export async function getConversation(id: string): Promise<{ other: Author | null; messages: MessageRow[] } | null> {
+export async function getConversation(id: string): Promise<ConversationDetail | null> {
   const uid = await getUserId();
   if (!uid) return null;
   const supabase = await createClient();
-  const [{ data: members }, { data: messages }] = await Promise.all([
-    supabase.from("conversation_members").select(`user_id,profiles(${AUTHOR})`).eq("conversation_id", id),
+  const [{ data: conv }, { data: members }, { data: messages }] = await Promise.all([
+    supabase.from("conversations").select("kind,title,post_id").eq("id", id).maybeSingle(),
+    supabase.from("conversation_members").select(`user_id,role,profiles(${AUTHOR})`).eq("conversation_id", id).order("joined_at"),
     supabase.from("messages").select("id,body,created_at,sender_id").eq("conversation_id", id).order("created_at").limit(200),
     supabase.rpc("mark_conversation_read", { p_conv: id }), // opening the conversation clears its unread mark
   ]);
-  if (!members || members.length === 0) return null;
-  const otherMember = (members as unknown as { user_id: string; profiles: Author | Author[] | null }[]).find((m) => m.user_id !== uid);
-  return { other: otherMember ? one(otherMember.profiles) : null, messages: (messages ?? []) as MessageRow[] };
+  if (!conv || !members || members.length === 0) return null;
+  const list = (members as unknown as { user_id: string; role: "owner" | "member"; profiles: Author | Author[] | null }[])
+    .map((m) => ({ ...(one(m.profiles) as Author), role: m.role }))
+    .filter((m) => m.id);
+  const c = conv as { kind: "direct" | "group"; title: string | null; post_id: string | null };
+  return {
+    kind: c.kind,
+    title: c.title,
+    postId: c.post_id,
+    other: c.kind === "direct" ? list.find((m) => m.id !== uid) ?? null : null,
+    members: list,
+    iAmOwner: list.some((m) => m.id === uid && m.role === "owner"),
+    messages: (messages ?? []) as MessageRow[],
+  };
 }
 
 export async function listNotifications(limit = 30): Promise<NotificationRow[]> {
@@ -438,4 +460,26 @@ export async function myMessageRequests(): Promise<{ incoming: MessageRequestRow
   const incoming = rows.filter((r) => r.to_user === uid).map((r) => ({ id: r.id, body: r.body, created_at: r.created_at, other: one(r.from) as Author }));
   const outgoing = rows.filter((r) => r.from_user === uid).map((r) => ({ id: r.id, body: r.body, created_at: r.created_at, other: one(r.to) as Author }));
   return { incoming, outgoing };
+}
+
+/** People I may add to a group: everyone I already talk with, plus providers who quoted on this project of mine. */
+export async function groupCandidates(postId?: string | null): Promise<Author[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const pool = new Map<string, Author>();
+  for (const c of await listConversations()) if (c.kind === "direct" && c.other) pool.set(c.other.id, c.other);
+  if (postId && /^[0-9a-f-]{36}$/i.test(postId)) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("quotes")
+      .select(`provider_id,provider:profiles!quotes_provider_id_fkey(${AUTHOR})`)
+      .eq("post_id", postId)
+      .in("status", ["pending", "accepted"]);
+    for (const r of (data ?? []) as unknown as { provider_id: string; provider: Author | Author[] }[]) {
+      const p = one(r.provider);
+      if (p) pool.set(p.id, p);
+    }
+  }
+  pool.delete(uid);
+  return [...pool.values()];
 }

@@ -66,9 +66,24 @@ export type JobRow = {
 
 export type ConversationRow = {
   id: string;
+  kind: "direct" | "group";
+  title: string | null;
+  memberCount: number;
   other: Author | null;
   last: { body: string; created_at: string; sender_id: string } | null;
+  lastSenderName: string | null;
   unread: boolean;
+};
+
+export type GroupMember = Author & { role: "owner" | "member" };
+export type ConversationDetail = {
+  kind: "direct" | "group";
+  title: string | null;
+  postId: string | null;
+  other: Author | null;
+  members: GroupMember[];
+  iAmOwner: boolean;
+  messages: MessageRow[];
 };
 
 export type MessageRow = { id: string; body: string; created_at: string; sender_id: string };
