@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { createPost } from "@/lib/app/actions";
 import { KIND_LABEL, type Author, type PostRow } from "@/lib/app/types";
+import { TEMPLATES, templateBySlug } from "@/lib/app/templates";
 import { AvatarImg } from "../../avatar";
 import { categoryLabel, type Category } from "@/lib/category-label";
 import { useLocale, useT } from "@/lib/i18n/client";
@@ -13,15 +14,28 @@ const KINDS = ["need_help", "offer_skill", "share_knowledge"] as const;
 
 type Rehire = { post: PostRow; provider: Author };
 
-export function NewPostForm({ categories, initialKind = "need_help", rehire }: { categories: Category[]; initialKind?: (typeof KINDS)[number]; rehire?: Rehire }) {
+export function NewPostForm({ categories, initialKind = "need_help", rehire, initialTemplate }: { categories: Category[]; initialKind?: (typeof KINDS)[number]; rehire?: Rehire; initialTemplate?: string }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(createPost, idle);
   const [kind, setKind] = useState<(typeof KINDS)[number]>((state.values?.kind as (typeof KINDS)[number]) ?? initialKind);
   const [openNow, setOpenNow] = useState(false);
+  const [template, setTemplate] = useState<string>(initialTemplate && templateBySlug(initialTemplate) ? initialTemplate : "");
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
   const old = rehire?.post;
-  const seed: Record<string, string> = old
+  const tpl = !old ? templateBySlug(template) : null;
+  const tplCategory = tpl ? categories.find((c) => c.slug === tpl.category) : undefined;
+  const seed: Record<string, string> = tpl
+    ? {
+        title: t(tpl.title),
+        body: t(tpl.body),
+        category_id: tplCategory ? String(tplCategory.id) : "",
+        deliverables: tpl.deliverables.map((d) => t(d)).join(String.fromCharCode(10)),
+        budget_min: String(tpl.budget[0]),
+        budget_max: String(tpl.budget[1]),
+        remote: tpl.remote ? "on" : "",
+      }
+    : old
     ? {
         title: old.title,
         body: old.body,
@@ -57,6 +71,19 @@ export function NewPostForm({ categories, initialKind = "need_help", rehire }: {
           {!openNow && <p className="mt-1 pl-7 text-xs text-ink-muted">{t("Opens to other providers after 24 hours if there is no reply.")}</p>}
         </div>
       )}
+      {!rehire && kind === "need_help" && (
+        <div className="rounded-2xl border border-stone-200 bg-white p-3">
+          <p className="text-sm font-medium">{t("Start from a template")}</p>
+          <p className="text-xs text-ink-muted">{t("Fills the scope and a typical budget. Change anything.")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {TEMPLATES.map((x) => (
+              <button key={x.slug} type="button" onClick={() => setTemplate(template === x.slug ? "" : x.slug)} aria-pressed={template === x.slug} className={`rounded-full border px-3 py-1 text-xs font-medium ${template === x.slug ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
+                {t(x.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <fieldset className={rehire ? "hidden" : ""}>
         <legend className="mb-1.5 text-sm font-medium">{t("Post type")}</legend>
         <div className="flex flex-wrap gap-2">
@@ -69,6 +96,7 @@ export function NewPostForm({ categories, initialKind = "need_help", rehire }: {
         </div>
         {err("kind") && <p className="mt-1 text-sm text-red-700">{err("kind")}</p>}
       </fieldset>
+      <div key={template || "blank"} className="contents">
       <Field label={t("Title")} error={err("title")}>
         <input name="title" defaultValue={val("title")} className={inputClass} aria-invalid={!!err("title")} />
       </Field>
@@ -118,6 +146,7 @@ export function NewPostForm({ categories, initialKind = "need_help", rehire }: {
           </div>
         </fieldset>
       )}
+      </div>
       <p className="text-xs text-ink-muted">{t("Shift jobs (part-time, short-term) open after the legal review.")}</p>
       <Button type="submit" disabled={pending}>
         {rehire ? t("Send to {name}", { name: who }) : t("Publish")}
