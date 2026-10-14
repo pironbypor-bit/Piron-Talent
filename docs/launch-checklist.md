@@ -2,14 +2,14 @@
 
 Owner steps are marked **(owner)**: they need the domain, a dashboard login or a decision. Everything else is done in code.
 
-## 1. Domain and Worker (owner)
+## 1. Domain and Worker (done 2026-10-14: piron.tech bought at Hostinger, zone in Cloudflare, app.piron.tech on the Worker, piron.tech on Hostinger WordPress)
 
 1. Pick the domain (for example `pirontalent.com`) and add it to the Cloudflare account that holds the `piron-talent` Worker (poleangpor1@gmail.com).
 2. Workers & Pages → piron-talent → Settings → Domains & Routes → **Add custom domain**: the apex and `www`. Cloudflare issues the certificate.
 3. Settings → Variables and Secrets → add `NEXT_PUBLIC_SITE_URL = https://<domain>`. Run `npm run deploy`. The sitemap, robots and share links then use the real domain.
 4. Keep the `*.workers.dev` address for one month as a fallback, then disable it under Domains & Routes.
 
-## 2. Supabase auth URLs (owner)
+## 2. Supabase auth URLs (done 2026-10-14)
 
 Authentication → URL Configuration:
 
