@@ -149,3 +149,23 @@ export type MessageRequestRow = { id: string; body: string; created_at: string; 
 export type InvitationRow = { provider: Author; quoted: boolean; created_at: string };
 export type InviteCandidate = Author & { source: "worked" | "kept" | "category" };
 export type InviteState = { invited: InvitationRow[]; candidates: InviteCandidate[]; invitedMe: boolean };
+
+export type ActivityMine = "joined" | "waitlist" | "confirmed" | "absent" | null;
+export type ActivityRow = {
+  id: string;
+  organiser: Author;
+  title: string;
+  description: string;
+  place: string | null;
+  city: string | null;
+  starts_at: string;
+  ends_at: string;
+  capacity: number;
+  bring: string | null;
+  status: "open" | "cancelled";
+  conversation_id: string | null;
+  joined: number;
+  waitlist: number;
+  mine: ActivityMine;
+};
+export type ActivityVolunteer = { user: Author; status: "joined" | "waitlist" | "confirmed" | "absent"; hours: number | null };

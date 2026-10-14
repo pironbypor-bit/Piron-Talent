@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { CITIES, HAS_DISTRICTS } from "@/lib/cities";
+import { phnomPenhToIso } from "@/lib/datetime";
 import { createClient, getUserId } from "@/lib/supabase/server";
 import { fieldErrors, formEntries, type FormState } from "@/lib/validation";
 import { z } from "zod";
@@ -194,6 +195,56 @@ export async function inviteToProject(providerId: string, formData: FormData) {
   if (error) redirect(`${back}${sep}error=${encodeURIComponent(error.message)}`);
   revalidatePath(back);
   redirect(`${back}${sep}invited=${data ? "1" : "0"}`);
+}
+
+// Volunteer activities (migration 0025) -----------------------------------------------------------------------
+
+export async function createActivity(formData: FormData) {
+  await requireUser("/app/activities/new");
+  const f = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const starts = phnomPenhToIso(f("date", 10), f("start", 5));
+  const ends = phnomPenhToIso(f("date", 10), f("end", 5));
+  const capacity = Math.round(Number(f("capacity", 4)));
+  const cityRaw = f("city", 40);
+  const bad = !starts || !ends || f("title", 120).length < 3 || f("description", 3000).length < 10 || !(capacity >= 1 && capacity <= 100);
+  if (bad) redirect("/app/activities/new?error=1");
+  // An end time before the start means it runs past midnight: move the end to the next day.
+  const endIso = new Date(ends!) > new Date(starts!) ? ends! : new Date(new Date(ends!).getTime() + 24 * 3600 * 1000).toISOString();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_activity", {
+    p_title: f("title", 120), p_description: f("description", 3000), p_place: f("place", 120),
+    p_city: (CITIES as readonly string[]).includes(cityRaw) ? cityRaw : "", p_starts: starts, p_ends: endIso, p_capacity: capacity, p_bring: f("bring", 500),
+  });
+  if (error || !data) redirect(`/app/activities/new?error=${error?.message.includes("too many") ? "limit" : "1"}`);
+  revalidatePath("/app/activities");
+  redirect(`/app/activities/${data}`);
+}
+
+async function activityRpc(id: string, fn: string, args: Record<string, unknown> = {}) {
+  if (!uuid.test(id)) return;
+  await requireUser(`/app/activities/${id}`);
+  await (await createClient()).rpc(fn, { p_activity: id, ...args });
+  revalidatePath(`/app/activities/${id}`);
+  revalidatePath("/app/activities");
+}
+
+export async function joinActivity(id: string) {
+  await activityRpc(id, "join_activity");
+}
+
+export async function leaveActivity(id: string) {
+  await activityRpc(id, "leave_activity");
+}
+
+export async function cancelActivity(id: string) {
+  await activityRpc(id, "cancel_activity");
+}
+
+export async function confirmVolunteer(activityId: string, userId: string, present: boolean, formData: FormData) {
+  if (!uuid.test(userId)) return;
+  const raw = String(formData.get("hours") ?? "").trim();
+  const hours = raw === "" ? null : Number(raw);
+  await activityRpc(activityId, "confirm_volunteer", { p_user: userId, p_present: present, p_hours: hours !== null && Number.isFinite(hours) ? hours : null });
 }
 
 export async function sendMessage(conversationId: string, formData: FormData) {

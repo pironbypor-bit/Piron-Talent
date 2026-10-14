@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice, Pill } from "@/components/ui";
 import { inviteToProject, sendHello, startConversation, toggleKeepProvider } from "@/lib/app/actions";
-import { contactState, getMe, getProvider, lastConfirmedJobWith, myOpenProjects } from "@/lib/app/queries";
+import { contactState, getMe, getProvider, lastConfirmedJobWith, myOpenProjects, volunteerRecord } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -21,6 +21,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
   const projects = contact && (contact.state === "open" || contact.state === "conversation") ? await myOpenProjects() : [];
   const data = await getProvider(id);
   if (!data) notFound();
+  const volunteer = await volunteerRecord(id);
   const { provider: p, portfolio, reviews, record, endorsements } = data;
   const supabase = await createClient();
   const image = (path: string) => supabase.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
@@ -89,6 +90,12 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
             );
           })}
         </ul>
+      )}
+
+      {volunteer.activities > 0 && (
+        <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          {t("Volunteer: {n} activities, {hours} hours confirmed.", { n: volunteer.activities, hours: volunteer.hours })}
+        </p>
       )}
 
       {record.length > 0 && (

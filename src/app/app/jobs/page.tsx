@@ -27,6 +27,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
         <h1 className="text-xl font-bold">{t("Jobs & Shifts")}</h1>
         <p className="text-sm text-brand-900">{t("Flexible work, real pay. Shift jobs open after the legal review.")}</p>
       </section>
+      <Link href="/app/activities" className="card mt-3 flex items-center justify-between px-4 py-2.5 text-sm font-semibold hover:bg-brand-50">
+        {t("Volunteer activities")} <span className="text-ink-muted">›</span>
+      </Link>
       <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
         {(["all", "freelance", "project"] as const).map((k) => (
           <Link key={k} href={k === "all" ? "/app/jobs" : `/app/jobs?type=${k}`} aria-current={active === k ? "page" : undefined} className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium ${active === k ? "bg-ink text-white" : "card hover:bg-brand-50"}`}>

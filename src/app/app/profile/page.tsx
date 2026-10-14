@@ -125,6 +125,7 @@ export default async function ProfilePage() {
           </div>
         </div>
         <Link href="/app/jobs" className={`${row} mt-1`}>{t("Browse jobs")} <ChevronRight className="size-4 text-ink-muted" /></Link>
+        <Link href="/app/activities" className={row}>{t("Volunteer activities")} <ChevronRight className="size-4 text-ink-muted" /></Link>
       </section>
 
       <section className="card mt-3 p-4" id="identity">

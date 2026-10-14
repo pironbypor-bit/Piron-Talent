@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -537,4 +537,56 @@ export async function myOpenProjects(): Promise<{ id: string; title: string }[]>
   const { data: jobs } = await supabase.from("project_jobs").select("post_id").in("post_id", posts.map((p) => p.id)).in("status", ["accepted", "delivered", "confirmed"]);
   const taken = new Set(((jobs ?? []) as { post_id: string }[]).map((j) => j.post_id));
   return posts.filter((p) => !taken.has(p.id));
+}
+
+// Volunteer activities (migration 0025) --------------------------------------------------------------------------
+
+const ACTIVITY_SELECT = `id,title,description,place,city,starts_at,ends_at,capacity,bring,status,conversation_id,organiser:profiles!activities_organiser_id_fkey(${AUTHOR})`;
+type ActivityBase = Omit<ActivityRow, "organiser" | "joined" | "waitlist" | "mine"> & { organiser: Author | Author[] };
+
+async function withStats(rows: ActivityBase[]): Promise<ActivityRow[]> {
+  if (rows.length === 0) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("activity_stats", { p_ids: rows.map((r) => r.id) });
+  const stats = new Map<string, { joined: number; waitlist: number; mine: ActivityMine }>();
+  for (const s of (data ?? []) as { activity_id: string; joined: number; waitlist: number; mine: ActivityMine }[]) stats.set(s.activity_id, s);
+  return rows.map((r) => ({ ...r, organiser: one(r.organiser) as Author, joined: stats.get(r.id)?.joined ?? 0, waitlist: stats.get(r.id)?.waitlist ?? 0, mine: stats.get(r.id)?.mine ?? null }));
+}
+
+/** Open activities that have not ended, soonest first; optional province. */
+export async function listActivities(city?: string): Promise<ActivityRow[]> {
+  const supabase = await createClient();
+  let query = supabase.from("activities").select(ACTIVITY_SELECT).eq("status", "open").gt("ends_at", new Date().toISOString()).order("starts_at").limit(60);
+  if (city) query = query.eq("city", city);
+  const { data } = await query;
+  return withStats((data ?? []) as unknown as ActivityBase[]);
+}
+
+/** One activity; the organiser also gets the volunteer list. */
+export async function getActivity(id: string): Promise<{ activity: ActivityRow; volunteers: ActivityVolunteer[]; isOrganiser: boolean } | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const supabase = await createClient();
+  const uid = await getUserId();
+  const { data } = await supabase.from("activities").select(ACTIVITY_SELECT).eq("id", id).maybeSingle();
+  if (!data) return null;
+  const [activity] = await withStats([data as unknown as ActivityBase]);
+  const isOrganiser = !!uid && activity.organiser.id === uid;
+  let volunteers: ActivityVolunteer[] = [];
+  if (isOrganiser) {
+    const { data: rows } = await supabase
+      .from("activity_members")
+      .select(`status,hours,user:profiles!activity_members_user_id_fkey(${AUTHOR})`)
+      .eq("activity_id", id)
+      .order("joined_at");
+    volunteers = ((rows ?? []) as unknown as { status: ActivityVolunteer["status"]; hours: number | null; user: Author | Author[] }[]).map((r) => ({ user: one(r.user) as Author, status: r.status, hours: r.hours }));
+  }
+  return { activity, volunteers, isOrganiser };
+}
+
+/** Confirmed volunteer activities and hours on a profile; zero when the person hides their record. */
+export async function volunteerRecord(userId: string): Promise<{ activities: number; hours: number }> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("volunteer_record", { p_user: userId });
+  const row = (Array.isArray(data) ? data[0] : data) as { activities: number; hours: number | string } | null;
+  return { activities: row?.activities ?? 0, hours: Number(row?.hours ?? 0) };
 }
