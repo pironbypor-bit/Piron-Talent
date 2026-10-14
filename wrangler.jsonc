@@ -10,10 +10,9 @@
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "piron-talent" }],
   "placement": { "mode": "smart" },
   "observability": { "enabled": true },
-  // Public hostnames. Custom domains create their own DNS records and certificates in the piron.tech zone.
+  // Public hostname of the app. piron.tech itself is the company website, hosted elsewhere.
   "routes": [
-    { "pattern": "app.piron.tech", "custom_domain": true },
-    { "pattern": "piron.tech", "custom_domain": true }
+    { "pattern": "app.piron.tech", "custom_domain": true }
   ],
   // Public, non-secret runtime variables. Secrets stay in the dashboard.
   "vars": { "NEXT_PUBLIC_SITE_URL": "https://app.piron.tech" }
