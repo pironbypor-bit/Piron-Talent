@@ -101,6 +101,6 @@ create or replace function public.notification_title_km(p_title text) returns te
   when 'Activity reminder' then 'ការរំលឹកសកម្មភាព'
   when 'Job alert' then 'ការជូនដំណឹងការងារ'
   else p_title end
-$;
+$$;
 
 commit;

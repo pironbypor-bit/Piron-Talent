@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Bell, ChevronRight, ClipboardList, Globe, LogOut, Shield, Smartphone, UserPen } from "lucide-react";
 import { Button } from "@/components/ui";
 import { setEmailNotifications, setRecordPublic, setReminders } from "@/lib/app/actions";
-import { getMe, isAdmin, myEmailNotifications, myReminders } from "@/lib/app/queries";
+import { adminCounts, getMe, isAdmin, myEmailNotifications, myReminders } from "@/lib/app/queries";
 import { ALL_LANGUAGES } from "@/lib/i18n/core";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { logOut } from "@/app/auth/actions";
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Settings behind the gear on the profile tab: edit profile, language, admin tools, log out. */
 export default async function SettingsPage() {
-  const [t, locale, me, admin, emailOn, remindersOn] = await Promise.all([getT(), getLocale(), getMe(), isAdmin(), myEmailNotifications(), myReminders()]);
+  const [t, locale, me, admin, emailOn, remindersOn, waiting] = await Promise.all([getT(), getLocale(), getMe(), isAdmin(), myEmailNotifications(), myReminders(), adminCounts()]);
   if (!me) return null;
   return (
     <main className="px-4 pb-24 pt-4">
@@ -44,8 +44,9 @@ export default async function SettingsPage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-semibold">{t("Admin tools")}</span>
-              <span className="block text-sm text-ink-muted">{t("Requests, identity review")}</span>
+              <span className="block text-sm text-ink-muted">{waiting.total > 0 ? t("{n} waiting for you", { n: waiting.total }) : t("Requests, identity review")}</span>
             </span>
+            {waiting.total > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-ink">{waiting.total}</span>}
             <ChevronRight className="size-4 text-ink-muted" />
           </Link>
         )}

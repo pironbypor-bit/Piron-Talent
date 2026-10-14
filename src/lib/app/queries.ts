@@ -334,6 +334,19 @@ export async function myReminders(): Promise<boolean> {
   return data?.reminders_enabled ?? true;
 }
 
+/** What is waiting for an admin (migration 0029). Zeros for everyone else. */
+export type AdminCounts = { identity: number; reports: number; disputes: number; requests: number; applications: number; total: number };
+export async function adminCounts(): Promise<AdminCounts> {
+  const zero = { identity: 0, reports: 0, disputes: 0, requests: 0, applications: 0, total: 0 };
+  const uid = await getUserId();
+  if (!uid) return zero;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("admin_counts");
+  const r = (Array.isArray(data) ? data[0] : data) as Omit<AdminCounts, "total"> | null;
+  if (!r) return zero;
+  return { ...r, total: r.identity + r.reports + r.disputes + r.requests + r.applications };
+}
+
 export async function isAdmin(): Promise<boolean> {
   const uid = await getUserId();
   if (!uid) return false;

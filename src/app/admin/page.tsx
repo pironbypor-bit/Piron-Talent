@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, Notice, PageTitle, Pill, inputClass } from "@/components/ui";
+import { adminCounts } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { APPLICANT_STATUSES, formatDate, statusLabel, statusTone, type ProjectRequest, type ProviderApplication } from "@/lib/pilot";
@@ -18,6 +19,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </main>
     );
   }
+  const waiting = await adminCounts();
   const [{ data: requests }, { data: applications }, { count: completed }] = await Promise.all([
     supabase.from("project_requests").select("*").order("created_at", { ascending: false }).limit(200),
     supabase.from("provider_applications").select("*").order("created_at", { ascending: false }).limit(200),
@@ -33,9 +35,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <PageTitle lead={t("Completed jobs: {n}", { n: completed ?? 0 })}>Admin</PageTitle>
       {error && <div className="mb-6"><Notice tone="error">{t("Something went wrong. Please try again.")}</Notice></div>}
       <p className="mb-8 flex flex-wrap gap-4">
-        <Link href="/admin/identity" className="font-medium underline">{t("Identity review")}</Link>
-        <Link href="/admin/reports" className="font-medium underline">{t("Reports")}</Link>
-        <Link href="/admin/disputes" className="font-medium underline">{t("Disputes")}</Link>
+        <Link href="/admin/identity" className="font-medium underline">{t("Identity review")}{waiting.identity > 0 ? ` (${waiting.identity})` : ""}</Link>
+        <Link href="/admin/reports" className="font-medium underline">{t("Reports")}{waiting.reports > 0 ? ` (${waiting.reports})` : ""}</Link>
+        <Link href="/admin/disputes" className="font-medium underline">{t("Disputes")}{waiting.disputes > 0 ? ` (${waiting.disputes})` : ""}</Link>
       </p>
 
       <section className="mb-12">
