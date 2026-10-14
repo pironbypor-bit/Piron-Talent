@@ -325,6 +325,15 @@ export async function myEmailNotifications(): Promise<boolean> {
   return data?.email_notifications ?? true;
 }
 
+/** Notification groups I muted in Settings (migration 0030). Nothing muted when there is no private row yet. */
+export async function myMutedGroups(): Promise<string[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("profile_private").select("muted_groups").eq("user_id", uid).maybeSingle();
+  return (data?.muted_groups as string[] | null) ?? [];
+}
+
 /** Reminders switch from Settings (migration 0027). No private row yet means on. */
 export async function myReminders(): Promise<boolean> {
   const uid = await getUserId();

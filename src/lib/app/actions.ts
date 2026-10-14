@@ -431,6 +431,14 @@ export async function setRecordPublic(formData: FormData) {
   revalidatePath("/app/settings");
 }
 
+export async function setNotificationGroup(group: string, formData: FormData) {
+  if (!["projects", "messages", "activities", "reviews"].includes(group)) return;
+  await requireUser("/app/settings");
+  const on = String(formData.get("on") ?? "") === "1";
+  await (await createClient()).rpc("set_notification_group", { p_group: group, p_on: on });
+  revalidatePath("/app/settings");
+}
+
 export async function setReminders(formData: FormData) {
   await requireUser("/app/settings");
   const on = String(formData.get("on") ?? "") === "1";
