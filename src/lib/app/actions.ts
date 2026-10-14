@@ -117,7 +117,7 @@ export async function sendHello(userId: string, formData: FormData) {
   const sep = back.includes("?") ? "&" : "?";
   if (error) redirect(`${back}${sep}error=${error.message.includes("too many") ? "limit" : encodeURIComponent(error.message)}`);
   revalidatePath(back);
-  redirect(`${back}${sep}hello=1`);
+  redirect(back);
 }
 
 /** Answer a request from the Messages tab: accept opens the conversation, decline is silent. */

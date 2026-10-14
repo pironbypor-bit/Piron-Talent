@@ -14,7 +14,7 @@ import { Stars } from "@/app/demo/demo-ui";
 /* eslint-disable @next/next/no-img-element */
 
 /** One provider profile. `base` is "/app" inside the app and "" on the public site; everything else is the same. */
-export async function ProviderProfile({ id, base, error, reported, hello }: { id: string; base: "/app" | ""; error?: string; reported?: string; hello?: string }) {
+export async function ProviderProfile({ id, base, error, reported }: { id: string; base: "/app" | ""; error?: string; reported?: string }) {
   const [t, locale, me, rehireFrom] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id)]);
   const contact = me && me.id !== id ? await contactState(id) : null;
   const data = await getProvider(id);
@@ -52,7 +52,6 @@ export async function ProviderProfile({ id, base, error, reported, hello }: { id
       </header>
       {error === "limit" && <div className="mt-3"><Notice tone="error">{t("You sent several requests today. Try again tomorrow.")}</Notice></div>}
       {error && error !== "limit" && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
-      {hello === "1" && <div className="mt-3"><Notice tone="success">{t("Your request was sent. You will see the answer in your notifications.")}</Notice></div>}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {p.price_from && <span className="rounded-full bg-brand-100 px-3 py-1.5 text-sm font-semibold text-brand-900">{t("From {price}", { price: p.price_from })}</span>}
