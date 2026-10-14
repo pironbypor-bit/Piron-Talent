@@ -486,6 +486,19 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   };
 }
 
+/** People this company invited who have not answered yet (visible to whoever invited them). */
+export async function businessPendingInvites(businessId: string): Promise<{ id: string; name: string }[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("business_invitations")
+    .select("user_id,user:profiles!business_invitations_user_id_fkey(display_name)")
+    .eq("business_id", businessId)
+    .eq("status", "pending");
+  return ((data ?? []) as unknown as { user_id: string; user: { display_name: string } | { display_name: string }[] | null }[]).map((r) => ({ id: r.user_id, name: one(r.user)?.display_name ?? "" }));
+}
+
 /** Company invitations waiting for my answer. */
 export async function myBusinessInvitations(): Promise<BusinessInvitationRow[]> {
   const uid = await getUserId();

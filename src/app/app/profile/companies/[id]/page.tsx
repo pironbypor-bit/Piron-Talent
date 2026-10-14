@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Briefcase, ChevronRight, FileText, LogOut, MessageCircle, X } from "lucide-react";
 import { Button, EmptyState, Pill } from "@/components/ui";
 import { inviteToBusiness, openBusinessChat, removeBusinessMember, setBusinessRole } from "@/lib/app/actions";
-import { getBusiness, getMe, groupCandidates } from "@/lib/app/queries";
+import { businessPendingInvites, getBusiness, getMe, groupCandidates } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../../avatar";
@@ -25,7 +25,9 @@ export default async function CompanyPage({ params }: Props) {
   const isOwner = b.role === "owner";
   const manager = b.role === "owner" || b.role === "manager";
   const inTeam = new Set(b.team.map((m) => m.user_id));
-  const candidates = manager && b.team.length < 20 ? (await groupCandidates()).filter((p) => !inTeam.has(p.id)) : [];
+  const waiting = manager ? await businessPendingInvites(b.id) : [];
+  const waitingIds = new Set(waiting.map((w) => w.id));
+  const candidates = manager && b.team.length < 20 ? (await groupCandidates()).filter((p) => !inTeam.has(p.id) && !waitingIds.has(p.id)) : [];
   const btn = "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold";
   const ROLE = { owner: "Owner", manager: "Manager", member: "Member" } as const;
 
@@ -104,6 +106,10 @@ export default async function CompanyPage({ params }: Props) {
           </li>
         ))}
       </ul>
+
+      {waiting.length > 0 && (
+        <p className="mt-2 text-sm text-ink-muted">{t("Waiting for an answer")}: {waiting.map((w) => w.name).join(", ")}</p>
+      )}
 
       {manager && (
         <section className="card mt-3 p-4">
