@@ -172,6 +172,30 @@ export async function leaveGroup(conversationId: string) {
   redirect("/app/messages");
 }
 
+// Invitations to a project (migration 0024) --------------------------------------------------------------------
+
+/** From the project page: invite the ticked providers. */
+export async function inviteProviders(postId: string, formData: FormData) {
+  if (!uuid.test(postId)) return;
+  await requireUser(`/app/post/${postId}`);
+  const providers = formData.getAll("providers").map(String).filter((v) => uuid.test(v)).slice(0, 10);
+  if (providers.length) await (await createClient()).rpc("invite_providers", { p_post: postId, p_providers: providers });
+  revalidatePath(`/app/post/${postId}`);
+}
+
+/** From a provider's profile: invite this one person to one of my open projects. */
+export async function inviteToProject(providerId: string, formData: FormData) {
+  const back = String(formData.get("back") ?? "/app");
+  const postId = String(formData.get("post") ?? "");
+  if (!uuid.test(providerId) || !uuid.test(postId)) return;
+  await requireUser(back);
+  const { data, error } = await (await createClient()).rpc("invite_providers", { p_post: postId, p_providers: [providerId] });
+  const sep = back.includes("?") ? "&" : "?";
+  if (error) redirect(`${back}${sep}error=${encodeURIComponent(error.message)}`);
+  revalidatePath(back);
+  redirect(`${back}${sep}invited=${data ? "1" : "0"}`);
+}
+
 export async function sendMessage(conversationId: string, formData: FormData) {
   if (!uuid.test(conversationId)) return;
   const uid = await requireUser(`/app/messages/${conversationId}`);

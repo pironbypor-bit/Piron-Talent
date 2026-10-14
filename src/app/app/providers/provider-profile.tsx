@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice, Pill } from "@/components/ui";
-import { sendHello, startConversation, toggleKeepProvider } from "@/lib/app/actions";
-import { contactState, getMe, getProvider, lastConfirmedJobWith } from "@/lib/app/queries";
+import { inviteToProject, sendHello, startConversation, toggleKeepProvider } from "@/lib/app/actions";
+import { contactState, getMe, getProvider, lastConfirmedJobWith, myOpenProjects } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -14,9 +14,11 @@ import { Stars } from "@/app/demo/demo-ui";
 /* eslint-disable @next/next/no-img-element */
 
 /** One provider profile. `base` is "/app" inside the app and "" on the public site; everything else is the same. */
-export async function ProviderProfile({ id, base, error, reported }: { id: string; base: "/app" | ""; error?: string; reported?: string }) {
+export async function ProviderProfile({ id, base, error, reported, invited }: { id: string; base: "/app" | ""; error?: string; reported?: string; invited?: string }) {
   const [t, locale, me, rehireFrom] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id)]);
   const contact = me && me.id !== id ? await contactState(id) : null;
+  // "Invite to a project": only for people who are open to work or already talking with me.
+  const projects = contact && (contact.state === "open" || contact.state === "conversation") ? await myOpenProjects() : [];
   const data = await getProvider(id);
   if (!data) notFound();
   const { provider: p, portfolio, reviews, record, endorsements } = data;
@@ -50,6 +52,8 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
           </div>
         </div>
       </header>
+      {invited === "1" && <div className="mt-3"><Notice tone="success">{t("Invitation sent. {name} will see it in notifications.", { name: p.display_name })}</Notice></div>}
+      {invited === "0" && <div className="mt-3"><Notice tone="info">{t("{name} was already invited to that project.", { name: p.display_name })}</Notice></div>}
       {error === "limit" && <div className="mt-3"><Notice tone="error">{t("You sent several requests today. Try again tomorrow.")}</Notice></div>}
       {error && error !== "limit" && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
 
@@ -119,6 +123,18 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
         </section>
       )}
 
+      {projects.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-stone-200 bg-white p-4">
+          <h2 className="font-semibold">{t("Invite to a project")}</h2>
+          <form action={inviteToProject.bind(null, p.id)} className="mt-2 flex flex-wrap gap-2">
+            <input type="hidden" name="back" value={path} />
+            <select name="post" className={`${inputClass} min-w-0 flex-1`} aria-label={t("Choose a project")}>
+              {projects.map((pj) => <option key={pj.id} value={pj.id}>{pj.title}</option>)}
+            </select>
+            <Button type="submit" className="px-4 py-2 text-sm">{t("Send invitation")}</Button>
+          </form>
+        </section>
+      )}
       {contact?.state === "conversation" && contact.conversationId && (
         <section className="mt-6 rounded-2xl border border-brand-300 bg-brand-50 p-4">
           <p className="text-sm">{t("You are already talking.")}</p>

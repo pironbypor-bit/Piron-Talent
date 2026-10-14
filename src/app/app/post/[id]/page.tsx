@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice } from "@/components/ui";
 import { addComment, startConversation } from "@/lib/app/actions";
-import { getMe, getPost, getProjectPanel } from "@/lib/app/queries";
+import { getInviteState, getMe, getPost, getProjectPanel } from "@/lib/app/queries";
 import { ProjectPanel } from "../project-panel";
 import { ReportForm } from "../../report-form";
 import { formatDate } from "@/lib/dates";
@@ -24,7 +24,9 @@ export default async function PostPage({ params, searchParams }: Props) {
   const data = await getPost(id);
   if (!data) notFound();
   const { post, comments } = data;
-  const panel = post.kind === "need_help" ? await getProjectPanel(post.id) : null;
+  const [panel, invite] = post.kind === "need_help"
+    ? await Promise.all([getProjectPanel(post.id), me ? getInviteState(post.id, post.category_id ?? null, post.author.id) : Promise.resolve(null)])
+    : [null, null];
   const comment = addComment.bind(null, post.id);
   const connect = startConversation.bind(null, post.author.id);
   const path = `/app/post/${post.id}`;
@@ -38,7 +40,7 @@ export default async function PostPage({ params, searchParams }: Props) {
         <PostCard post={post} t={t} locale={locale} path={path} me={me?.id ?? null} full />
       </div>
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
-      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} providerSkills={panel.providerSkills} me={me} t={t} locale={locale} />}
+      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} providerSkills={panel.providerSkills} invite={invite} me={me} t={t} locale={locale} />}
 
       {me && me.id !== post.author.id && (
         <section id="connect" className="mt-4 rounded-2xl border border-brand-300 bg-brand-50 p-4">

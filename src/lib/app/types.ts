@@ -145,3 +145,7 @@ export type WorkRecordRow = { job_id: string; title: string; completed_at: strin
 
 export type ContactState = "anon" | "self" | "conversation" | "open" | "pending" | "incoming" | "declined" | "can_request";
 export type MessageRequestRow = { id: string; body: string; created_at: string; other: Author };
+
+export type InvitationRow = { provider: Author; quoted: boolean; created_at: string };
+export type InviteCandidate = Author & { source: "worked" | "kept" | "category" };
+export type InviteState = { invited: InvitationRow[]; candidates: InviteCandidate[]; invitedMe: boolean };

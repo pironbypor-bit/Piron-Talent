@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Button, Pill, inputClass } from "@/components/ui";
-import { acceptQuote, declineQuote, sendQuote, withdrawQuote } from "@/lib/app/actions";
-import type { DisputeRow, MeRow, PostRow, ProjectJobRow, ProjectScope, QuoteRow } from "@/lib/app/types";
+import { acceptQuote, declineQuote, inviteProviders, sendQuote, withdrawQuote } from "@/lib/app/actions";
+import type { DisputeRow, InviteState, MeRow, PostRow, ProjectJobRow, ProjectScope, QuoteRow } from "@/lib/app/types";
 import { formatDate } from "@/lib/dates";
 import type { Locale, T } from "@/lib/i18n/core";
 import { AvatarImg } from "../avatar";
 import { JobPanel } from "./job-panel";
 
-type Props = { post: PostRow; scope: ProjectScope; quotes: QuoteRow[]; job: ProjectJobRow | null; count: number; reviewed: boolean; dispute: DisputeRow | null; providerSkills: string[]; me: MeRow | null; t: T; locale: Locale };
+type Props = { post: PostRow; scope: ProjectScope; quotes: QuoteRow[]; job: ProjectJobRow | null; count: number; reviewed: boolean; dispute: DisputeRow | null; providerSkills: string[]; invite: InviteState | null; me: MeRow | null; t: T; locale: Locale };
 
 export const QUOTE_TONE: Record<string, "amber" | "green" | "neutral" | "red"> = { pending: "amber", accepted: "green", declined: "neutral", withdrawn: "neutral" };
 export const QUOTE_LABEL: Record<string, string> = { pending: "Pending", accepted: "Accepted", declined: "Declined", withdrawn: "Withdrawn" };
@@ -15,7 +15,7 @@ export const QUOTE_LABEL: Record<string, string> = { pending: "Pending", accepte
 const days = (t: T, n: number | null) => (n === null ? null : n === 1 ? t("Delivery in 1 day") : t("Delivery in {n} days", { n }));
 
 /** Scope, quotes and the job record under a Job offer post. Who sees what follows the database policies. */
-export function ProjectPanel({ post, scope, quotes, job, count, reviewed, dispute, me, t, locale, providerSkills }: Props) {
+export function ProjectPanel({ post, scope, quotes, job, count, reviewed, dispute, me, t, locale, providerSkills, invite }: Props) {
   const isAuthor = !!me && me.id === post.author.id;
   const myQuote = me ? quotes.find((q) => q.provider_id === me.id) : undefined;
   const path = `/app/post/${post.id}`;
@@ -44,6 +44,49 @@ export function ProjectPanel({ post, scope, quotes, job, count, reviewed, disput
             {scope.deadline && <span className="rounded-full bg-stone-100 px-2.5 py-1">{t("Deadline@@project")} {formatDate(scope.deadline, locale)}</span>}
             <span className="rounded-full bg-stone-100 px-2.5 py-1">{scope.remote ? t("Remote") : t("On site")}</span>
           </div>
+        </section>
+      )}
+
+      {invite?.invitedMe && !job && (
+        <p className="rounded-xl bg-brand-50 px-3 py-2 text-sm text-brand-900">{t("You were invited to send a quote.")}</p>
+      )}
+
+      {isAuthor && invite && !job && (
+        <section className="card p-4">
+          <h2 className="font-semibold">{t("Invite providers")}</h2>
+          {invite.invited.length > 0 && (
+            <ul className="mt-2 divide-y divide-stone-100">
+              {invite.invited.map((i) => (
+                <li key={i.provider.id} className="flex items-center gap-3 py-2">
+                  <AvatarImg name={i.provider.display_name} url={i.provider.avatar_url} />
+                  <Link href={`/app/providers/${i.provider.id}`} className="min-w-0 flex-1 truncate text-sm font-medium hover:underline">{i.provider.display_name}</Link>
+                  <Pill tone={i.quoted ? "green" : "neutral"}>{i.quoted ? t("Quote sent") : t("Waiting")}</Pill>
+                </li>
+              ))}
+            </ul>
+          )}
+          {invite.candidates.length > 0 ? (
+            <form action={inviteProviders.bind(null, post.id)} className="mt-3">
+              <ul className="space-y-1">
+                {invite.candidates.map((c) => (
+                  <li key={c.id}>
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-brand-50">
+                      <input type="checkbox" name="providers" value={c.id} className="size-4 accent-brand-500" />
+                      <AvatarImg name={c.display_name} url={c.avatar_url} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{c.display_name}</span>
+                        <span className="block truncate text-xs text-ink-muted">{c.role_line ? `${c.role_line} · ` : ""}{t(c.source === "worked" ? "Worked with before" : c.source === "kept" ? "Kept" : "Same category")}</span>
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <Button type="submit" className="mt-3 px-4 py-2 text-sm">{t("Send invitations")}</Button>
+            </form>
+          ) : (
+            <p className="mt-2 text-sm text-ink-muted">{t("No one to suggest yet. Keep providers from Services and they appear here.")}</p>
+          )}
+          <Link href="/app/services" className="mt-2 inline-block text-sm font-medium underline">{t("Find more in Services")}</Link>
         </section>
       )}
 

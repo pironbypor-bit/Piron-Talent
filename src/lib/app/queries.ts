@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -482,4 +482,59 @@ export async function groupCandidates(postId?: string | null): Promise<Author[]>
   }
   pool.delete(uid);
   return [...pool.values()];
+}
+
+// Invitations to a project (migration 0024) --------------------------------------------------------------------
+
+/** The author's invited list with who already quoted, and who they could invite next; for a provider, whether they were invited. */
+export async function getInviteState(postId: string, categoryId: number | null, authorId: string): Promise<InviteState> {
+  const uid = await getUserId();
+  const empty: InviteState = { invited: [], candidates: [], invitedMe: false };
+  if (!uid) return empty;
+  const supabase = await createClient();
+  if (uid !== authorId) {
+    const { data } = await supabase.from("post_invitations").select("post_id").eq("post_id", postId).eq("provider_id", uid).maybeSingle();
+    return { ...empty, invitedMe: !!data };
+  }
+  const [{ data: inv }, { data: quoted }, { data: kept }, { data: worked }] = await Promise.all([
+    supabase.from("post_invitations").select(`provider_id,created_at,provider:profiles!post_invitations_provider_id_fkey(${AUTHOR})`).eq("post_id", postId).order("created_at"),
+    supabase.from("quotes").select("provider_id").eq("post_id", postId),
+    supabase.from("saved_providers").select("provider_id").eq("user_id", uid),
+    supabase.from("project_jobs").select("provider_id").eq("customer_id", uid).eq("status", "confirmed"),
+  ]);
+  const quotedIds = new Set(((quoted ?? []) as { provider_id: string }[]).map((r) => r.provider_id));
+  const invited: InvitationRow[] = ((inv ?? []) as unknown as { provider_id: string; created_at: string; provider: Author | Author[] }[]).map((r) => ({ provider: one(r.provider) as Author, quoted: quotedIds.has(r.provider_id), created_at: r.created_at }));
+  const skip = new Set<string>([uid, ...invited.map((i) => i.provider.id), ...quotedIds]);
+  const source = new Map<string, InviteCandidate["source"]>();
+  for (const r of (kept ?? []) as { provider_id: string }[]) source.set(r.provider_id, "kept");
+  for (const r of (worked ?? []) as { provider_id: string }[]) source.set(r.provider_id, "worked");
+  const ids = [...source.keys()].filter((id) => !skip.has(id));
+  const select = `${AUTHOR},is_available`;
+  const [{ data: known }, { data: sameCategory }] = await Promise.all([
+    ids.length ? supabase.from("profiles").select(select).in("id", ids) : Promise.resolve({ data: [] }),
+    categoryId ? supabase.from("profiles").select(select).eq("primary_category_id", categoryId).eq("is_available", true).limit(12) : Promise.resolve({ data: [] }),
+  ]);
+  // Same rule as the database: invite providers who are open to work, or people I already talk with.
+  const talking = new Set((await listConversations()).filter((c) => c.kind === "direct" && c.other).map((c) => c.other!.id));
+  const out = new Map<string, InviteCandidate>();
+  for (const p of (known ?? []) as unknown as (Author & { is_available: boolean })[]) {
+    if (p.is_available || talking.has(p.id)) out.set(p.id, { ...p, source: source.get(p.id) ?? "kept" });
+  }
+  for (const p of (sameCategory ?? []) as unknown as (Author & { is_available: boolean })[]) {
+    if (!skip.has(p.id) && !out.has(p.id)) out.set(p.id, { ...p, source: "category" });
+  }
+  return { invited, candidates: [...out.values()].slice(0, 20), invitedMe: false };
+}
+
+/** My published projects that have not been given to anyone yet; the choices for "Invite to a project" on a profile. */
+export async function myOpenProjects(): Promise<{ id: string; title: string }[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("posts").select("id,title").eq("author_id", uid).eq("kind", "need_help").eq("status", "published").order("created_at", { ascending: false }).limit(20);
+  const posts = (data ?? []) as { id: string; title: string }[];
+  if (posts.length === 0) return [];
+  const { data: jobs } = await supabase.from("project_jobs").select("post_id").in("post_id", posts.map((p) => p.id)).in("status", ["accepted", "delivered", "confirmed"]);
+  const taken = new Set(((jobs ?? []) as { post_id: string }[]).map((j) => j.post_id));
+  return posts.filter((p) => !taken.has(p.id));
 }
