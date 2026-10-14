@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice } from "@/components/ui";
 import { addComment, startConversation } from "@/lib/app/actions";
+import { ShareButton } from "@/components/share-button";
 import { getInviteState, getMe, getPost, getProjectPanel } from "@/lib/app/queries";
 import { ProjectPanel } from "../project-panel";
 import { ReportForm } from "../../report-form";
@@ -39,6 +40,7 @@ export default async function PostPage({ params, searchParams }: Props) {
       <div className="mt-3">
         <PostCard post={post} t={t} locale={locale} path={path} me={me?.id ?? null} full />
       </div>
+      <div className="mt-2"><ShareButton path={path} title={post.title} /></div>
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
       {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} providerSkills={panel.providerSkills} invite={invite} me={me} t={t} locale={locale} />}
 

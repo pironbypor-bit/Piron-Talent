@@ -247,6 +247,24 @@ export async function confirmVolunteer(activityId: string, userId: string, prese
   await activityRpc(activityId, "confirm_volunteer", { p_user: userId, p_present: present, p_hours: hours !== null && Number.isFinite(hours) ? hours : null });
 }
 
+// Blocking (migration 0026): nobody is told; both directions stop messages, requests, invitations and groups.
+export async function blockUser(userId: string, path: string) {
+  if (!uuid.test(userId)) return;
+  const uid = await requireUser(path);
+  if (uid === userId) return;
+  await (await createClient()).from("user_blocks").upsert({ blocker_id: uid, blocked_id: userId });
+  revalidatePath(path);
+  revalidatePath("/app/messages");
+}
+
+export async function unblockUser(userId: string, path: string) {
+  if (!uuid.test(userId)) return;
+  const uid = await requireUser(path);
+  await (await createClient()).from("user_blocks").delete().eq("blocker_id", uid).eq("blocked_id", userId);
+  revalidatePath(path);
+  revalidatePath("/app/messages");
+}
+
 export async function sendMessage(conversationId: string, formData: FormData) {
   if (!uuid.test(conversationId)) return;
   const uid = await requireUser(`/app/messages/${conversationId}`);

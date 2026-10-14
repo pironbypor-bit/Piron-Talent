@@ -83,10 +83,12 @@ export type ConversationDetail = {
   other: Author | null;
   members: GroupMember[];
   iAmOwner: boolean;
+  blocked: boolean;
   messages: MessageRow[];
 };
+export type BlockedPerson = { user: Author; created_at: string };
 
-export type MessageRow = { id: string; body: string; created_at: string; sender_id: string };
+export type MessageRow = { id: string; body: string; created_at: string; sender_id: string; attachment_path: string | null; attachment_type: string | null };
 
 export type NotificationRow = { id: string; title: string; body: string | null; link_path: string | null; read_at: string | null; created_at: string };
 

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LogOut, Users, X } from "lucide-react";
-import { Button, inputClass } from "@/components/ui";
-import { addGroupMembers, leaveGroup, removeGroupMember, sendMessage } from "@/lib/app/actions";
+import { FileText, LogOut, Users, X } from "lucide-react";
+import { Button } from "@/components/ui";
+import { addGroupMembers, leaveGroup, removeGroupMember } from "@/lib/app/actions";
+import { createClient } from "@/lib/supabase/server";
+import { MessageComposer } from "./composer";
 import { getConversation, getMe, groupCandidates } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -23,13 +25,21 @@ export default async function ConversationPage({ params }: Props) {
   if (!data || !me) notFound();
   const { other, messages, kind, members, iAmOwner } = data;
   const group = kind === "group";
-  const send = sendMessage.bind(null, id);
   const name = group ? (data.title ?? "") : other?.display_name ?? "?";
   const nameOf = new Map(members.map((m) => [m.id, m.display_name]));
   // People the owner can still add: contacts (and project quoters) who are not members yet.
   const addable = group && iAmOwner && members.length < 20 ? (await groupCandidates(data.postId)).filter((p) => !members.some((m) => m.id === p.id)) : [];
   // Day separators: show the date when it changes from the previous message.
   const days = messages.map((m) => formatDate(m.created_at, locale));
+  // Files are private: a one-hour link for each attachment, made for people who are in the conversation.
+  const supabase = await createClient();
+  const urls = new Map<string, string>();
+  await Promise.all(
+    messages.filter((m) => m.attachment_path).map(async (m) => {
+      const { data: signed } = await supabase.storage.from("message-files").createSignedUrl(m.attachment_path!, 3600);
+      if (signed?.signedUrl) urls.set(m.id, signed.signedUrl);
+    }),
+  );
 
   return (
     <main className="flex min-h-full flex-col px-4 py-4">
@@ -108,7 +118,17 @@ export default async function ConversationPage({ params }: Props) {
               {showDay && <p className="my-2 text-center text-xs text-ink-muted">{day}</p>}
               {showName && <p className="ml-1 text-xs font-medium text-ink-muted">{nameOf.get(m.sender_id) ?? "?"}</p>}
               <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <p className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${mine ? "bg-brand-100" : "card"}`}>{m.body}</p>
+                <div className={`max-w-[80%] rounded-2xl px-3 py-2 ${mine ? "bg-brand-100" : "card"}`}>
+                  {m.attachment_path && urls.get(m.id) && (m.attachment_type === "application/pdf" ? (
+                    <a href={urls.get(m.id)} target="_blank" rel="noopener noreferrer" className="mb-1 inline-flex items-center gap-1.5 text-sm font-medium underline"><FileText className="size-4" />{t("Open PDF")}</a>
+                  ) : (
+                    <a href={urls.get(m.id)} target="_blank" rel="noopener noreferrer" className="mb-1 block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={urls.get(m.id)} alt="" className="max-h-60 rounded-lg object-contain" />
+                    </a>
+                  ))}
+                  <p className="whitespace-pre-wrap">{m.body}</p>
+                </div>
               </div>
             </li>
           );
@@ -116,12 +136,11 @@ export default async function ConversationPage({ params }: Props) {
         {group && messages.length === 0 && <li className="text-center text-sm text-ink-muted">{t("Say something to the group.")}</li>}
       </ol>
 
-      <form action={send} className="sticky bottom-0 mt-4 flex gap-2 bg-brand-50/40 py-2">
-        <input name="body" className={inputClass} placeholder={t("Type a message")} aria-label={t("Type a message")} required maxLength={3000} autoComplete="off" />
-        <Button type="submit" className="px-4 py-2">
-          {t("Send")}
-        </Button>
-      </form>
+      {data.blocked ? (
+        <p className="sticky bottom-0 mt-4 rounded-xl bg-stone-100 px-3 py-3 text-center text-sm text-ink-muted">{t("You cannot send messages in this conversation.")}</p>
+      ) : (
+        <MessageComposer conversationId={id} userId={me.id} />
+      )}
     </main>
   );
 }

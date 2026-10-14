@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CalendarClock, MapPin, MessageCircle, Package, Users } from "lucide-react";
 import { Button, CheckedPill, Notice, Pill, inputClass } from "@/components/ui";
 import { cancelActivity, confirmVolunteer, joinActivity, leaveActivity } from "@/lib/app/actions";
+import { ShareButton } from "@/components/share-button";
 import { getActivity, getMe } from "@/lib/app/queries";
 import { formatRange } from "@/lib/datetime";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -35,6 +36,7 @@ export default async function ActivityPage({ params }: Props) {
       <Link href="/app/activities" className="text-sm font-medium underline">{t("Back")}</Link>
       <section className="card mt-3 p-4">
         <h1 className="text-xl font-bold">{a.title}</h1>
+        <div className="mt-2"><ShareButton path={`/app/activities/${a.id}`} title={a.title} /></div>
         {cancelled && <p className="mt-2"><Pill tone="red">{t("Cancelled")}</Pill></p>}
         <ul className="mt-3 space-y-1.5 text-sm">
           <li className="flex items-center gap-2"><CalendarClock className="size-4 text-ink-muted" />{formatRange(a.starts_at, a.ends_at, locale)}</li>

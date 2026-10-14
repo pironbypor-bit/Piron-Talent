@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, inputClass, Notice, Pill } from "@/components/ui";
-import { inviteToProject, sendHello, startConversation, toggleKeepProvider } from "@/lib/app/actions";
-import { contactState, getMe, getProvider, lastConfirmedJobWith, myOpenProjects, volunteerRecord } from "@/lib/app/queries";
+import { blockUser, inviteToProject, sendHello, startConversation, toggleKeepProvider, unblockUser } from "@/lib/app/actions";
+import { ShareButton } from "@/components/share-button";
+import { contactState, getMe, getProvider, iBlocked, lastConfirmedJobWith, myOpenProjects, volunteerRecord } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -22,6 +23,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
   const data = await getProvider(id);
   if (!data) notFound();
   const volunteer = await volunteerRecord(id);
+  const blocked = me && me.id !== id ? await iBlocked(id) : false;
   const { provider: p, portfolio, reviews, record, endorsements } = data;
   const supabase = await createClient();
   const image = (path: string) => supabase.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
@@ -65,6 +67,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
             {t("Hire again")}
           </Link>
         )}
+        <ShareButton path={`/providers/${p.id}`} title={p.display_name} />
         <form action={keep}>
           <button type="submit" aria-pressed={p.saved} className={`rounded-full border px-3 py-1.5 text-sm font-medium ${p.saved ? "border-brand-400 bg-brand-100" : "border-stone-300 bg-white hover:bg-stone-50"}`}>
             {p.saved ? t("Kept") : t("Keep")}
@@ -206,6 +209,11 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
         )}
       </section>
       {me && me.id !== p.id && <ReportForm type="user" id={p.id} path={path} reported={reported === "1"} t={t} />}
+      {me && me.id !== p.id && (
+        <form action={(blocked ? unblockUser : blockUser).bind(null, p.id, path)} className="mt-3">
+          <button type="submit" className="text-sm text-ink-muted underline">{blocked ? t("Unblock this person") : t("Block this person")}</button>
+        </form>
+      )}
     </main>
   );
 }

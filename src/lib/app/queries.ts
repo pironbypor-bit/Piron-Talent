@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -247,7 +247,7 @@ export async function getConversation(id: string): Promise<ConversationDetail | 
   const [{ data: conv }, { data: members }, { data: messages }] = await Promise.all([
     supabase.from("conversations").select("kind,title,post_id").eq("id", id).maybeSingle(),
     supabase.from("conversation_members").select(`user_id,role,profiles(${AUTHOR})`).eq("conversation_id", id).order("joined_at"),
-    supabase.from("messages").select("id,body,created_at,sender_id").eq("conversation_id", id).order("created_at").limit(200),
+    supabase.from("messages").select("id,body,created_at,sender_id,attachment_path,attachment_type").eq("conversation_id", id).order("created_at").limit(200),
     supabase.rpc("mark_conversation_read", { p_conv: id }), // opening the conversation clears its unread mark
   ]);
   if (!conv || !members || members.length === 0) return null;
@@ -255,6 +255,7 @@ export async function getConversation(id: string): Promise<ConversationDetail | 
     .map((m) => ({ ...(one(m.profiles) as Author), role: m.role }))
     .filter((m) => m.id);
   const c = conv as { kind: "direct" | "group"; title: string | null; post_id: string | null };
+  const { data: blocked } = c.kind === "direct" ? await supabase.rpc("chat_blocked", { p_conv: id }) : { data: false };
   return {
     kind: c.kind,
     title: c.title,
@@ -262,6 +263,7 @@ export async function getConversation(id: string): Promise<ConversationDetail | 
     other: c.kind === "direct" ? list.find((m) => m.id !== uid) ?? null : null,
     members: list,
     iAmOwner: list.some((m) => m.id === uid && m.role === "owner"),
+    blocked: blocked === true,
     messages: (messages ?? []) as MessageRow[],
   };
 }
@@ -589,4 +591,23 @@ export async function volunteerRecord(userId: string): Promise<{ activities: num
   const { data } = await supabase.rpc("volunteer_record", { p_user: userId });
   const row = (Array.isArray(data) ? data[0] : data) as { activities: number; hours: number | string } | null;
   return { activities: row?.activities ?? 0, hours: Number(row?.hours ?? 0) };
+}
+
+// Blocking (migration 0026) ---------------------------------------------------------------------------------
+
+/** Did I block this person? (Only my own blocks are readable.) */
+export async function iBlocked(userId: string): Promise<boolean> {
+  const uid = await getUserId();
+  if (!uid) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.from("user_blocks").select("blocked_id").eq("blocker_id", uid).eq("blocked_id", userId).maybeSingle();
+  return !!data;
+}
+
+export async function myBlocks(): Promise<BlockedPerson[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("user_blocks").select(`created_at,user:profiles!user_blocks_blocked_id_fkey(${AUTHOR})`).eq("blocker_id", uid).order("created_at", { ascending: false });
+  return ((data ?? []) as unknown as { created_at: string; user: Author | Author[] }[]).map((r) => ({ user: one(r.user) as Author, created_at: r.created_at }));
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase, Building2, ChevronRight, Plus, Search, Store } from "lucide-react";
 import { AngkorSilhouette } from "@/components/brand";
+import { ShareButton } from "@/components/share-button";
 import { CheckedPill, Pill } from "@/components/ui";
 import { setAvailableThisWeek } from "@/lib/app/actions";
 import { getMe, myBusinesses, myCounters, myIdentityStatus } from "@/lib/app/queries";
@@ -126,6 +127,14 @@ export default async function ProfilePage() {
         </div>
         <Link href="/app/jobs" className={`${row} mt-1`}>{t("Browse jobs")} <ChevronRight className="size-4 text-ink-muted" /></Link>
         <Link href="/app/activities" className={row}>{t("Volunteer activities")} <ChevronRight className="size-4 text-ink-muted" /></Link>
+      </section>
+
+      <section className="card mt-3 flex items-center gap-3 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{t("Invite friends")}</p>
+          <p className="text-sm text-ink-muted">{t("Send the link to someone who needs work done or offers a service.")}</p>
+        </div>
+        <ShareButton path="/app" title="Piron Work" />
       </section>
 
       <section className="card mt-3 p-4" id="identity">

@@ -114,6 +114,11 @@ export default async function SettingsPage() {
         </div>
       </section>
 
+      <Link href="/app/settings/blocked" className="card mt-4 flex items-center justify-between px-4 py-3 font-semibold hover:bg-brand-50">
+        {t("Blocked people")}
+        <ChevronRight className="size-4 text-ink-muted" />
+      </Link>
+
       <section className="card mt-4 px-4 py-3">
         <p className="text-sm text-ink-muted">{t("Signed in as {email}", { email: me.display_name })}</p>
         <form action={logOut} className="mt-2">
