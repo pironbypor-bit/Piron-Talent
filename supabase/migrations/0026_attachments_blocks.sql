@@ -138,3 +138,9 @@ begin
 end;$$;
 
 commit;
+
+-- Applied right after the block above: the uploader can delete their own file through the storage API.
+begin;
+create policy message_files_delete on storage.objects for delete to authenticated
+ using (bucket_id = 'message-files' and owner = (select auth.uid()));
+commit;
