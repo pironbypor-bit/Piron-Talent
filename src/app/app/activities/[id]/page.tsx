@@ -8,6 +8,7 @@ import { ShareButton } from "@/components/share-button";
 import { getActivity, getMe } from "@/lib/app/queries";
 import { formatRange } from "@/lib/datetime";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { shareMeta } from "@/lib/seo";
 import { AvatarImg } from "../../avatar";
 
 type Props = { params: Promise<{ id: string }> };
@@ -15,7 +16,10 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const data = await getActivity(id);
-  return { title: data?.activity.title ?? "Piron Work" };
+  if (!data) return { title: "Piron Work" };
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const x = data.activity;
+  return shareMeta({ title: x.title, description: [formatRange(x.starts_at, x.ends_at, locale), x.place, x.city ? t(x.city) : null].filter(Boolean).join(" · "), path: `/app/activities/${id}`, type: "article" });
 }
 
 /** One activity: details, Join or Leave, the group chat for people who are in, and the organiser's list. */

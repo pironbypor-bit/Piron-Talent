@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ProviderProfile } from "@/app/app/providers/provider-profile";
 import { getProvider } from "@/lib/app/queries";
 import { getT } from "@/lib/i18n/server";
+import { shareMeta } from "@/lib/seo";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; reported?: string }> };
 
@@ -11,11 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Piron Work" };
   const p = data.provider;
   const title = [p.display_name, p.role_line, p.city ? t(p.city) : null].filter(Boolean).join(" · ");
-  return {
-    title,
-    description: p.bio?.slice(0, 160) ?? undefined,
-    openGraph: { title, description: p.bio?.slice(0, 160) ?? undefined, images: p.avatar_url ? [p.avatar_url] : undefined },
-  };
+  return shareMeta({ title, description: p.bio ?? t("Skilled work, with checked identity and real reviews."), path: `/providers/${id}`, image: p.avatar_url, type: "profile" });
 }
 
 /** Public profile, same body as the app page but with the site header and footer. */

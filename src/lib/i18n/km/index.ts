@@ -453,6 +453,7 @@ const km: Messages = {
   "{n} reviews": "ការវាយតម្លៃ {n}",
   "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
   "Search": "ស្វែងរក",
+  "Skilled work, with checked identity and real reviews.": "ការងារជំនាញ ជាមួយអត្តសញ្ញាណបានត្រួតពិនិត្យ និងការវាយតម្លៃពិតប្រាកដ។",
   "Terms and pay": "លក្ខខណ្ឌការងារ និងប្រាក់ឈ្នួល",
   "Only you and each person see their own terms and pay.": "មានតែអ្នក និងម្នាក់ៗទេដែលឃើញលក្ខខណ្ឌ និងប្រាក់ឈ្នួលរបស់ខ្លួន។",
   "Only you and the owner see this.": "មានតែអ្នក និងម្ចាស់ក្រុមហ៊ុនទេដែលឃើញវា។",

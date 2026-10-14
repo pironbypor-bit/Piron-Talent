@@ -31,12 +31,12 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 
 ## State on 2026-10-14
 - Migrations 0001 to 0032 are applied on the live database (latest: 0029 owner alerts, 0030 notification preferences, 0031 company team, 0032 team terms and private pay records). Worker version 367fe213 (2026-10-15).
-- Vault secrets: site_url (https://app.piron.tech), push_hook_secret (set), brevo_api_key (still the placeholder; the owner must paste the real key with select vault.update_secret((select id from vault.secrets where name='brevo_api_key'), '<key>');).
+- Vault secrets: site_url (https://app.piron.tech), push_hook_secret (set), brevo_api_key (set 2026-10-15, key name Piron Work 2 in Brevo, expires 2027-10-15).
 - Cloudflare secrets: VAPID_PRIVATE_KEY, PUSH_HOOK_SECRET; var NEXT_PUBLIC_VAPID_PUBLIC_KEY in wrangler.jsonc. The same three are in .env.local.
 - Phone notifications: the owner has not yet installed the app on a phone to try the switch in Settings.
 
 ## Open items for the owner
-- Paste the Brevo API key (above). Cancel the two extra Hostinger orders (piron.site, pirontalent.space). Decide clean up or keep of the test-run data (posts "Test loop: cafe logo refresh" x2, the $45 job, review, conversation, closed dispute and report, POR's $40 quote on post fed97023-54d1-47ec-9b2e-276cd2c83157). Optional: WordPress theme styling in Piron amber.
+- Cancel the two extra Hostinger orders (piron.site, pirontalent.space). Decide clean up or keep of the test-run data (posts "Test loop: cafe logo refresh" x2, the $45 job, review, conversation, closed dispute and report, POR's $40 quote on post fed97023-54d1-47ec-9b2e-276cd2c83157). Optional: WordPress theme styling in Piron amber.
 
 ## Plans the owner approved, in order
 1. People plan (docs/app-ui-plan.md and the message of 2026-10-14): profile step DONE. "Say hello" message requests DONE (0022). Group messages DONE for people-you-talk-with and project groups (0023); company team chat waits for company invitations and activity groups for volunteer activities. Inviting several providers to a project DONE (0024, from the project page and from a profile). Volunteer activities DONE (0025: own tables, join with waitlist, activity group chat, organiser-confirmed hours, volunteer record on the profile; a Volunteer chip on Home and the day-before reminder are not built). Photos and PDFs in messages, blocking and Share buttons DONE (0026); the people plan is complete except company team chat (needs company invitations) and rich link previews. Next: the notification plan below.

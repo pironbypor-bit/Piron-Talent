@@ -9,6 +9,7 @@ import { ProjectPanel } from "../project-panel";
 import { ReportForm } from "../../report-form";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { shareMeta } from "@/lib/seo";
 import { AvatarImg } from "../../avatar";
 import { PostCard } from "../../post-card";
 
@@ -17,7 +18,10 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const data = await getPost(id);
-  return { title: data?.post.title ?? "Piron Work" };
+  if (!data) return { title: "Piron Work" };
+  const t = await getT();
+  const where = [data.post.place, data.post.remote ? t("Remote") : null].filter(Boolean).join(" · ");
+  return shareMeta({ title: data.post.title, description: [data.post.body, where].filter(Boolean).join(" · "), path: `/app/post/${id}`, type: "article" });
 }
 
 export default async function PostPage({ params, searchParams }: Props) {
