@@ -78,3 +78,7 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 ## Profile hub and companies (migration 0020, built 2026-10-14)
 - Profile design A from docs/app-ui-plan.md 4.6: src/app/app/profile/page.tsx is the hub; companies at /app/profile/companies/new and /app/profile/companies/[id] (queries myBusinesses, getBusiness; action createCompany → rpc create_business, which also writes the owner membership since business_members has no insert policy). Posting under a company: /app/jobs/new?business=<id> and /app/post/new?business=<id> add a hidden business_id; RLS checks membership.
 - Shell: TopBar has a details-element menu (Notifications, Settings, Log out) next to the bell, the avatar links to Profile, and the fifth tab is Post (/app/post/new). The demo shell shares it; /demo/app/post/new is a chooser.
+
+## Profile for everyone: work record and endorsements (migration 0021, built 2026-10-14)
+- /app/providers/[id] already served any profile; it now shows a Work record (confirmed project_jobs via work_record(uuid), both as provider and as customer) and endorsement counts next to skills. profiles.record_public (Settings switch "Show my work record") hides a person's own record and their name on other people's records, so a name appears only when both allow it.
+- Endorsements: the review form on a confirmed job lists the provider's skills; the customer ticks up to three, leaveReview calls endorse(job, skills[]) before leave_review. Only skills the provider lists count; one row per job and skill.

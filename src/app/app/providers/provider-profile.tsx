@@ -18,7 +18,7 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
   const [t, locale, me, rehireFrom] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id)]);
   const data = await getProvider(id);
   if (!data) notFound();
-  const { provider: p, portfolio, reviews } = data;
+  const { provider: p, portfolio, reviews, record, endorsements } = data;
   const supabase = await createClient();
   const image = (path: string) => supabase.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
   const path = `${base}/providers/${p.id}`;
@@ -73,12 +73,34 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
       )}
       {p.skills.length > 0 && (
         <ul className="mt-3 flex flex-wrap gap-2">
-          {p.skills.map((s) => (
-            <li key={s} className="rounded-full border border-stone-300 bg-white px-3 py-1 text-sm">
-              {s}
-            </li>
-          ))}
+          {p.skills.map((s) => {
+            const n = endorsements.find((e) => e.skill === s)?.n ?? 0;
+            return (
+              <li key={s} className={`rounded-full border px-3 py-1 text-sm ${n ? "border-brand-300 bg-brand-50" : "border-stone-300 bg-white"}`}>
+                {s}
+                {n > 0 && <span className="ml-1 text-xs text-brand-900">· {t("endorsed {n}", { n })}</span>}
+              </li>
+            );
+          })}
         </ul>
+      )}
+
+      {record.length > 0 && (
+        <section className="mt-6">
+          <h2 className="font-semibold">{t("Work record")}</h2>
+          <p className="text-xs text-ink-muted">{t("Jobs confirmed on Piron Work. Names appear only when both people allow it.")}</p>
+          <ul className="card mt-2 divide-y divide-stone-100">
+            {record.map((r) => (
+              <li key={r.job_id} className="px-3 py-2.5">
+                <p className="truncate font-medium">{r.title}</p>
+                <p className="text-xs text-ink-muted">
+                  {formatDate(r.completed_at, locale)} · {t(r.role === "provider" ? "As provider" : "As customer")} ·{" "}
+                  {r.other_id && r.other_name ? <Link href={`${base}/providers/${r.other_id}`} className="underline">{r.other_name}</Link> : t(r.role === "provider" ? "a customer" : "a provider")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {portfolio.length > 0 && (

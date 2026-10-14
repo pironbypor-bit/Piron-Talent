@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, ChevronRight, Globe, LogOut, Shield, Smartphone, UserPen } from "lucide-react";
+import { Bell, ChevronRight, ClipboardList, Globe, LogOut, Shield, Smartphone, UserPen } from "lucide-react";
 import { Button } from "@/components/ui";
-import { setEmailNotifications } from "@/lib/app/actions";
+import { setEmailNotifications, setRecordPublic } from "@/lib/app/actions";
 import { getMe, isAdmin, myEmailNotifications } from "@/lib/app/queries";
 import { ALL_LANGUAGES } from "@/lib/i18n/core";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -91,6 +91,24 @@ export default async function SettingsPage() {
             <input type="hidden" name="on" value={emailOn ? "0" : "1"} />
             <button type="submit" role="switch" aria-checked={emailOn} aria-label={t("Email notifications")} className={`relative h-6 w-11 rounded-full transition ${emailOn ? "bg-brand-500" : "bg-stone-300"}`}>
               <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${emailOn ? "left-[22px]" : "left-0.5"}`} />
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section className="card mt-4 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-brand-100 text-brand-800">
+            <ClipboardList className="size-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">{t("Show my work record")}</span>
+            <span className="block text-sm text-ink-muted">{t("Confirmed jobs on your profile, and your name on the other person's record.")}</span>
+          </span>
+          <form action={setRecordPublic}>
+            <input type="hidden" name="on" value={me.record_public ? "0" : "1"} />
+            <button type="submit" role="switch" aria-checked={me.record_public} aria-label={t("Show my work record")} className={`relative h-6 w-11 rounded-full transition ${me.record_public ? "bg-brand-500" : "bg-stone-300"}`}>
+              <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${me.record_public ? "left-[22px]" : "left-0.5"}`} />
             </button>
           </form>
         </div>

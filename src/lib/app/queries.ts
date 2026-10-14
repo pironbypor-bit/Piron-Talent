@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -16,7 +16,7 @@ export const getMe = cache(async (): Promise<MeRow | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select(`${AUTHOR},bio,city,district,is_available,available_until,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
+    .select(`${AUTHOR},bio,city,district,is_available,available_until,record_public,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
     .eq("id", uid)
     .maybeSingle();
   if (!data) return null;
@@ -149,19 +149,26 @@ export async function myPortfolio() {
 export async function getProvider(id: string) {
   const supabase = await createClient();
   const uid = await getUserId();
-  const [{ data }, { data: portfolio }, { data: reviews }, saved] = await Promise.all([
+  const [{ data }, { data: portfolio }, { data: reviews }, saved, { data: record }, { data: endorsed }] = await Promise.all([
     supabase.from("profiles").select(`${AUTHOR},city,district,available_until,bio,price_from,remote,completed_jobs,primary_category_id,profile_skills(skills(name))`).eq("id", id).maybeSingle(),
     supabase.from("portfolio_items").select("id,image_path,caption,sort_order").eq("provider_id", id).order("sort_order"),
     supabase.from("reviews").select(`id,stars,comment,created_at,author:profiles!reviews_author_id_fkey(${AUTHOR})`).eq("subject_id", id).order("created_at", { ascending: false }).limit(10),
     uid ? supabase.from("saved_providers").select("provider_id").eq("user_id", uid).eq("provider_id", id).maybeSingle() : Promise.resolve({ data: null }),
+    supabase.rpc("work_record", { p_user: id }),
+    supabase.from("endorsements").select("skill").eq("to_user", id),
   ]);
   if (!data) return null;
+  const counts = new Map<string, number>();
+  for (const e of (endorsed ?? []) as { skill: string }[]) counts.set(e.skill, (counts.get(e.skill) ?? 0) + 1);
+  const endorsements = [...counts.entries()].map(([skill, n]) => ({ skill, n })).sort((a, b) => b.n - a.n);
   const sig = (await replySignals(supabase, [id])).get(id) ?? { reply_minutes: null, replies: 0 };
   const provider: ProviderRow = { ...withSkills(data as unknown as Omit<ProviderRow, "skills" | "saved" | "reply_minutes" | "replies"> & SkillJoin), ...sig, saved: !!saved.data };
   return {
     provider,
     portfolio: (portfolio ?? []) as { id: string; image_path: string; caption: string | null; sort_order: number }[],
     reviews: ((reviews ?? []) as unknown as { id: string; stars: number; comment: string | null; created_at: string; author: Author | Author[] }[]).map((r) => ({ ...r, author: one(r.author) as Author })),
+    record: (record ?? []) as WorkRecordRow[],
+    endorsements,
   };
 }
 
@@ -316,14 +323,17 @@ export async function getProjectPanel(postId: string) {
   ]);
   let reviewed = false;
   let dispute: DisputeRow | null = null;
+  let providerSkills: string[] = [];
   if (job && uid) {
-    const j = job as { id: string; quote_id: string };
-    const [{ data: r }, { data: d }] = await Promise.all([
+    const j = job as { id: string; quote_id: string; provider_id: string };
+    const [{ data: r }, { data: d }, { data: sk }] = await Promise.all([
       supabase.from("reviews").select("id").eq("project_job_id", j.id).eq("author_id", uid).maybeSingle(),
       supabase.from("disputes").select("id,opened_by,status,reason,resolution,created_at").eq("quote_id", j.quote_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("profile_skills").select("skills(name)").eq("profile_id", j.provider_id),
     ]);
     reviewed = !!r;
     dispute = (d ?? null) as DisputeRow | null;
+    providerSkills = ((sk ?? []) as unknown as SkillJoin["profile_skills"]).map((s) => s.skills?.name).filter(Boolean) as string[];
   }
   return {
     scope: (scope ?? { deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null }) as ProjectScope,
@@ -338,6 +348,7 @@ export async function getProjectPanel(postId: string) {
     count: typeof countData === "number" ? countData : 0,
     reviewed,
     dispute,
+    providerSkills,
   };
 }
 

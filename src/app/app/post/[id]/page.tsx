@@ -38,7 +38,7 @@ export default async function PostPage({ params, searchParams }: Props) {
         <PostCard post={post} t={t} locale={locale} path={path} me={me?.id ?? null} full />
       </div>
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
-      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} me={me} t={t} locale={locale} />}
+      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} providerSkills={panel.providerSkills} me={me} t={t} locale={locale} />}
 
       {me && me.id !== post.author.id && (
         <section id="connect" className="mt-4 rounded-2xl border border-brand-300 bg-brand-50 p-4">

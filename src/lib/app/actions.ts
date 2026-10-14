@@ -240,6 +240,15 @@ export async function setAvailableThisWeek(formData: FormData) {
   revalidatePath("/app/services");
 }
 
+/** Settings: show my confirmed jobs on my profile (and my name on the other party's record). */
+export async function setRecordPublic(formData: FormData) {
+  const uid = await requireUser("/app/settings");
+  const on = String(formData.get("on") ?? "") === "1";
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ record_public: on }).eq("id", uid);
+  revalidatePath("/app/settings");
+}
+
 export async function setEmailNotifications(formData: FormData) {
   await requireUser("/app/settings");
   const on = String(formData.get("on") ?? "") === "1";
@@ -348,6 +357,8 @@ export async function leaveReview(postId: string, jobId: string, formData: FormD
   await requireUser(`/app/post/${postId}`);
   const stars = Number(formData.get("stars"));
   if (!(stars >= 1 && stars <= 5)) return;
+  const skills = formData.getAll("skills").map(String).filter((s) => s.length > 0 && s.length <= 60).slice(0, 3);
+  if (skills.length) await (await createClient()).rpc("endorse", { p_job: jobId, p_skills: skills });
   await rpcThenBack(`/app/post/${postId}`, "leave_review", { p_job: jobId, p_stars: stars, p_comment: String(formData.get("comment") ?? "").trim().slice(0, 1000) });
 }
 

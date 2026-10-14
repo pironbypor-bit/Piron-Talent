@@ -81,6 +81,7 @@ export type MeRow = Author & {
   district: string | null;
   is_available: boolean;
   available_until: string | null;
+  record_public: boolean;
   price_from: string | null;
   remote: boolean;
   primary_category_id: number | null;
@@ -124,3 +125,5 @@ export type BusinessDetail = Omit<BusinessRow, "jobs" | "projects"> & {
   jobs: { id: string; title: string; job_type: string; status: string; created_at: string; applicants: number }[];
   posts: { id: string; title: string; status: string; created_at: string }[];
 };
+
+export type WorkRecordRow = { job_id: string; title: string; completed_at: string; role: "provider" | "customer"; other_name: string | null; other_id: string | null };

@@ -6,10 +6,10 @@ import { formatDate } from "@/lib/dates";
 import type { Locale, T } from "@/lib/i18n/core";
 import { AvatarImg } from "../avatar";
 
-type Props = { job: ProjectJobRow; post: PostRow; quotes: QuoteRow[]; reviewed: boolean; dispute: DisputeRow | null; me: MeRow | null; t: T; locale: Locale };
+type Props = { job: ProjectJobRow; post: PostRow; quotes: QuoteRow[]; reviewed: boolean; dispute: DisputeRow | null; providerSkills: string[]; me: MeRow | null; t: T; locale: Locale };
 
 /** The job record after a quote is accepted: stepper, the next action for whoever is looking, review at the end. */
-export function JobPanel({ job, post, quotes, reviewed, dispute, me, t, locale }: Props) {
+export function JobPanel({ job, post, quotes, reviewed, dispute, providerSkills, me, t, locale }: Props) {
   const isCustomer = !!me && me.id === job.customer_id;
   const isProvider = !!me && me.id === job.provider_id;
   const provider = quotes.find((q) => q.id === job.quote_id)?.provider ?? post.author;
@@ -89,6 +89,18 @@ export function JobPanel({ job, post, quotes, reviewed, dispute, me, t, locale }
                     ))}
                   </div>
                   <textarea name="comment" rows={3} className={inputClass} placeholder={t("Your review")} />
+                  {providerSkills.length > 0 && (
+                    <fieldset>
+                      <legend className="text-sm font-medium">{t("Which skills stood out? Up to three.")}</legend>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {providerSkills.map((s) => (
+                          <label key={s} className="cursor-pointer rounded-full border border-stone-300 bg-white px-3 py-1 text-sm has-[:checked]:border-brand-400 has-[:checked]:bg-brand-100">
+                            <input type="checkbox" name="skills" value={s} className="sr-only" />{s}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
                   <Button type="submit" className="px-4 py-2 text-sm">{t("Send review")}</Button>
                 </form>
               )}
