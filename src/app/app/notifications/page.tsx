@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Bell, CheckCircle2, FileCheck, Gavel, MessageCircle, PackageCheck, Sparkles, Star, Tag, UserPlus, XCircle, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui";
 import { markNotificationsRead } from "@/lib/app/actions";
@@ -81,7 +80,7 @@ export default async function NotificationsPage() {
                 const fresh = !n.read_at;
                 return (
                   <li key={n.id}>
-                    <Link prefetch={false} href={`/app/notifications/go/${n.id}`} className={`flex items-start gap-3 px-3 py-3 hover:bg-stone-50 ${fresh ? "bg-brand-50/60" : ""}`}>
+                    <a href={`/app/notifications/go/${n.id}`} className={`flex items-start gap-3 px-3 py-3 hover:bg-stone-50 ${fresh ? "bg-brand-50/60" : ""}`}>
                       <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${fresh ? "bg-brand-200 text-brand-900" : "bg-stone-100 text-ink-muted"}`}>
                         <Icon className="size-4" />
                       </span>
@@ -93,7 +92,7 @@ export default async function NotificationsPage() {
                         <span className="text-xs text-ink-muted">{formatDate(n.created_at, locale)}</span>
                         {fresh && <span className="size-2 rounded-full bg-brand-500" aria-label={t("Unread")} />}
                       </span>
-                    </Link>
+                    </a>
                   </li>
                 );
               })}
