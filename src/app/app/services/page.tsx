@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bookmark, Calculator, FileText, Laptop, MoreHorizontal, Palette, Scale, Search, Sparkles, Star, Wrench, type LucideIcon } from "lucide-react";
+import { Bookmark, Star } from "lucide-react";
 import { CheckedPill, EmptyState } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { toggleKeepProvider } from "@/lib/app/actions";
 import { listProviders, type ProviderSort } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { CITIES, isCity } from "@/lib/cities";
+import { ProviderFilters } from "@/components/provider-filters";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvailablePill, replyText } from "@/components/signals";
 import { AvatarImg } from "../avatar";
@@ -16,18 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("Services") };
 }
 
-const TILES: Record<string, { Icon: LucideIcon; tone: string; review?: boolean }> = {
-  finance: { Icon: Calculator, tone: "bg-amber-100 text-amber-800" },
-  documents: { Icon: FileText, tone: "bg-sky-100 text-sky-800" },
-  legal: { Icon: Scale, tone: "bg-stone-200 text-stone-700", review: true },
-  technology: { Icon: Laptop, tone: "bg-violet-100 text-violet-800" },
-  electrical: { Icon: Wrench, tone: "bg-stone-200 text-stone-700", review: true },
-  beauty: { Icon: Sparkles, tone: "bg-pink-100 text-pink-800" },
-  creative: { Icon: Palette, tone: "bg-emerald-100 text-emerald-800" },
-};
-const GRID = ["finance", "documents", "legal", "technology", "electrical", "beauty", "creative"];
-
-/** Services tab: category grid from the categories table, then providers who marked themselves available. */
+/** Services tab: search and filters at the top, then providers who marked themselves available. */
 type Params = { category?: string; q?: string; remote?: string; city?: string; sort?: string };
 
 export default async function ServicesPage({ searchParams }: { searchParams: Promise<Params> }) {
@@ -38,7 +28,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
   const city = isCity(params.city) ? params.city : "";
   const sort: ProviderSort = params.sort === "completed" || params.sort === "newest" ? params.sort : "rated";
   const providers = await listProviders({ categoryId: selected?.id, q, remote, city, sort });
-  const searching = Boolean(q || remote || city || params.sort);
+  const searching = Boolean(q || remote || city || (params.sort && params.sort !== "rated"));
   const qs = (over: Partial<Params>) => {
     const p = new URLSearchParams();
     const merged: Params = { category: selected ? String(selected.id) : undefined, q: q || undefined, remote: remote ? "1" : undefined, city: city || undefined, sort: params.sort, ...over };
@@ -47,77 +37,18 @@ export default async function ServicesPage({ searchParams }: { searchParams: Pro
     return str ? `/app/services?${str}` : "/app/services";
   };
   const path = qs({});
-  const short = (name: string) => name.split(/ (&|និង) /)[0];
-
   return (
     <main className="px-4 pb-24 pt-4">
-      <section className="hero-amber rounded-3xl p-4">
-        <h1 className="text-xl font-bold">{t("Find professional services")}</h1>
-        <p className="text-sm text-brand-900">{t("Skilled people. Checked identity.")}</p>
-      </section>
-
-      <ul className="mt-4 grid grid-cols-4 gap-2">
-        {GRID.map((slug) => {
-          const c = categories.find((x) => x.slug === slug);
-          if (!c) return null;
-          const { Icon, tone, review } = TILES[slug];
-          const active = selected?.id === c.id;
-          return (
-            <li key={slug}>
-              <Link href={active ? "/app/services" : `/app/services?category=${c.id}`} aria-current={active ? "page" : undefined} className={`card flex h-full flex-col items-center gap-1.5 px-1 py-3 text-center text-[11px] font-medium leading-tight ${active ? "ring-2 ring-brand-500" : "hover:bg-brand-50"} ${review ? "opacity-70" : ""}`}>
-                <span className={`flex size-10 items-center justify-center rounded-xl ${tone}`}>
-                  <Icon className="size-5" />
-                </span>
-                <span className="line-clamp-2">{short(categoryLabel(c, locale))}</span>
-                {review && <span className="text-[10px] font-normal text-ink-muted">{t("After review")}</span>}
-              </Link>
-            </li>
-          );
-        })}
-        <li>
-          <Link href="/app/services" className="card flex h-full flex-col items-center gap-1.5 px-1 py-3 text-center text-[11px] font-medium hover:bg-brand-50">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-brand-100 text-brand-800">
-              <MoreHorizontal className="size-5" />
-            </span>
-            {t("More")}
-          </Link>
-        </li>
-      </ul>
-
-      <form action="/app/services" method="get" className="mt-5 space-y-2">
-        {selected && <input type="hidden" name="category" value={selected.id} />}
-        {remote && <input type="hidden" name="remote" value="1" />}
-        {city && <input type="hidden" name="city" value={city} />}
-        <label className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-brand-500">
-          <Search className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
-          <span className="sr-only">{t("Search providers")}</span>
-          <input name="q" defaultValue={q} placeholder={t("Search providers")} maxLength={60} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-          <button type="submit" className="rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-ink hover:bg-brand-400">
-            {t("Search")}
-          </button>
-        </label>
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <Link href={qs({ remote: remote ? undefined : "1" })} aria-pressed={remote} className={`rounded-full border px-3 py-1 font-medium ${remote ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
-            {t("Remote")}
-          </Link>
-          <span className="ml-auto text-ink-muted">{t("Sort")}</span>
-          <select name="sort" defaultValue={sort} className="rounded-full border border-stone-200 bg-white px-2 py-1 text-xs">
-            <option value="rated">{t("Best rated")}</option>
-            <option value="completed">{t("Most completed jobs")}</option>
-            <option value="newest">{t("Newest")}</option>
-          </select>
-        </div>
-      </form>
-      <div className="mt-2 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label={t("City")}>
-        <Link href={qs({ city: undefined })} aria-pressed={!city} className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${!city ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
-          {t("All cities")}
-        </Link>
-        {CITIES.map((c) => (
-          <Link key={c} href={qs({ city: city === c ? undefined : c })} aria-pressed={city === c} className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${city === c ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`}>
-            {t(c)}
-          </Link>
-        ))}
-      </div>
+      <ProviderFilters
+        action="/app/services"
+        q={q}
+        category={selected ? String(selected.id) : ""}
+        categories={categories.map((c) => ({ value: String(c.id), label: categoryLabel(c, locale) }))}
+        city={city}
+        cities={CITIES.map((c) => ({ value: c, label: t(c) }))}
+        remote={remote}
+        sort={sort}
+      />
 
       <h2 className="mt-5 text-lg font-bold">{selected && city ? t("{category} providers in {city}", { category: categoryLabel(selected, locale), city: t(city) }) : selected ? categoryLabel(selected, locale) : city ? t("Providers in {city}", { city: t(city) }) : searching ? t("Results") : t("Popular providers")}</h2>
       {providers.length === 0 ? (

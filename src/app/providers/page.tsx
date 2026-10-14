@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { CheckedPill, EmptyState, PageTitle } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { AvatarImg } from "@/app/app/avatar";
 import { listProviders, type ProviderSort } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { CITIES, isCity } from "@/lib/cities";
+import { ProviderFilters } from "@/components/provider-filters";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvailablePill, replyText } from "@/components/signals";
 
@@ -25,8 +26,6 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return { title, description: t("Checked providers with a record of completed jobs. Post what you need and compare quotes.") };
 }
 
-const chip = (on: boolean) => `shrink-0 rounded-full border px-3 py-1 text-sm font-medium ${on ? "border-brand-400 bg-brand-100 text-brand-900" : "border-stone-200 bg-white hover:bg-stone-50"}`;
-
 /** Public directory: the same provider query as the Services tab, inside the site chrome, with clean URLs for category and city. */
 export default async function ProvidersPage({ searchParams }: Props) {
   const [t, locale, categories, params] = await Promise.all([getT(), getLocale(), getCategories(), searchParams]);
@@ -36,13 +35,6 @@ export default async function ProvidersPage({ searchParams }: Props) {
   const city = isCity(params.city) ? params.city : "";
   const sort: ProviderSort = params.sort === "completed" || params.sort === "newest" ? params.sort : "rated";
   const providers = await listProviders({ categoryId: selected?.id, q, remote, city, sort });
-  const qs = (over: Partial<Params>) => {
-    const p = new URLSearchParams();
-    const merged: Params = { category: selected ? String(selected.id) : undefined, q: q || undefined, remote: remote ? "1" : undefined, city: city || undefined, sort: params.sort, ...over };
-    for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
-    const str = p.toString();
-    return str ? `/providers?${str}` : "/providers";
-  };
   const heading =
     selected && city ? t("{category} providers in {city}", { category: categoryLabel(selected, locale), city: t(city) })
     : selected ? t("{category} providers", { category: categoryLabel(selected, locale) })
@@ -53,44 +45,16 @@ export default async function ProvidersPage({ searchParams }: Props) {
     <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
       <PageTitle lead={t("Checked providers with a record of completed jobs. Post what you need and compare quotes.")}>{t("Providers")}</PageTitle>
 
-      <form action="/providers" method="get" className="space-y-2">
-        {selected && <input type="hidden" name="category" value={selected.id} />}
-        {remote && <input type="hidden" name="remote" value="1" />}
-        {city && <input type="hidden" name="city" value={city} />}
-        <label className="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-brand-500">
-          <Search className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
-          <span className="sr-only">{t("Search providers")}</span>
-          <input name="q" defaultValue={q} placeholder={t("Search by name, role or skill")} maxLength={60} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-          <button type="submit" className="rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-ink hover:bg-brand-400">
-            {t("Search")}
-          </button>
-        </label>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t("Category")}>
-          <Link href={qs({ category: undefined })} aria-pressed={!selected} className={chip(!selected)}>{t("All categories")}</Link>
-          {categories.map((c) => (
-            <Link key={c.id} href={qs({ category: selected?.id === c.id ? undefined : String(c.id) })} aria-pressed={selected?.id === c.id} className={chip(selected?.id === c.id)}>
-              {categoryLabel(c, locale)}
-            </Link>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t("City")}>
-          <Link href={qs({ city: undefined })} aria-pressed={!city} className={chip(!city)}>{t("All cities")}</Link>
-          {CITIES.map((c) => (
-            <Link key={c} href={qs({ city: city === c ? undefined : c })} aria-pressed={city === c} className={chip(city === c)}>
-              {t(c)}
-            </Link>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <Link href={qs({ remote: remote ? undefined : "1" })} aria-pressed={remote} className={chip(remote)}>{t("Remote")}</Link>
-          <span className="ml-auto text-ink-muted">{t("Sort")}</span>
-          <select name="sort" defaultValue={sort} className="rounded-full border border-stone-200 bg-white px-2 py-1 text-sm" aria-label={t("Sort")}>
-            <option value="rated">{t("Best rated")}</option>
-            <option value="completed">{t("Most completed jobs")}</option>
-            <option value="newest">{t("Newest")}</option>
-          </select>
-        </div>
-      </form>
+      <ProviderFilters
+        action="/providers"
+        q={q}
+        category={selected ? String(selected.id) : ""}
+        categories={categories.map((c) => ({ value: String(c.id), label: categoryLabel(c, locale) }))}
+        city={city}
+        cities={CITIES.map((c) => ({ value: c, label: t(c) }))}
+        remote={remote}
+        sort={sort}
+      />
 
       <div className="mt-8 flex items-baseline justify-between gap-3">
         <h2 className="text-xl font-bold">{heading}</h2>
