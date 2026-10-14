@@ -246,6 +246,21 @@ export async function setEmailNotifications(formData: FormData) {
   revalidatePath("/app/settings");
 }
 
+/** This device wants phone notifications: one row per browser subscription, replaced if the endpoint repeats. */
+export async function savePushSubscription(sub: { endpoint: string; p256dh: string; auth: string; userAgent?: string }) {
+  const uid = await requireUser("/app/settings");
+  if (!sub.endpoint.startsWith("https://") || sub.endpoint.length > 1000) return;
+  const supabase = await createClient();
+  await supabase.from("push_subscriptions").delete().eq("user_id", uid).eq("endpoint", sub.endpoint);
+  await supabase.from("push_subscriptions").insert({ user_id: uid, endpoint: sub.endpoint, p256dh: sub.p256dh.slice(0, 200), auth: sub.auth.slice(0, 100), user_agent: sub.userAgent?.slice(0, 300) ?? null });
+}
+
+export async function removePushSubscription(endpoint: string) {
+  const uid = await requireUser("/app/settings");
+  const supabase = await createClient();
+  await supabase.from("push_subscriptions").delete().eq("user_id", uid).eq("endpoint", endpoint);
+}
+
 export async function markNotificationsRead() {
   const uid = await requireUser("/app/profile");
   const supabase = await createClient();

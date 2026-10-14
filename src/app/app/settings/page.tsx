@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, ChevronRight, Globe, LogOut, Shield, UserPen } from "lucide-react";
+import { Bell, ChevronRight, Globe, LogOut, Shield, Smartphone, UserPen } from "lucide-react";
 import { Button } from "@/components/ui";
 import { setEmailNotifications } from "@/lib/app/actions";
 import { getMe, isAdmin, myEmailNotifications } from "@/lib/app/queries";
@@ -8,6 +8,7 @@ import { ALL_LANGUAGES } from "@/lib/i18n/core";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { logOut } from "@/app/auth/actions";
 import { setLocale } from "@/app/actions/locale";
+import { PushSwitch } from "./push-switch";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -63,6 +64,17 @@ export default async function SettingsPage() {
               </button>
             ))}
           </form>
+        </div>
+      </section>
+
+      <section className="card mt-4 px-4 py-3">
+        <div className="flex items-start gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-800">
+            <Smartphone className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <PushSwitch publicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
+          </div>
         </div>
       </section>
 

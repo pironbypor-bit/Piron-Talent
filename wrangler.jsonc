@@ -15,5 +15,9 @@
     { "pattern": "app.piron.tech", "custom_domain": true }
   ],
   // Public, non-secret runtime variables. Secrets stay in the dashboard.
-  "vars": { "NEXT_PUBLIC_SITE_URL": "https://app.piron.tech" }
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://app.piron.tech",
+    // Public half of the Web Push key pair; the private half and PUSH_HOOK_SECRET are dashboard secrets.
+    "NEXT_PUBLIC_VAPID_PUBLIC_KEY": "BKTEsVtsDH4QQGLAV4U0zGlmvMwrUig3LrHHBa_fszQxs1IyFJwzagjIpm2ECBZFFWSDQqQBRhXCsI1XdQWCaEU"
+  }
 }

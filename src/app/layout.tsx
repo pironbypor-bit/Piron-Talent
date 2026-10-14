@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Khmer } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, TAGLINE } from "@/lib/brand";
@@ -15,7 +15,11 @@ const khmer = Noto_Sans_Khmer({ subsets: ["khmer"], variable: "--font-khmer", di
 export const metadata: Metadata = {
   title: { default: APP_NAME, template: "%s - " + APP_NAME },
   description: TAGLINE,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
 };
+
+export const viewport: Viewport = { themeColor: "#f5b800" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
