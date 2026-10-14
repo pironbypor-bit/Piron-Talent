@@ -12,7 +12,7 @@ export async function SiteHeader() {
   return (
     <header className="border-b border-stone-200">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4">
-        <Link href="/" className="text-lg font-bold tracking-tight">
+        <Link href="/providers" className="text-lg font-bold tracking-tight">
           {APP_NAME}
         </Link>
         <nav className="flex items-center gap-4 text-sm">

@@ -12,7 +12,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data } = await supabase.from("profiles").select("id,updated_at").eq("is_available", true).limit(5000);
   const now = new Date();
   return [
-    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
     ...SEGMENTS.map((s) => ({ url: `${SITE_URL}/for/${s.slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.8 })),
     { url: `${SITE_URL}/providers`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     ...CITIES.filter((c) => c !== "Other").map((c) => ({ url: `${SITE_URL}/providers?city=${encodeURIComponent(c)}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
