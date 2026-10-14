@@ -285,7 +285,7 @@ export async function getProjectPanel(postId: string) {
   const uid = await getUserId();
   const [{ data: scope }, { data: quotes }, { data: job }, { data: countData }] = await Promise.all([
     supabase.from("posts").select("deliverables,deadline,remote,budget_min,budget_max").eq("id", postId).maybeSingle(),
-    uid ? supabase.from("quotes").select(`id,post_id,provider_id,price,days,note,status,created_at,provider:profiles!quotes_provider_id_fkey(${AUTHOR})`).eq("post_id", postId).order("created_at") : Promise.resolve({ data: [] }),
+    uid ? supabase.from("quotes").select(`id,post_id,provider_id,price,days,note,status,created_at,provider:profiles!quotes_provider_id_fkey(${AUTHOR},completed_jobs,reviews!reviews_subject_id_fkey(stars))`).eq("post_id", postId).order("created_at") : Promise.resolve({ data: [] }),
     uid ? supabase.from("project_jobs").select("id,post_id,quote_id,customer_id,provider_id,agreed_price,status,delivered_at,confirmed_at,note,created_at").eq("post_id", postId).in("status", ["accepted", "delivered", "confirmed"]).maybeSingle() : Promise.resolve({ data: null }),
     supabase.rpc("quote_count", { p_post: postId }),
   ]);
@@ -302,7 +302,13 @@ export async function getProjectPanel(postId: string) {
   }
   return {
     scope: (scope ?? { deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null }) as ProjectScope,
-    quotes: ((quotes ?? []) as unknown as (Omit<QuoteRow, "provider"> & { provider: Author | Author[] })[]).map((q) => ({ ...q, provider: one(q.provider) as Author })),
+    quotes: ((quotes ?? []) as unknown as (Omit<QuoteRow, "provider" | "stats"> & { provider: (Author & { completed_jobs: number; reviews: { stars: number }[] }) | (Author & { completed_jobs: number; reviews: { stars: number }[] })[] })[]).map((q) => {
+      const p = one(q.provider)!;
+      const { completed_jobs, reviews, ...author } = p;
+      const n = reviews?.length ?? 0;
+      const quoteStats = { rating: n ? reviews.reduce((a, x) => a + x.stars, 0) / n : null, reviews: n, completed_jobs };
+      return { ...q, provider: author as Author, stats: quoteStats };
+    }),
     job: (job ?? null) as ProjectJobRow | null,
     count: typeof countData === "number" ? countData : 0,
     reviewed,

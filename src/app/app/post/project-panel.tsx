@@ -57,6 +57,8 @@ export function ProjectPanel({ post, scope, quotes, job, count, reviewed, disput
           </div>
           {isAuthor && <p className="mt-1 text-xs text-ink-muted">{t("Quotes are private between you and each provider.")}</p>}
 
+          {isAuthor && quotes.filter((q) => q.status === "pending").length > 0 && <QuoteCompare quotes={quotes.filter((q) => q.status === "pending")} postId={post.id} t={t} />}
+
           {isAuthor && quotes.length > 0 && (
             <ul className="mt-3 space-y-3">
               {quotes.map((q) => (
@@ -147,6 +149,48 @@ export function ProjectPanel({ post, scope, quotes, job, count, reviewed, disput
           )}
         </section>
       )}
+    </div>
+  );
+}
+
+/** Side-by-side view of the pending quotes: one column per provider, Accept on each. Markers only when there is something to compare. */
+function QuoteCompare({ quotes, postId, t }: { quotes: QuoteRow[]; postId: string; t: T }) {
+  const lowest = quotes.length > 1 ? Math.min(...quotes.map((q) => q.price)) : null;
+  const withDays = quotes.filter((q) => q.days !== null);
+  const fastest = quotes.length > 1 && withDays.length > 1 ? Math.min(...withDays.map((q) => q.days as number)) : null;
+  return (
+    <div className="-mx-4 mt-3 overflow-x-auto px-4 pb-1">
+      <p className="mb-2 text-xs font-medium text-ink-muted">{t("Compare")}</p>
+      <div className="flex gap-2" style={{ minWidth: "max-content" }}>
+        {quotes.map((q) => {
+          const isLowest = lowest !== null && q.price === lowest;
+          const isFastest = fastest !== null && q.days === fastest;
+          return (
+            <div key={q.id} className={`w-44 shrink-0 rounded-2xl border p-3 ${isLowest ? "border-brand-400 bg-brand-50" : "border-stone-200 bg-white"}`}>
+              <div className="flex items-center gap-2">
+                <AvatarImg name={q.provider.display_name} url={q.provider.avatar_url} />
+                <Link href={`/app/providers/${q.provider.id}`} className="min-w-0 truncate text-sm font-semibold hover:underline">
+                  {q.provider.display_name}
+                </Link>
+              </div>
+              <p className="mt-2 text-2xl font-bold">${q.price}</p>
+              <dl className="mt-1 space-y-0.5 text-xs text-ink-muted">
+                <div className="flex justify-between gap-2"><dt>{t("Days")}</dt><dd className="font-medium text-ink">{q.days ?? "–"}</dd></div>
+                <div className="flex justify-between gap-2"><dt>{t("Rating")}</dt><dd className="font-medium text-ink">{q.stats.rating !== null ? `${q.stats.rating.toFixed(1)} (${q.stats.reviews})` : t("New")}</dd></div>
+                <div className="flex justify-between gap-2"><dt>{t("Completed jobs")}</dt><dd className="font-medium text-ink">{q.stats.completed_jobs}</dd></div>
+                <div className="flex justify-between gap-2"><dt>{t("Identity")}</dt><dd className="font-medium text-ink">{q.provider.identity_checked ? t("Checked") : t("Not yet")}</dd></div>
+              </dl>
+              <div className="mt-2 flex min-h-5 flex-wrap gap-1">
+                {isLowest && <span className="rounded-full bg-brand-200 px-2 py-0.5 text-[10px] font-semibold text-brand-900">{t("Lowest price")}</span>}
+                {isFastest && <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[10px] font-semibold text-ink">{t("Fastest")}</span>}
+              </div>
+              <form action={acceptQuote.bind(null, postId, q.id)} className="mt-2">
+                <Button type="submit" className="w-full px-3 py-1.5 text-sm">{t("Accept quote")}</Button>
+              </form>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

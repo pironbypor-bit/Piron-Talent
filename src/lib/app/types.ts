@@ -95,7 +95,8 @@ export const KIND_LABEL: Record<PostKind, string> = {
 
 // Phase 2 core loop
 export type QuoteStatus = "pending" | "accepted" | "declined" | "withdrawn";
-export type QuoteRow = { id: string; post_id: string; provider_id: string; price: number; days: number | null; note: string | null; status: QuoteStatus; created_at: string; provider: Author };
+export type QuoteStats = { rating: number | null; reviews: number; completed_jobs: number };
+export type QuoteRow = { id: string; post_id: string; provider_id: string; price: number; days: number | null; note: string | null; status: QuoteStatus; created_at: string; provider: Author; stats: QuoteStats };
 export type ProjectJobStatus = "accepted" | "delivered" | "confirmed" | "cancelled";
 export type ProjectJobRow = {
   id: string;
