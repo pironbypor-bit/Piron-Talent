@@ -94,7 +94,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
 
       {volunteer.activities > 0 && (
         <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-          {t("Volunteer: {n} activities, {hours} hours confirmed.", { n: volunteer.activities, hours: volunteer.hours })}
+          {t("Volunteer record · Activities: {n} · Hours: {hours}", { n: volunteer.activities, hours: volunteer.hours })}
         </p>
       )}
 

@@ -490,7 +490,7 @@ const km: Messages = {
   "Hours": "ម៉ោង",
   "You can confirm who came once the activity has started.": "អ្នកអាចបញ្ជាក់ថានរណាបានមក នៅពេលសកម្មភាពចាប់ផ្តើម។",
   "Cancel this activity": "លុបចោលសកម្មភាពនេះ",
-  "Volunteer: {n} activities, {hours} hours confirmed.": "ស្ម័គ្រចិត្ត៖ សកម្មភាព {n} ម៉ោង {hours} ដែលបានបញ្ជាក់។",
+  "Volunteer record · Activities: {n} · Hours: {hours}": "កំណត់ត្រាស្ម័គ្រចិត្ត · សកម្មភាព៖ {n} · ម៉ោង៖ {hours}",
   "Activity joined": "មានអ្នកចូលរួមសកម្មភាព",
   "Activity spot": "មានកន្លែងទំនេរក្នុងសកម្មភាព",
   "Activity cancelled": "សកម្មភាពត្រូវបានលុបចោល",
