@@ -30,7 +30,7 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 - Helpers used inside policies on the same table must be security definer; qualify columns in policy subqueries with the table name.
 
 ## State on 2026-10-14
-- Migrations 0001 to 0028 are applied on the live database (latest: 0025 volunteer activities, 0026 message files and blocking, 0027 reminders with pg_cron every 30 minutes, 0028 job alerts). Latest Worker version 5f3c7c05 (2026-10-14).
+- Migrations 0001 to 0029 are applied on the live database (latest: 0026 message files and blocking, 0027 reminders with pg_cron every 30 minutes, 0028 job alerts, 0029 owner alerts). Latest Worker version 2f026e24 (2026-10-14).
 - Vault secrets: site_url (https://app.piron.tech), push_hook_secret (set), brevo_api_key (still the placeholder; the owner must paste the real key with select vault.update_secret((select id from vault.secrets where name='brevo_api_key'), '<key>');).
 - Cloudflare secrets: VAPID_PRIVATE_KEY, PUSH_HOOK_SECRET; var NEXT_PUBLIC_VAPID_PUBLIC_KEY in wrangler.jsonc. The same three are in .env.local.
 - Phone notifications: the owner has not yet installed the app on a phone to try the switch in Settings.
@@ -40,7 +40,7 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 
 ## Plans the owner approved, in order
 1. People plan (docs/app-ui-plan.md and the message of 2026-10-14): profile step DONE. "Say hello" message requests DONE (0022). Group messages DONE for people-you-talk-with and project groups (0023); company team chat waits for company invitations and activity groups for volunteer activities. Inviting several providers to a project DONE (0024, from the project page and from a profile). Volunteer activities DONE (0025: own tables, join with waitlist, activity group chat, organiser-confirmed hours, volunteer record on the profile; a Volunteer chip on Home and the day-before reminder are not built). Photos and PDFs in messages, blocking and Share buttons DONE (0026); the people plan is complete except company team chat (needs company invitations) and rich link previews. Next: the notification plan below.
-2. Notification plan: step 4 scheduled reminders DONE (0027) and job alerts DONE (0028); next step 5 owner alerts in the centre and step 6 per-group preferences; step 5 owner alerts in the centre (new identity check, report, dispute, request, application) with an Admin count; step 6 per-group preferences in Settings (Projects and quotes, Messages, Reminders, Reviews).
+2. Notification plan: step 4 scheduled reminders DONE (0027) and job alerts DONE (0028); step 5 owner alerts DONE (0029); next step 6 per-group preferences in Settings (Projects and quotes, Messages, Reminders, Reviews) replacing the single Reminders switch; step 5 owner alerts in the centre (new identity check, report, dispute, request, application) with an Admin count; step 6 per-group preferences in Settings (Projects and quotes, Messages, Reminders, Reviews).
 3. Earlier backlog: share previews for profiles and projects, category SEO pages, admin KPIs, Khmer voice-to-scope; later business accounts, payments, invoices, KYC level 3; company managers (business_members roles exist, no invitation screen yet).
 
 ## How features are built here
