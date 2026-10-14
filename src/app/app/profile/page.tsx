@@ -4,7 +4,9 @@ import { Bell, Bookmark, Briefcase, FileCheck, FileText, MessageCircle, Settings
 import { AngkorSilhouette } from "@/components/brand";
 import { CheckedPill, Pill } from "@/components/ui";
 import { markNotificationsRead } from "@/lib/app/actions";
+import { setAvailableThisWeek } from "@/lib/app/actions";
 import { getMe, listNotifications, myCounters, myIdentityStatus } from "@/lib/app/queries";
+import { isAvailableNow } from "@/components/signals";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
@@ -80,6 +82,24 @@ export default async function ProfilePage() {
           </li>
         ))}
       </ul>
+
+      {me.is_available && (() => {
+        const on = isAvailableNow(me);
+        return (
+          <section className="card mt-4 flex items-center gap-3 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">{t("Available this week")}</p>
+              <p className="text-sm text-ink-muted">{on ? t("Shown on your card until {date}", { date: formatDate(me.available_until!, locale) }) : t("Tell customers you have time for new work. Lasts 7 days.")}</p>
+            </div>
+            <form action={setAvailableThisWeek}>
+              <input type="hidden" name="on" value={on ? "0" : "1"} />
+              <button type="submit" role="switch" aria-checked={on} aria-label={t("Available this week")} className={`relative h-6 w-11 rounded-full transition ${on ? "bg-emerald-500" : "bg-stone-300"}`}>
+                <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${on ? "left-[22px]" : "left-0.5"}`} />
+              </button>
+            </form>
+          </section>
+        );
+      })()}
 
       <Link href="/app/profile/jobs" className="card mt-4 flex items-center justify-between px-4 py-3 font-semibold hover:bg-brand-50">
         {t("My jobs")}

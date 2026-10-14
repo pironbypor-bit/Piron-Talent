@@ -6,6 +6,7 @@ import { getMe, getProvider, lastConfirmedJobWith } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { AvailablePill, replyText } from "@/components/signals";
 import { AvatarImg } from "../avatar";
 import { ReportForm } from "../report-form";
 import { Stars } from "@/app/demo/demo-ui";
@@ -43,6 +44,8 @@ export async function ProviderProfile({ id, base, error, reported }: { id: strin
             {rating !== null && <Stars rating={rating} />}
             <span className="text-ink-muted">{t("{n} completed jobs", { n: p.completed_jobs })}</span>
             {p.identity_checked && <Pill tone="green">{t("Identity checked")}</Pill>}
+            <AvailablePill s={p} t={t} />
+            {replyText(t, p) && <span className="text-ink-muted">{replyText(t, p)}</span>}
           </div>
         </div>
       </header>

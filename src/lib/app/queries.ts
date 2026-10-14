@@ -16,7 +16,7 @@ export const getMe = cache(async (): Promise<MeRow | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select(`${AUTHOR},bio,city,district,is_available,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
+    .select(`${AUTHOR},bio,city,district,is_available,available_until,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
     .eq("id", uid)
     .maybeSingle();
   if (!data) return null;
@@ -77,6 +77,15 @@ export async function getPost(id: string): Promise<{ post: PostRow; comments: Co
   };
 }
 
+/** Measured reply time per provider from the database; empty when nobody has replied yet. */
+async function replySignals(supabase: Awaited<ReturnType<typeof createClient>>, ids: string[]) {
+  const map = new Map<string, { reply_minutes: number | null; replies: number }>();
+  if (!ids.length) return map;
+  const { data } = await supabase.rpc("provider_signals", { p_ids: ids });
+  for (const r of (data ?? []) as { provider_id: string; reply_minutes: number | null; replies: number }[]) map.set(r.provider_id, { reply_minutes: r.reply_minutes, replies: r.replies });
+  return map;
+}
+
 const withSkills = <T extends SkillJoin>(row: T) => ({ ...row, skills: row.profile_skills.map((s) => s.skills?.name).filter(Boolean) as string[] });
 
 export type ProviderSort = "rated" | "completed" | "newest";
@@ -93,7 +102,7 @@ export async function listProviders(opts: { categoryId?: number; q?: string; rem
   }
   let query = supabase
     .from("profiles")
-    .select(`${AUTHOR},city,district,bio,price_from,remote,completed_jobs,primary_category_id,created_at,profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
+    .select(`${AUTHOR},city,district,available_until,bio,price_from,remote,completed_jobs,primary_category_id,created_at,profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
     .eq("is_available", true)
     .limit(60);
   if (opts.categoryId) query = query.eq("primary_category_id", opts.categoryId);
@@ -106,17 +115,19 @@ export async function listProviders(opts: { categoryId?: number; q?: string; rem
     query = query.or(parts.join(","));
   }
   const { data } = await query;
-  type Row = Omit<ProviderRow, "skills" | "saved"> & SkillJoin & { created_at: string; reviews: { stars: number }[] };
+  type Row = Omit<ProviderRow, "skills" | "saved" | "reply_minutes" | "replies"> & SkillJoin & { created_at: string; reviews: { stars: number }[] };
   const rows = (data ?? []) as unknown as Row[];
   let saved = new Set<string>();
   if (uid && rows.length) {
     const { data: s } = await supabase.from("saved_providers").select("provider_id").eq("user_id", uid);
     saved = new Set((s ?? []).map((x) => x.provider_id));
   }
+  const signals = await replySignals(supabase, rows.map((r) => r.id));
   const out = rows.map((r) => {
     const n = r.reviews?.length ?? 0;
     const rating = n ? r.reviews.reduce((a, x) => a + x.stars, 0) / n : null;
-    return { ...withSkills(r), saved: saved.has(r.id), rating, reviews: n };
+    const sig = signals.get(r.id) ?? { reply_minutes: null, replies: 0 };
+    return { ...withSkills(r), ...sig, saved: saved.has(r.id), rating, reviews: n };
   });
   const sort = opts.sort ?? "rated";
   out.sort((a, b) =>
@@ -139,13 +150,14 @@ export async function getProvider(id: string) {
   const supabase = await createClient();
   const uid = await getUserId();
   const [{ data }, { data: portfolio }, { data: reviews }, saved] = await Promise.all([
-    supabase.from("profiles").select(`${AUTHOR},city,bio,price_from,remote,completed_jobs,primary_category_id,profile_skills(skills(name))`).eq("id", id).maybeSingle(),
+    supabase.from("profiles").select(`${AUTHOR},city,district,available_until,bio,price_from,remote,completed_jobs,primary_category_id,profile_skills(skills(name))`).eq("id", id).maybeSingle(),
     supabase.from("portfolio_items").select("id,image_path,caption,sort_order").eq("provider_id", id).order("sort_order"),
     supabase.from("reviews").select(`id,stars,comment,created_at,author:profiles!reviews_author_id_fkey(${AUTHOR})`).eq("subject_id", id).order("created_at", { ascending: false }).limit(10),
     uid ? supabase.from("saved_providers").select("provider_id").eq("user_id", uid).eq("provider_id", id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   if (!data) return null;
-  const provider: ProviderRow = { ...withSkills(data as unknown as Omit<ProviderRow, "skills" | "saved"> & SkillJoin), saved: !!saved.data };
+  const sig = (await replySignals(supabase, [id])).get(id) ?? { reply_minutes: null, replies: 0 };
+  const provider: ProviderRow = { ...withSkills(data as unknown as Omit<ProviderRow, "skills" | "saved" | "reply_minutes" | "replies"> & SkillJoin), ...sig, saved: !!saved.data };
   return {
     provider,
     portfolio: (portfolio ?? []) as { id: string; image_path: string; caption: string | null; sort_order: number }[],

@@ -8,6 +8,7 @@ import { listProviders, type ProviderSort } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { CITIES, isCity } from "@/lib/cities";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { AvailablePill, replyText } from "@/components/signals";
 
 type Params = { category?: string; q?: string; remote?: string; city?: string; sort?: string };
 type Props = { searchParams: Promise<Params> };
@@ -126,6 +127,8 @@ export default async function ProvidersPage({ searchParams }: Props) {
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                   {p.identity_checked ? <CheckedPill>{t("Identity checked")}</CheckedPill> : <span className="rounded-full bg-stone-100 px-2 py-0.5 text-ink-muted">{t("New")}</span>}
                   <span className="text-ink-muted">{t("{n} completed jobs", { n: p.completed_jobs })}</span>
+                  <AvailablePill s={p} t={t} />
+                  {replyText(t, p) && <span className="text-ink-muted">{replyText(t, p)}</span>}
                   {p.rating !== null && (
                     <span className="inline-flex items-center gap-0.5">
                       <Star className="size-3.5 fill-brand-500 text-brand-500" aria-hidden="true" />

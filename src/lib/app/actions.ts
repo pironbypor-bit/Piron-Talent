@@ -229,6 +229,15 @@ export async function removePortfolioItem(id: string) {
   revalidatePath(`/app/providers/${uid}`);
 }
 
+export async function setAvailableThisWeek(formData: FormData) {
+  await requireUser("/app/profile");
+  const on = String(formData.get("on") ?? "") === "1";
+  const supabase = await createClient();
+  await supabase.rpc("set_available_this_week", { p_on: on });
+  revalidatePath("/app/profile");
+  revalidatePath("/app/services");
+}
+
 export async function setEmailNotifications(formData: FormData) {
   await requireUser("/app/settings");
   const on = String(formData.get("on") ?? "") === "1";

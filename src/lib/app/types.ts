@@ -36,7 +36,8 @@ export type PostRow = {
 
 export type CommentRow = { id: string; body: string; created_at: string; author: Author };
 
-export type ProviderRow = Author & {
+export type Signals = { available_until: string | null; reply_minutes: number | null; replies: number };
+export type ProviderRow = Author & Signals & {
   city: string | null;
   district: string | null;
   bio: string | null;
@@ -78,6 +79,7 @@ export type MeRow = Author & {
   city: string | null;
   district: string | null;
   is_available: boolean;
+  available_until: string | null;
   price_from: string | null;
   remote: boolean;
   primary_category_id: number | null;
