@@ -14,7 +14,7 @@ const KINDS = ["need_help", "offer_skill", "share_knowledge"] as const;
 
 type Rehire = { post: PostRow; provider: Author };
 
-export function NewPostForm({ categories, initialKind = "need_help", rehire, initialTemplate }: { categories: Category[]; initialKind?: (typeof KINDS)[number]; rehire?: Rehire; initialTemplate?: string }) {
+export function NewPostForm({ categories, initialKind = "need_help", rehire, initialTemplate, businessId }: { categories: Category[]; initialKind?: (typeof KINDS)[number]; rehire?: Rehire; initialTemplate?: string; businessId?: string }) {
   const t = useT();
   const locale = useLocale();
   const [state, action, pending] = useActionState(createPost, idle);
@@ -53,6 +53,7 @@ export function NewPostForm({ categories, initialKind = "need_help", rehire, ini
 
   return (
     <form action={action} noValidate className="space-y-4">
+      {businessId && <input type="hidden" name="business_id" value={businessId} />}
       {state.message && !state.ok && <Notice tone="error">{t(state.message)}</Notice>}
       {rehire && (
         <div className="rounded-2xl border border-brand-300 bg-brand-50 p-4">

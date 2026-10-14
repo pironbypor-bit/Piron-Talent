@@ -8,12 +8,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("Post a job") };
 }
 
-export default async function NewJobPage() {
-  const t = await getT();
+export default async function NewJobPage({ searchParams }: { searchParams: Promise<{ business?: string }> }) {
+  const [t, { business }] = await Promise.all([getT(), searchParams]);
+  const businessId = business && /^[0-9a-f-]{36}$/i.test(business) ? business : undefined;
   return (
     <main className="px-4 py-4">
       <PageTitle lead={t("Shift jobs (part-time, short-term) open after the legal review.")}>{t("Post a job")}</PageTitle>
-      <NewJobForm />
+      <NewJobForm businessId={businessId} />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -363,4 +363,40 @@ export async function myJobs() {
     .limit(50);
   type Row = { id: string; post_id: string; customer_id: string; provider_id: string; agreed_price: number; status: string; created_at: string; post: { title: string } | { title: string }[] | null; customer: Author | Author[]; provider: Author | Author[] };
   return ((data ?? []) as unknown as Row[]).map((r) => ({ ...r, title: one(r.post)?.title ?? "", customer: one(r.customer) as Author, provider: one(r.provider) as Author, mine: r.customer_id === uid ? "customer" : "provider" }));
+}
+
+// Companies (migration 0020) ----------------------------------------------------------------------------------
+
+/** The companies I own, with how many published jobs and projects each has. */
+export async function myBusinesses(): Promise<BusinessRow[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("businesses").select("id,name,description,city,created_at").eq("owner_id", uid).order("created_at");
+  const rows = (data ?? []) as Omit<BusinessRow, "jobs" | "projects">[];
+  if (rows.length === 0) return [];
+  const ids = rows.map((b) => b.id);
+  const [{ data: jobs }, { data: posts }] = await Promise.all([
+    supabase.from("jobs").select("business_id").in("business_id", ids).eq("status", "published"),
+    supabase.from("posts").select("business_id").in("business_id", ids).eq("status", "published"),
+  ]);
+  const count = (list: { business_id: string }[] | null, id: string) => (list ?? []).filter((x) => x.business_id === id).length;
+  return rows.map((b) => ({ ...b, jobs: count(jobs as { business_id: string }[] | null, b.id), projects: count(posts as { business_id: string }[] | null, b.id) }));
+}
+
+/** One of my companies with its openings; null when it is not mine. */
+export async function getBusiness(id: string): Promise<BusinessDetail | null> {
+  const uid = await getUserId();
+  if (!uid || !/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const supabase = await createClient();
+  const { data: b } = await supabase.from("businesses").select("id,name,description,city,created_at").eq("id", id).eq("owner_id", uid).maybeSingle();
+  if (!b) return null;
+  const [{ data: jobs }, { data: posts }] = await Promise.all([
+    supabase.from("jobs").select("id,title,job_type,status,created_at").eq("business_id", id).neq("status", "closed").order("created_at", { ascending: false }),
+    supabase.from("posts").select("id,title,status,created_at").eq("business_id", id).eq("status", "published").order("created_at", { ascending: false }),
+  ]);
+  const jobRows = (jobs ?? []) as { id: string; title: string; job_type: string; status: string; created_at: string }[];
+  const { data: apps } = jobRows.length ? await supabase.from("job_applications").select("job_id").in("job_id", jobRows.map((j) => j.id)) : { data: [] };
+  const applicants = (apps ?? []) as { job_id: string }[];
+  return { ...(b as Omit<BusinessRow, "jobs" | "projects">), jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })), posts: (posts ?? []) as BusinessDetail["posts"] };
 }

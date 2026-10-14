@@ -12,11 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const uuid = /^[0-9a-f-]{36}$/i;
-type Params = { kind?: string; rehire?: string; to?: string; template?: string };
+type Params = { kind?: string; rehire?: string; to?: string; template?: string; business?: string };
 
 /** New post, or a rehire: ?rehire=<my old post>&to=<provider> opens the form filled with the old scope, invited to that provider. */
 export default async function NewPostPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const [t, categories, { kind, rehire, to, template }] = await Promise.all([getT(), getCategories(), searchParams]);
+  const [t, categories, { kind, rehire, to, template, business }] = await Promise.all([getT(), getCategories(), searchParams]);
   let seed: { post: PostRow; provider: Author } | undefined;
   if (rehire && to && uuid.test(rehire) && uuid.test(to)) {
     const [me, old, prov] = await Promise.all([getMe(), getPost(rehire), getProvider(to)]);
@@ -28,7 +28,7 @@ export default async function NewPostPage({ searchParams }: { searchParams: Prom
   return (
     <main className="px-4 py-4">
       <PageTitle lead={seed ? t("Same scope as last time. Change anything, then send.") : undefined}>{seed ? t("Hire again") : t("Write a post@@title")}</PageTitle>
-      <NewPostForm categories={categories} initialKind={initialKind} rehire={seed} initialTemplate={template} />
+      <NewPostForm categories={categories} initialKind={initialKind} rehire={seed} initialTemplate={template} businessId={business && uuid.test(business) ? business : undefined} />
     </main>
   );
 }

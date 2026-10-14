@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Briefcase, Building2, ChevronRight, Plus, Search, Settings, Store } from "lucide-react";
+import { Briefcase, Building2, ChevronRight, Plus, Search, Store } from "lucide-react";
 import { CheckedPill, Pill } from "@/components/ui";
 import { useT } from "@/lib/i18n/client";
 import { applications, companies, counts, person, requests, type Company } from "@/lib/demo/profile-hub-fixtures";
@@ -9,7 +9,7 @@ import { DemoCompare } from "../demo-compare";
 import { CompanyScreen, NewCompanyScreen, RequestsScreen, ServiceScreen, WorkScreen } from "./screens";
 
 // Demo A, "cards": the profile front page is a hub. One card per hat (need work done, offer a service, my
-// companies, looking for work). Each card opens its own page. Settings stays for account preferences only.
+// companies, looking for work). Each card opens its own page. Notifications and Settings live in the top-bar menu.
 
 type Screen = { kind: "hub" } | { kind: "service" } | { kind: "requests" } | { kind: "work" } | { kind: "company"; company: Company } | { kind: "new-company" };
 
@@ -45,7 +45,6 @@ export function ProfileHubA() {
             {person.identity && <span className="mt-1 inline-block"><CheckedPill>{t("Identity checked")}</CheckedPill></span>}
           </div>
         </div>
-        <button type="button" aria-label={t("Settings")} className="rounded-full bg-white/90 p-2 text-ink-muted"><Settings className="size-4" /></button>
       </div>
 
       {/* 1. Customer */}
@@ -121,10 +120,6 @@ export function ProfileHubA() {
         {open({ kind: "work" }, t("My applications"))}
       </section>
 
-      <ul className="card mt-3 divide-y divide-stone-100">
-        <li className="flex items-center gap-3 px-4 py-3"><Bell className="size-4 text-ink-muted" /><span className="flex-1 font-medium">{t("Notifications")}</span><Pill tone="amber">3</Pill></li>
-        <li className="flex items-center gap-3 px-4 py-3"><Settings className="size-4 text-ink-muted" /><span className="flex-1 font-medium">{t("Settings")}</span><span className="text-xs text-ink-muted">{t("Language, notifications, identity, log out")}</span></li>
-      </ul>
     </div>
   );
 }

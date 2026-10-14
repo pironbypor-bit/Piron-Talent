@@ -116,3 +116,11 @@ Each step ships behind the existing /demo first as fixtures when the design need
 2. Whether Home shows Skill offers to customers by default or only Job offers and knowledge posts.
 3. Icon set for the category grid (lucide names), or custom illustrations later.
 4. Whether to start the identity check before Phase 2 so the first providers carry the pill on day one.
+
+## 4.6 Profile hub, design A (owner decision 2026-10-14)
+One account, four hats. The Profile front page is a hub with one card per hat, each card opening its own page:
+1. I need work done: open requests, Find a service, Post a project, My jobs and requests.
+2. I offer a service: visibility, completed jobs, Available this week switch, My service (the provider fields in Edit profile).
+3. My companies: one row per company (part-time jobs, projects, city) and Add company. A company page shows its openings with applicant counts, Post a job and Post a project under that company (business_id on jobs and posts; migration 0020 create_business).
+4. Looking for work: applications, saved posts, Browse jobs. Job alerts come with the reminders step of the notification plan.
+Then Identity check and Avatar. Notifications and Settings moved to a menu next to the bell in the top bar; the avatar in the top bar is the Profile button; the fifth tab is Post. Demos: /demo/app/profile-a (chosen) and /demo/app/profile-b (switcher, not chosen).

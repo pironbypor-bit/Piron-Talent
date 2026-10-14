@@ -59,21 +59,22 @@ const postSchema = z
     budget_max: money,
     invited_provider_id: z.string().transform((v) => (uuid.test(v) ? v : null)),
     open_now: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
+    business_id: z.string().transform((v) => (uuid.test(v) ? v : null)),
   })
   .refine((d) => d.budget_max === null || d.budget_min === null || d.budget_max >= d.budget_min, { path: ["budget_max"], message: "Must not be lower than the first amount." });
 
 export async function createPost(_prev: FormState, formData: FormData): Promise<FormState> {
   const uid = await requireUser("/app/post/new");
-  const values = formEntries(formData, ["kind", "title", "body", "category_id", "place", "price_text", "deliverables", "deadline", "remote", "budget_min", "budget_max", "invited_provider_id", "open_now"]);
+  const values = formEntries(formData, ["kind", "title", "body", "category_id", "place", "price_text", "deliverables", "deadline", "remote", "budget_min", "budget_max", "invited_provider_id", "open_now", "business_id"]);
   const parsed = postSchema.safeParse(values);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error), values, message: "Please check the highlighted fields." };
   const supabase = await createClient();
-  const { invited_provider_id, open_now, ...fields } = parsed.data;
+  const { invited_provider_id, open_now, business_id, ...fields } = parsed.data;
   const scope = fields.kind === "need_help" ? fields : { ...fields, deliverables: [], deadline: null, remote: false, budget_min: null, budget_max: null };
   // A rehire goes to one provider first; it opens to everyone after 24 hours unless the author opens it now.
   const invited = fields.kind === "need_help" && invited_provider_id && invited_provider_id !== uid ? invited_provider_id : null;
   const opens_at = invited && !open_now ? new Date(Date.now() + 24 * 3600 * 1000).toISOString() : null;
-  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published", invited_provider_id: invited, opens_at }).select("id").single();
+  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published", invited_provider_id: invited, opens_at, business_id }).select("id").single();
   if (error || !data) return { ok: false, values, message: "Something went wrong. Please try again." };
   revalidatePath("/app");
   redirect(`/app/post/${data.id}`);
@@ -136,11 +137,12 @@ const jobSchema = z.object({
   pay_amount: z.preprocess((v) => (v === "" || v == null ? null : Number(v)), z.number({ error: "Must be a number." }).min(0).nullable()),
   pay_unit: z.enum(["hour", "day", "project"]),
   remote_available: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
+  business_id: z.string().transform((v) => (uuid.test(v) ? v : null)),
 });
 
 export async function createJob(_prev: FormState, formData: FormData): Promise<FormState> {
   const uid = await requireUser("/app/jobs/new");
-  const values = formEntries(formData, ["title", "description", "city", "job_type", "pay_amount", "pay_unit", "remote_available"]);
+  const values = formEntries(formData, ["title", "description", "city", "job_type", "pay_amount", "pay_unit", "remote_available", "business_id"]);
   const parsed = jobSchema.safeParse(values);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error), values, message: "Please check the highlighted fields." };
   const supabase = await createClient();
@@ -259,6 +261,21 @@ export async function removePushSubscription(endpoint: string) {
   const uid = await requireUser("/app/settings");
   const supabase = await createClient();
   await supabase.from("push_subscriptions").delete().eq("user_id", uid).eq("endpoint", endpoint);
+}
+
+/** Add a company (migration 0020): name, kind, city. Then its page, where jobs and projects are posted under it. */
+export async function createCompany(formData: FormData) {
+  await requireUser("/app/profile/companies/new");
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
+  const kind = String(formData.get("kind") ?? "").trim().slice(0, 80);
+  const cityRaw = String(formData.get("city") ?? "");
+  const city = (CITIES as readonly string[]).includes(cityRaw) ? cityRaw : "";
+  if (name.length < 2) redirect("/app/profile/companies/new?error=1");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_business", { p_name: name, p_kind: kind, p_city: city });
+  if (error || !data) redirect("/app/profile/companies/new?error=1");
+  revalidatePath("/app/profile");
+  redirect(`/app/profile/companies/${data}`);
 }
 
 export async function markNotificationsRead() {

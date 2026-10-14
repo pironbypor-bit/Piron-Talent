@@ -6,7 +6,7 @@ import { createJob } from "@/lib/app/actions";
 import { useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 
-export function NewJobForm() {
+export function NewJobForm({ businessId }: { businessId?: string }) {
   const t = useT();
   const [state, action, pending] = useActionState(createJob, idle);
   const err = (k: string) => (state.errors?.[k] ? t(state.errors[k]) : undefined);
@@ -14,6 +14,7 @@ export function NewJobForm() {
 
   return (
     <form action={action} noValidate className="space-y-4">
+      {businessId && <input type="hidden" name="business_id" value={businessId} />}
       {state.message && !state.ok && <Notice tone="error">{t(state.message)}</Notice>}
       <Field label={t("Job title")} error={err("title")}>
         <input name="title" defaultValue={val("title")} className={inputClass} aria-invalid={!!err("title")} />
