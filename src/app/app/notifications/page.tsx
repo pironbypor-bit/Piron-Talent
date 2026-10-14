@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bell, CheckCircle2, FileCheck, Gavel, MessageCircle, PackageCheck, Sparkles, Star, Tag, UserPlus, XCircle, type LucideIcon } from "lucide-react";
+import { Bell, CalendarClock, CheckCircle2, FileCheck, Gavel, MessageCircle, PackageCheck, Sparkles, Star, Tag, UserPlus, XCircle, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui";
 import { markNotificationsRead } from "@/lib/app/actions";
 import { listNotifications } from "@/lib/app/queries";
@@ -34,6 +34,12 @@ const ICONS: Record<string, LucideIcon> = {
   "Activity spot": CheckCircle2,
   "Activity cancelled": XCircle,
   "Hours confirmed": CheckCircle2,
+  "Quote waiting": Tag,
+  "Confirm the work": PackageCheck,
+  "Deadline tomorrow": CalendarClock,
+  "Availability ends soon": Bell,
+  "Hire again?": UserPlus,
+  "Activity reminder": CalendarClock,
   "Request accepted": CheckCircle2,
   "Identity checked": FileCheck,
   "Identity check rejected": FileCheck,

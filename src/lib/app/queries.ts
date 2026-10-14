@@ -325,6 +325,15 @@ export async function myEmailNotifications(): Promise<boolean> {
   return data?.email_notifications ?? true;
 }
 
+/** Reminders switch from Settings (migration 0027). No private row yet means on. */
+export async function myReminders(): Promise<boolean> {
+  const uid = await getUserId();
+  if (!uid) return true;
+  const supabase = await createClient();
+  const { data } = await supabase.from("profile_private").select("reminders_enabled").eq("user_id", uid).maybeSingle();
+  return data?.reminders_enabled ?? true;
+}
+
 export async function isAdmin(): Promise<boolean> {
   const uid = await getUserId();
   if (!uid) return false;

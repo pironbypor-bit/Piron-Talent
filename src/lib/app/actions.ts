@@ -409,6 +409,13 @@ export async function setRecordPublic(formData: FormData) {
   revalidatePath("/app/settings");
 }
 
+export async function setReminders(formData: FormData) {
+  await requireUser("/app/settings");
+  const on = String(formData.get("on") ?? "") === "1";
+  await (await createClient()).rpc("set_reminders", { p_on: on });
+  revalidatePath("/app/settings");
+}
+
 export async function setEmailNotifications(formData: FormData) {
   await requireUser("/app/settings");
   const on = String(formData.get("on") ?? "") === "1";
