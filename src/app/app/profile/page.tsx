@@ -5,7 +5,7 @@ import { AngkorSilhouette } from "@/components/brand";
 import { ShareButton } from "@/components/share-button";
 import { CheckedPill, Pill } from "@/components/ui";
 import { setAvailableThisWeek } from "@/lib/app/actions";
-import { getMe, myBusinesses, myCounters, myIdentityStatus } from "@/lib/app/queries";
+import { getMe, myBusinessInvitations, myBusinesses, myCounters, myIdentityStatus } from "@/lib/app/queries";
 import { isAvailableNow } from "@/components/signals";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -28,7 +28,7 @@ const chipPrimary = "rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold t
 const chipSecondary = "rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-brand-50";
 
 export default async function ProfilePage() {
-  const [t, locale, me, counters, identity, companies] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), myBusinesses()]);
+  const [t, locale, me, counters, identity, companies, invites] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), myBusinesses(), myBusinessInvitations()]);
   if (!me) return null; // the proxy redirects anonymous visitors to /login
   const on = isAvailableNow(me);
 
@@ -98,12 +98,17 @@ export default async function ProfilePage() {
             <p className="text-sm text-ink-muted">{t("Hire part-time staff or freelancers under a company name.")}</p>
           </div>
         </div>
+        {invites.length > 0 && (
+          <Link href="/app/profile/companies/invites" className="mt-2 flex items-center justify-between border-t border-stone-100 bg-brand-50 px-4 py-2.5 text-sm font-semibold hover:bg-brand-100">
+            {t("{n} company invitations", { n: invites.length })} <ChevronRight className="size-4 text-ink-muted" />
+          </Link>
+        )}
         <ul className="mt-2 divide-y divide-stone-100 border-t border-stone-100">
           {companies.map((c) => (
             <li key={c.id}>
               <Link href={`/app/profile/companies/${c.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50">
                 <span className="min-w-0 flex-1">
-                  <span className="block font-medium">{c.name}</span>
+                  <span className="block font-medium">{c.name}{c.role !== "owner" ? <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-normal text-ink-muted">{t(c.role === "manager" ? "Manager" : "Member")}</span> : null}</span>
                   <span className="block text-xs text-ink-muted">{c.jobs} {t("part-time")} · {c.projects} {t("projects")}{c.city ? ` · ${t(c.city)}` : ""}</span>
                 </span>
                 <ChevronRight className="size-4 text-ink-muted" />

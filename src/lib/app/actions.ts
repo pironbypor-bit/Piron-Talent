@@ -484,6 +484,50 @@ export async function createCompany(formData: FormData) {
   redirect(`/app/profile/companies/${data}`);
 }
 
+// Company team (migration 0031) -----------------------------------------------------------------------------
+
+export async function inviteToBusiness(businessId: string, formData: FormData) {
+  if (!uuid.test(businessId)) return;
+  await requireUser(`/app/profile/companies/${businessId}`);
+  const role = String(formData.get("role") ?? "member") === "manager" ? "manager" : "member";
+  const supabase = await createClient();
+  for (const id of formData.getAll("people").map(String).filter((v) => uuid.test(v)).slice(0, 10)) {
+    await supabase.rpc("invite_to_business", { p_business: businessId, p_user: id, p_role: role });
+  }
+  revalidatePath(`/app/profile/companies/${businessId}`);
+}
+
+export async function answerBusinessInvitation(invitationId: string, accept: boolean) {
+  if (!uuid.test(invitationId)) return;
+  await requireUser("/app/profile/companies/invites");
+  const { data } = await (await createClient()).rpc("answer_business_invitation", { p_invitation: invitationId, p_accept: accept });
+  revalidatePath("/app/profile");
+  redirect(accept && data ? `/app/profile/companies/${data}` : "/app/profile/companies/invites");
+}
+
+export async function removeBusinessMember(businessId: string, userId: string) {
+  if (!uuid.test(businessId) || !uuid.test(userId)) return;
+  const uid = await requireUser(`/app/profile/companies/${businessId}`);
+  await (await createClient()).rpc("remove_business_member", { p_business: businessId, p_user: userId });
+  revalidatePath("/app/profile");
+  if (userId === uid) redirect("/app/profile");
+  revalidatePath(`/app/profile/companies/${businessId}`);
+}
+
+export async function setBusinessRole(businessId: string, userId: string, role: "manager" | "member") {
+  if (!uuid.test(businessId) || !uuid.test(userId)) return;
+  await requireUser(`/app/profile/companies/${businessId}`);
+  await (await createClient()).rpc("set_business_role", { p_business: businessId, p_user: userId, p_role: role });
+  revalidatePath(`/app/profile/companies/${businessId}`);
+}
+
+export async function openBusinessChat(businessId: string) {
+  if (!uuid.test(businessId)) return;
+  await requireUser(`/app/profile/companies/${businessId}`);
+  const { data } = await (await createClient()).rpc("open_business_chat", { p_business: businessId });
+  redirect(data ? `/app/messages/${data}` : `/app/profile/companies/${businessId}`);
+}
+
 export async function markNotificationsRead() {
   const uid = await requireUser("/app/profile");
   const supabase = await createClient();

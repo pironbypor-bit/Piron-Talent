@@ -35,6 +35,8 @@ const ICONS: Record<string, LucideIcon> = {
   "Activity cancelled": XCircle,
   "Hours confirmed": CheckCircle2,
   "Job alert": Bell,
+  "Company invitation": UserPlus,
+  "Company joined": CheckCircle2,
   "New identity check": FileCheck,
   "New report": Gavel,
   "New dispute": Gavel,

@@ -137,8 +137,12 @@ export type ProjectScope = { deliverables: string[]; deadline: string | null; re
 export type DisputeStatus = "open" | "reviewing" | "resolved" | "dismissed";
 export type DisputeRow = { id: string; opened_by: string; status: DisputeStatus; reason: string; resolution: string | null; created_at: string };
 
-export type BusinessRow = { id: string; name: string; description: string | null; city: string | null; created_at: string; jobs: number; projects: number };
+export type BusinessRole = "owner" | "manager" | "member";
+export type BusinessRow = { id: string; name: string; description: string | null; city: string | null; created_at: string; conversation_id: string | null; role: BusinessRole; jobs: number; projects: number };
+export type TeamMember = { user_id: string; display_name: string; avatar_url: string | null; role: BusinessRole };
+export type BusinessInvitationRow = { id: string; business_id: string; business_name: string; role: "manager" | "member"; inviter: string; created_at: string };
 export type BusinessDetail = Omit<BusinessRow, "jobs" | "projects"> & {
+  team: TeamMember[];
   jobs: { id: string; title: string; job_type: string; status: string; created_at: string; applicants: number }[];
   posts: { id: string; title: string; status: string; created_at: string }[];
 };

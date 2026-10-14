@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -433,13 +433,21 @@ export async function myJobs() {
 
 // Companies (migration 0020) ----------------------------------------------------------------------------------
 
-/** The companies I own, with how many published jobs and projects each has. */
+/** The companies I belong to (owner, manager or member), with how many published jobs and projects each has. */
 export async function myBusinesses(): Promise<BusinessRow[]> {
   const uid = await getUserId();
   if (!uid) return [];
   const supabase = await createClient();
-  const { data } = await supabase.from("businesses").select("id,name,description,city,created_at").eq("owner_id", uid).order("created_at");
-  const rows = (data ?? []) as Omit<BusinessRow, "jobs" | "projects">[];
+  const { data } = await supabase
+    .from("business_members")
+    .select("role,business:businesses(id,name,description,city,created_at,conversation_id)")
+    .eq("user_id", uid);
+  type Base = Omit<BusinessRow, "jobs" | "projects" | "role">;
+  type Row = { role: BusinessRole; business: Base | Base[] | null };
+  const rows = ((data ?? []) as unknown as Row[])
+    .map((r) => ({ ...(one(r.business) as Base), role: r.role }))
+    .filter((r) => r.id)
+    .sort((x, y) => x.created_at.localeCompare(y.created_at));
   if (rows.length === 0) return [];
   const ids = rows.map((b) => b.id);
   const [{ data: jobs }, { data: posts }] = await Promise.all([
@@ -450,21 +458,47 @@ export async function myBusinesses(): Promise<BusinessRow[]> {
   return rows.map((b) => ({ ...b, jobs: count(jobs as { business_id: string }[] | null, b.id), projects: count(posts as { business_id: string }[] | null, b.id) }));
 }
 
-/** One of my companies with its openings; null when it is not mine. */
+/** One of my companies with its openings and team; null when I do not belong to it. */
 export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   const uid = await getUserId();
   if (!uid || !/^[0-9a-f-]{36}$/i.test(id)) return null;
   const supabase = await createClient();
-  const { data: b } = await supabase.from("businesses").select("id,name,description,city,created_at").eq("id", id).eq("owner_id", uid).maybeSingle();
+  const { data: mine } = await supabase.from("business_members").select("role").eq("business_id", id).eq("user_id", uid).maybeSingle();
+  if (!mine) return null;
+  const role = (mine as { role: BusinessRole }).role;
+  const { data: b } = await supabase.from("businesses").select("id,name,description,city,created_at,conversation_id").eq("id", id).maybeSingle();
   if (!b) return null;
-  const [{ data: jobs }, { data: posts }] = await Promise.all([
-    supabase.from("jobs").select("id,title,job_type,status,created_at").eq("business_id", id).neq("status", "closed").order("created_at", { ascending: false }),
-    supabase.from("posts").select("id,title,status,created_at").eq("business_id", id).eq("status", "published").order("created_at", { ascending: false }),
+  const manager = role === "owner" || role === "manager";
+  const [{ data: jobs }, { data: posts }, { data: team }] = await Promise.all([
+    manager ? supabase.from("jobs").select("id,title,job_type,status,created_at").eq("business_id", id).neq("status", "closed").order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
+    manager ? supabase.from("posts").select("id,title,status,created_at").eq("business_id", id).eq("status", "published").order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
+    supabase.rpc("business_team", { p_business: id }),
   ]);
   const jobRows = (jobs ?? []) as { id: string; title: string; job_type: string; status: string; created_at: string }[];
   const { data: apps } = jobRows.length ? await supabase.from("job_applications").select("job_id").in("job_id", jobRows.map((j) => j.id)) : { data: [] };
   const applicants = (apps ?? []) as { job_id: string }[];
-  return { ...(b as Omit<BusinessRow, "jobs" | "projects">), jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })), posts: (posts ?? []) as BusinessDetail["posts"] };
+  return {
+    ...(b as Omit<BusinessRow, "jobs" | "projects" | "role">),
+    role,
+    team: (team ?? []) as TeamMember[],
+    jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })),
+    posts: (posts ?? []) as BusinessDetail["posts"],
+  };
+}
+
+/** Company invitations waiting for my answer. */
+export async function myBusinessInvitations(): Promise<BusinessInvitationRow[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("business_invitations")
+    .select(`id,business_id,role,created_at,business:businesses(name),inviter:profiles!business_invitations_invited_by_fkey(display_name)`)
+    .eq("user_id", uid)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  type Row = { id: string; business_id: string; role: "manager" | "member"; created_at: string; business: { name: string } | { name: string }[] | null; inviter: { display_name: string } | { display_name: string }[] | null };
+  return ((data ?? []) as unknown as Row[]).map((r) => ({ id: r.id, business_id: r.business_id, role: r.role, created_at: r.created_at, business_name: one(r.business)?.name ?? "", inviter: one(r.inviter)?.display_name ?? "" }));
 }
 
 // Message requests, "Say hello" (migration 0022) ----------------------------------------------------------------
