@@ -30,3 +30,9 @@ Scope: everything built from migration 0032 to 0041 (team terms and pay, company
 - Reminders: all six kinds fire once (quote waiting, confirm the work, deadline tomorrow, availability ending, hire again, activity reminder to organiser and member); a second run sends nothing.
 - Mute groups: a muted group drops the notification, other groups still arrive.
 - Organiser rule: unchecked identity is refused, checked is allowed.
+
+## Addendum 2026-10-15 (found while building Piron Work Space step 2)
+
+- **Fixed (migration 0046):** authenticated users had UPDATE on every column of profiles, and the row policy only checked 'own row'. Anyone could set their own identity_checked = true or completed_jobs = 99 through the API. Now only the profile editor columns can be written directly; identity_checked and completed_jobs change only through security definer functions. Rule test 08 covers it. Checked the live data first: no profile had identity_checked set outside the review flow (identity checked count was 0 on the owner overview).
+- **Also reviewed:** every other table with an UPDATE policy (businesses, jobs, notifications, portfolio_items, posts, profile_private, quotes, saved_*, services). None has a trust column a user could abuse; quotes and services keep their status through WITH CHECK. Tables without an UPDATE policy are default-deny.
+- **Lesson:** after any new table or column that holds a trust value (checked, paused, counts, status set by staff), grant UPDATE by column, not by table.
