@@ -79,7 +79,7 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
   const n = live?.unread ?? unread;
   return (
     <header className="print:hidden sticky top-0 z-10 flex items-center justify-between border-b border-brand-100 bg-white/90 px-4 py-2.5 backdrop-blur">
-      <Link href={base} className="flex items-center gap-2 font-bold tracking-tight">
+      <Link href={spaceHref ? "/choose" : base} className="flex items-center gap-2 font-bold tracking-tight">
         <BrandMark className="size-8" />
         {APP_NAME}
       </Link>

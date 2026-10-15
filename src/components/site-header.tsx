@@ -3,16 +3,19 @@ import { APP_NAME, CONTACT_EMAIL } from "@/lib/brand";
 import { ALL_LANGUAGES } from "@/lib/i18n/core";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { getUserId } from "@/lib/supabase/server";
+import { isOwner } from "@/lib/app/queries";
 import { setLocale } from "@/app/actions/locale";
 
 const LANGUAGE_LABEL = { km: "ខ្មែរ", en: "EN" } as const;
 
 export async function SiteHeader() {
   const [t, locale, userId] = await Promise.all([getT(), getLocale(), getUserId()]);
+  // The owner's logo leads to the page that offers Piron Work and Piron Work Space.
+  const owner = userId ? await isOwner() : false;
   return (
     <header className="border-b border-stone-200">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4">
-        <Link href="/providers" className="text-lg font-bold tracking-tight">
+        <Link href={owner ? "/choose" : "/providers"} className="text-lg font-bold tracking-tight">
           {APP_NAME}
         </Link>
         <nav className="flex items-center gap-4 text-sm">
