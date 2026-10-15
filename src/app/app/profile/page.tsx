@@ -136,18 +136,10 @@ export default async function ProfilePage() {
         </ul>
       </section>
 
-      <Link href="/app/invoices" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
+      <Link href="/app/payments" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
         <span>
-          <span className="block font-semibold">{t("Invoices and payments")}</span>
-          <span className="block text-sm text-ink-muted">{t("Records of what was agreed and paid. No money moves through Piron Work.")}</span>
-        </span>
-        <ChevronRight className="size-4 shrink-0 text-ink-muted" />
-      </Link>
-
-      <Link href="/app/profile/payout" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
-        <span>
-          <span className="block font-semibold">{t("Payout account")}</span>
-          <span className="block text-sm text-ink-muted">{t("Where you want to be paid. The team checks the name against your ID.")}</span>
+          <span className="block font-semibold">{t("Payments")}</span>
+          <span className="block text-sm text-ink-muted">{t("Invoices, payout account and team pay terms are in the Payments tab.")}</span>
         </span>
         <ChevronRight className="size-4 shrink-0 text-ink-muted" />
       </Link>

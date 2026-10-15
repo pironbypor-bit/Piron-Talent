@@ -25,7 +25,7 @@ export default async function PayoutPage({ searchParams }: Props) {
 
   return (
     <main className="px-4 pb-24 pt-4">
-      <Link href="/app/profile" className="text-sm font-medium underline">{t("Back")}</Link>
+      <Link href="/app/payments" className="text-sm font-medium underline">{t("Back")}</Link>
       <section className="card mt-3 p-4">
         <h1 className="text-xl font-bold">{t("Payout account")}</h1>
         <p className="mt-1 text-sm text-ink-muted">{t("Tell us where you want to be paid. The Piron Work team checks that the account holder name is the same as the name on your ID. Piron Work does not move money; this is how customers can see you are verified.")}</p>

@@ -180,3 +180,5 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 - Rule tests: supabase/tests/01 to 06 (README there). Self-contained, roll back, each with the expected RESULT line. Run the relevant ones after any migration that changes those areas.
 
 - Dropdowns: one component, src/components/dropdown.tsx (design A, owner decision 2026-10-15). Use <Dropdown> instead of a native select: it keeps a hidden native select for the value, so FormData, required and server actions work unchanged. compact = pill for filters, submitOnChange sends the form, search box appears on more than 8 choices. The top-bar menu in src/components/app-shell.tsx uses the same look. Demos: /demo/app/dropdown-a and /demo/app/dropdown-b.
+
+- Payments tab: bottom bar is Home, Payments, Services, Jobs, Messages. /app/payments is the one place for money: totals, invoices list, payout account, jobs to invoice, team pay terms per company, alert settings. Invoices and payout pages highlight this tab. The Profile page links to it instead of holding its own cards.

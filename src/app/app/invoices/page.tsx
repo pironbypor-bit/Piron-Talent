@@ -45,7 +45,7 @@ export default async function InvoicesPage() {
 
   return (
     <main className="px-4 pb-24 pt-4">
-      <Link href="/app/profile" className="text-sm font-medium underline">{t("Back")}</Link>
+      <Link href="/app/payments" className="text-sm font-medium underline">{t("Back")}</Link>
       <section className="card mt-3 p-4">
         <h1 className="text-xl font-bold">{t("Invoices")}</h1>
         <p className="text-sm text-ink-muted">{t("Records of what was agreed and paid. Piron Work does not take or move money. These are not tax invoices.")}</p>
