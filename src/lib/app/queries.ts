@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -466,7 +466,7 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   const { data: mine } = await supabase.from("business_members").select("role").eq("business_id", id).eq("user_id", uid).maybeSingle();
   if (!mine) return null;
   const role = (mine as { role: BusinessRole }).role;
-  const { data: b } = await supabase.from("businesses").select("id,name,description,city,created_at,conversation_id").eq("id", id).maybeSingle();
+  const { data: b } = await supabase.from("businesses").select("id,name,description,city,created_at,conversation_id,page_public,about").eq("id", id).maybeSingle();
   if (!b) return null;
   const manager = role === "owner" || role === "manager";
   const [{ data: jobs }, { data: posts }, { data: team }] = await Promise.all([
@@ -478,7 +478,7 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   const { data: apps } = jobRows.length ? await supabase.from("job_applications").select("job_id").in("job_id", jobRows.map((j) => j.id)) : { data: [] };
   const applicants = (apps ?? []) as { job_id: string }[];
   return {
-    ...(b as Omit<BusinessRow, "jobs" | "projects" | "role">),
+    ...(b as Omit<BusinessRow, "jobs" | "projects" | "role"> & { page_public: boolean; about: string | null }),
     role,
     team: (team ?? []) as TeamMember[],
     jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })),
@@ -718,4 +718,22 @@ export async function myJobAlerts(): Promise<JobAlertRow[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("job_alerts").select("id,category_id,city").eq("user_id", uid).order("created_at", { ascending: false });
   return (data ?? []) as JobAlertRow[];
+}
+
+/** Files of one company that the reader may see (row security decides: owners and managers all, members Team and Public). */
+export async function companyDocuments(businessId: string): Promise<CompanyDoc[]> {
+  if (!/^[0-9a-f-]{36}$/i.test(businessId)) return [];
+  const { data } = await (await createClient())
+    .from("business_documents")
+    .select("id,business_id,name,mime,bytes,level,created_at,updated_at")
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as CompanyDoc[];
+}
+
+/** Public company page data. Works without a login; null when the page is off and the reader is not in the company. */
+export async function companyPublic(id: string): Promise<CompanyPublic | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const { data } = await (await createClient()).rpc("company_public", { p_id: id });
+  return (data ?? null) as CompanyPublic | null;
 }

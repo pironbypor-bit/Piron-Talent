@@ -216,6 +216,8 @@ export async function createActivity(formData: FormData) {
     p_city: (CITIES as readonly string[]).includes(cityRaw) ? cityRaw : "", p_starts: starts, p_ends: endIso, p_capacity: capacity, p_bring: f("bring", 500),
   });
   if (error || !data) redirect(`/app/activities/new?error=${error?.message.includes("too many") ? "limit" : "1"}`);
+  const company = f("business", 36);
+  if (uuid.test(company)) await supabase.rpc("link_activity_company", { p_activity: data, p_business: company });
   revalidatePath("/app/activities");
   redirect(`/app/activities/${data}`);
 }
@@ -654,12 +656,12 @@ export async function leaveReview(postId: string, jobId: string, formData: FormD
 
 // Reports and disputes (Phase 2) ------------------------------------------------------------------------------
 
-const REPORT_TYPES = ["post", "comment", "user", "job", "message"] as const;
+const REPORT_TYPES = ["post", "comment", "user", "job", "message", "company"] as const;
 export type ReportType = (typeof REPORT_TYPES)[number];
 
 /** Report a post, comment, job, message or person. One open report per target per person; the admin queue takes it from there. */
 export async function fileReport(type: ReportType, targetId: string, path: string, formData: FormData) {
-  if (!REPORT_TYPES.includes(type) || !uuid.test(targetId) || !path.startsWith("/app/")) return;
+  if (!REPORT_TYPES.includes(type) || !uuid.test(targetId) || !(path.startsWith("/app/") || path.startsWith("/companies/"))) return;
   await requireUser(path);
   const reason = String(formData.get("reason") ?? "").trim().slice(0, 1000);
   const supabase = await createClient();
@@ -671,4 +673,47 @@ export async function openDispute(postId: string, jobId: string, formData: FormD
   if (!uuid.test(postId) || !uuid.test(jobId)) return;
   await requireUser(`/app/post/${postId}`);
   await rpcThenBack(`/app/post/${postId}`, "open_dispute", { p_job: jobId, p_reason: String(formData.get("reason") ?? "").trim().slice(0, 2000) });
+}
+
+// Company documents and the public company page (migration 0033). Only the owner publishes.
+export async function setCompanyPage(business: string, formData: FormData) {
+  if (!uuid.test(business)) return;
+  await requireUser(`/app/profile/companies/${business}`);
+  const about = String(formData.get("about") ?? "").slice(0, 500);
+  const on = String(formData.get("public") ?? "") === "1";
+  const { error } = await (await createClient()).rpc("set_company_page", { p_business: business, p_about: about, p_public: on });
+  revalidatePath(`/app/profile/companies/${business}`);
+  revalidatePath(`/companies/${business}`);
+  redirect(`/app/profile/companies/${business}${error ? "?error=page" : "?saved=1"}`);
+}
+
+export async function setDocumentLevel(business: string, doc: string, level: string) {
+  if (!uuid.test(business) || !uuid.test(doc) || !["private", "team", "public"].includes(level)) return;
+  const back = `/app/profile/companies/${business}/documents`;
+  await requireUser(back);
+  const { error } = await (await createClient()).rpc("set_document_level", { p_doc: doc, p_level: level });
+  revalidatePath(back);
+  revalidatePath(`/companies/${business}`);
+  redirect(error ? `${back}?error=1` : back);
+}
+
+export async function deleteCompanyDocument(business: string, doc: string) {
+  if (!uuid.test(business) || !uuid.test(doc)) return;
+  const back = `/app/profile/companies/${business}/documents`;
+  await requireUser(back);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("delete_company_document", { p_doc: doc });
+  if (!error && typeof data === "string") await supabase.storage.from("company-files").remove([data]);
+  revalidatePath(back);
+  revalidatePath(`/companies/${business}`);
+  redirect(error ? `${back}?error=1` : back);
+}
+
+/** Called by the browser right after it uploaded the file to the company-files bucket. The file starts as Private. */
+export async function registerCompanyDocument(business: string, file: { path: string; name: string; mime: string; bytes: number }): Promise<{ ok: boolean }> {
+  if (!uuid.test(business)) return { ok: false };
+  await requireUser(`/app/profile/companies/${business}/documents`);
+  const { error } = await (await createClient()).rpc("add_company_document", { p_business: business, p_name: file.name, p_path: file.path, p_mime: file.mime, p_bytes: Math.round(file.bytes) });
+  revalidatePath(`/app/profile/companies/${business}/documents`);
+  return { ok: !error };
 }

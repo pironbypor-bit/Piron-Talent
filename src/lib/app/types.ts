@@ -144,7 +144,17 @@ export type RateUnit = "hour" | "day" | "month";
 export type MemberTerms = { user_id: string; job_title: string | null; duties: string | null; rate: number | null; rate_unit: RateUnit | null; starts_on: string | null };
 export type PayRecordRow = { id: string; user_id: string; period_from: string; period_to: string; quantity: number; unit: RateUnit; rate: number; amount: number; status: "owed" | "paid"; paid_on: string | null; note: string | null };
 export type BusinessInvitationRow = { id: string; business_id: string; business_name: string; role: "manager" | "member"; inviter: string; created_at: string };
+export type CompanyDoc = { id: string; business_id: string; name: string; mime: string; bytes: number; level: "private" | "team" | "public"; created_at: string; updated_at: string };
+export type CompanyPublic = {
+  id: string; name: string; kind: string | null; city: string | null; about: string | null; is_public: boolean; owner_checked: boolean;
+  posts: { id: string; title: string; kind: string; city: string | null; budget_min: number | null; budget_max: number | null; created_at: string }[];
+  jobs: { id: string; title: string; city: string | null; pay_amount: number | null; pay_unit: string; created_at: string }[];
+  activities: { id: string; title: string; place: string | null; city: string | null; starts_at: string; capacity: number; joined: number }[];
+  documents: { id: string; name: string; mime: string; bytes: number }[];
+};
 export type BusinessDetail = Omit<BusinessRow, "jobs" | "projects"> & {
+  page_public: boolean;
+  about: string | null;
   team: TeamMember[];
   jobs: { id: string; title: string; job_type: string; status: string; created_at: string; applicants: number }[];
   posts: { id: string; title: string; status: string; created_at: string }[];

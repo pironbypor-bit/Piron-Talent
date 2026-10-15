@@ -17,6 +17,7 @@ const TARGET_PATH: Record<string, (id: string) => string | null> = {
   job: (id) => `/app/jobs/${id}`,
   comment: () => null,
   message: () => null,
+  company: (id) => `/companies/${id}`,
 };
 
 /** Reports queue: open and reviewing first, then the last closed ones. Each row links to the reported thing. */
@@ -34,7 +35,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const open = rows.filter((r) => r.status === "open" || r.status === "reviewing");
   const closed = rows.filter((r) => r.status !== "open" && r.status !== "reviewing").slice(0, 30);
   const who = (r: Row) => (Array.isArray(r.reporter) ? r.reporter[0]?.display_name : r.reporter?.display_name) ?? "?";
-  const TYPE: Record<string, string> = { post: "Post", user: "Person", job: "Job", comment: "Comment", message: "Message" };
+  const TYPE: Record<string, string> = { post: "Post", user: "Person", job: "Job", comment: "Comment", message: "Message", company: "Company page" };
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">

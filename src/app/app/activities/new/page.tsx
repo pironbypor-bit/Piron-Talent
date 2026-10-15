@@ -11,8 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** One form. The date and times are in Phnom Penh time; an end before the start means it runs past midnight. */
-export default async function NewActivityPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const [t, { error }] = await Promise.all([getT(), searchParams]);
+export default async function NewActivityPage({ searchParams }: { searchParams: Promise<{ error?: string; business?: string }> }) {
+  const [t, { error, business }] = await Promise.all([getT(), searchParams]);
   return (
     <main className="px-4 pb-24 pt-4">
       <Link href="/app/activities" className="text-sm font-medium underline">{t("Back")}</Link>
@@ -22,6 +22,7 @@ export default async function NewActivityPage({ searchParams }: { searchParams: 
       {error === "limit" && <div className="mb-4"><Notice tone="error">{t("You already have five open activities. Finish or cancel one first.")}</Notice></div>}
       {error === "1" && <div className="mb-4"><Notice tone="error">{t("Please check the highlighted fields.")}</Notice></div>}
       <form action={createActivity} className="card space-y-4 p-4">
+        {business && /^[0-9a-f-]{36}$/i.test(business) && <input type="hidden" name="business" value={business} />}
         <Field label={t("Title")}><input name="title" required minLength={3} maxLength={120} className={inputClass} /></Field>
         <Field label={t("What will people do?")}><textarea name="description" required minLength={10} maxLength={3000} rows={5} className={inputClass} /></Field>
         <div className="grid grid-cols-3 gap-2">

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Briefcase, ChevronRight, FileText, LogOut, MessageCircle, X } from "lucide-react";
-import { Button, EmptyState, Pill } from "@/components/ui";
-import { inviteToBusiness, openBusinessChat, removeBusinessMember, setBusinessRole } from "@/lib/app/actions";
+import { Briefcase, CalendarClock, ChevronRight, FileText, FolderOpen, Globe, LogOut, MessageCircle, X } from "lucide-react";
+import { Button, EmptyState, Pill, inputClass } from "@/components/ui";
+import { ShareButton } from "@/components/share-button";
+import { inviteToBusiness, openBusinessChat, removeBusinessMember, setBusinessRole, setCompanyPage } from "@/lib/app/actions";
 import { businessPendingInvites, getBusiness, getMe, groupCandidates } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -47,6 +48,31 @@ export default async function CompanyPage({ params }: Props) {
             <button type="submit" className={`${btn} border border-stone-300 bg-white hover:bg-brand-50`}><MessageCircle className="size-4" />{t("Team chat")}</button>
           </form>
         </div>
+      </section>
+
+      <section className="card mt-3 p-4">
+        <h2 className="font-semibold">{t("Documents and public page")}</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href={`/app/profile/companies/${b.id}/documents`} className={`${btn} bg-brand-500 text-ink hover:bg-brand-400`}><FolderOpen className="size-4" />{t("Documents")}</Link>
+          {b.page_public && <Link href={`/companies/${b.id}`} className={`${btn} border border-stone-300 bg-white hover:bg-brand-50`}><Globe className="size-4" />{t("Open public page")}</Link>}
+          {manager && <Link href={`/app/activities/new?business=${b.id}`} className={`${btn} border border-stone-300 bg-white hover:bg-brand-50`}><CalendarClock className="size-4" />{t("Organise an activity")}</Link>}
+          {b.page_public && <ShareButton path={`/companies/${b.id}`} title={b.name} />}
+        </div>
+        {isOwner ? (
+          <form action={setCompanyPage.bind(null, b.id)} className="mt-4 space-y-3">
+            <label className="block text-sm font-medium">
+              {t("About the company")}
+              <textarea name="about" defaultValue={b.about ?? ""} maxLength={500} rows={3} placeholder={t("A few lines for visitors: what you do and where.")} className={`${inputClass} mt-1`} />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="public" value="1" defaultChecked={b.page_public} className="size-4" />
+              {t("Show the company page to everyone")}
+            </label>
+            <Button type="submit" className="px-4 py-2 text-sm">{t("Save page")}</Button>
+          </form>
+        ) : (
+          <p className="mt-3 text-sm text-ink-muted">{b.page_public ? t("The company page is public.") : t("The company page is not public. Only the owner can turn it on.")}</p>
+        )}
       </section>
 
       {manager && (

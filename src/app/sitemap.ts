@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("id,updated_at,city,primary_category_id").eq("is_available", true).limit(5000);
+  const { data: companyIds } = await supabase.rpc("public_company_ids");
   const { data: cats } = await supabase.from("categories").select("id,slug").eq("active", true);
   const slugById = new Map(((cats ?? []) as { id: number; slug: string }[]).map((c) => [c.id, c.slug]));
   // A category-in-city page is listed only when at least one available provider is based there; empty ones stay out of search.
@@ -25,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/providers`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/services`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.8 },
     ...CATEGORY_CONTENT.map((c) => ({ url: `${SITE_URL}/services/${c.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.8 })),
+    ...((companyIds ?? []) as string[]).map((id) => ({ url: `${SITE_URL}/companies/${id}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...[...combos].map((k) => ({ url: `${SITE_URL}/services/${k}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
     ...CITIES.filter((c) => c !== "Other").map((c) => ({ url: `${SITE_URL}/providers?city=${encodeURIComponent(c)}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
     ...((data ?? []) as { id: string; updated_at: string | null }[]).map((p) => ({ url: `${SITE_URL}/providers/${p.id}`, lastModified: p.updated_at ? new Date(p.updated_at) : now, changeFrequency: "weekly" as const, priority: 0.6 })),
