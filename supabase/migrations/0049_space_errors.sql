@@ -49,8 +49,9 @@ begin
   window_start = case when now() - e.window_start > interval '10 minutes' then now() else e.window_start end,
   window_count = case when now() - e.window_start > interval '10 minutes' then 1 else e.window_count + 1 end
  returning * into r;
- -- Four or more in ten minutes: tell the owner, at most once an hour per error.
- if r.window_count >= 5 and r.status = 'open' and (r.alerted_at is null or r.alerted_at < now() - interval '1 hour') then
+ -- Five in ten minutes: tell the owner, at most once an hour per error and at most 3 alerts an hour in total.
+ if r.window_count >= 5 and r.status = 'open' and (r.alerted_at is null or r.alerted_at < now() - interval '1 hour')
+    and (select count(*) from public.notifications where title = 'App error repeating' and created_at > now() - interval '1 hour') < 3 then
   update public.app_errors set alerted_at = now() where id = r.id;
   for o in select user_id from public.admins where is_owner loop
    perform public.notify(o.user_id, 'App error repeating', left(r.message, 140) || ' (' || r.window_count || ' times in 10 minutes)', '/admin/space/errors');

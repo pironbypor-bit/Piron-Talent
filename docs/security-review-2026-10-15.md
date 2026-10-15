@@ -36,3 +36,14 @@ Scope: everything built from migration 0032 to 0041 (team terms and pay, company
 - **Fixed (migration 0046):** authenticated users had UPDATE on every column of profiles, and the row policy only checked 'own row'. Anyone could set their own identity_checked = true or completed_jobs = 99 through the API. Now only the profile editor columns can be written directly; identity_checked and completed_jobs change only through security definer functions. Rule test 08 covers it. Checked the live data first: no profile had identity_checked set outside the review flow (identity checked count was 0 on the owner overview).
 - **Also reviewed:** every other table with an UPDATE policy (businesses, jobs, notifications, portfolio_items, posts, profile_private, quotes, saved_*, services). None has a trust column a user could abuse; quotes and services keep their status through WITH CHECK. Tables without an UPDATE policy are default-deny.
 - **Lesson:** after any new table or column that holds a trust value (checked, paused, counts, status set by staff), grant UPDATE by column, not by table.
+
+## Addendum 2 (Piron Work Space review, 2026-10-15)
+
+Scope: migrations 0045 to 0052 (owner flag and audit log, overview, people and pause, marketplace, errors, feature switches, money, reports).
+
+- **RLS:** all 58 public tables have row level security on. The new tables (audit_log, app_errors, feature_flags, feature_flag_people, finance_entries) have no direct grants for anon or authenticated except SELECT on audit_log and app_errors for the owner policy; everything else goes through functions.
+- **Functions:** all 22 space_* functions are executable by authenticated only, every one checks is_owner() itself, and every one sets search_path to empty. The two internal helpers (space_funnel, space_finance_in_month) are not executable by app roles. Rule tests 07 and 09 to 14 prove that a normal account and a visitor get nothing.
+- **Anonymous-callable by design:** my_features() (returns only features that are on for everyone) and log_app_error() (error reports from visitors).
+- **Found and fixed:** log_app_error could be used to cause many owner alerts with different messages. Now at most 3 alerts an hour in total (patched on the live database and in migration 0049). Reports are capped at 100 a minute and 2000 kept, addresses and long numbers are removed before storing.
+- **Accepted limits:** pausing a person blocks the app and server actions but not direct database calls with their own token (needs an auth ban with the service role key). The error table is readable by the owner only, but messages come from users' browsers: they are treated as plain text and never rendered as HTML.
+- **Full rule test run:** tests 01 to 14 all match their expected lines after migration 0046 (the only expected difference: test 06 shows Quote waiting x2 and first_run 8 because a real pending quote also qualifies).
