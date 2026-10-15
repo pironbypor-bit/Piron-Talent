@@ -202,3 +202,5 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 - Space step 7 (Reports): /admin/space/reports (one page monthly owner report, print or save as PDF, CSV downloads for people, jobs and invoices at /admin/space/reports/export/[kind], no contact details) and /admin/space/audit (every admin action with a filter). Migration 0052 (space_report, space_export, space_audit), rule test 14.
 
 - Projects save the poster's profile city in posts.city when posted (createPost); existing posts were backfilled 2026-10-15. The Space Marketplace city table reads it.
+
+- instrumentation.ts keeps the worker alive with getCloudflareContext().ctx.waitUntil, otherwise the error report was cancelled when the response ended on Cloudflare (found by the 2026-10-15 test run). Verified: Send a test error now creates an Errors line.
