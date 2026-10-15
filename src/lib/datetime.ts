@@ -24,3 +24,21 @@ export function formatRange(startIso: string, endIso: string, locale: Locale): s
   const day = formatDate(s.date, locale);
   return s.date === e.date ? `${day} · ${s.time}–${e.time}` : `${day} ${s.time} – ${formatDate(e.date, locale)} ${e.time}`;
 }
+
+/** Phnom Penh calendar date and clock time of an instant: "2026-10-18" and "08:30". */
+export const ppDate = (iso: string) => parts(iso).date;
+export const ppTime = (iso: string) => parts(iso).time;
+export const todayPP = () => parts(new Date().toISOString()).date;
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+/** Add days to a YYYY-MM-DD date string. */
+export function addDays(date: string, n: number): string {
+  const x = new Date(date + "T00:00:00Z");
+  x.setUTCDate(x.getUTCDate() + n);
+  return `${x.getUTCFullYear()}-${pad2(x.getUTCMonth() + 1)}-${pad2(x.getUTCDate())}`;
+}
+/** The Monday of the week that holds the date. */
+export function mondayOf(date: string): string {
+  const x = new Date(date + "T00:00:00Z");
+  return addDays(date, -((x.getUTCDay() + 6) % 7));
+}

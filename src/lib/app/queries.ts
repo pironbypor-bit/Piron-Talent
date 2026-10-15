@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -756,4 +756,32 @@ export async function adminKpis(): Promise<AdminKpis | null> {
   if (!uid) return null;
   const { data } = await (await createClient()).rpc("admin_kpis");
   return (data ?? null) as AdminKpis | null;
+}
+
+/** Shifts of one company between two instants. Owner and managers get everyone's; a member only their own (row security). */
+export async function teamShifts(businessId: string, fromIso: string, toIso: string): Promise<ShiftRow[]> {
+  if (!/^[0-9a-f-]{36}$/i.test(businessId)) return [];
+  const { data } = await (await createClient())
+    .from("team_shifts")
+    .select("id,user_id,starts_at,ends_at,note,clock_in_at,clock_out_at,absent,user:profiles!team_shifts_user_id_fkey(display_name)")
+    .eq("business_id", businessId)
+    .gte("starts_at", fromIso)
+    .lt("starts_at", toIso)
+    .order("starts_at");
+  return ((data ?? []) as unknown as (Omit<ShiftRow, "person"> & { user: { display_name: string } | { display_name: string }[] | null })[]).map((r) => {
+    const { user, ...rest } = r;
+    return { ...rest, person: one(user)?.display_name ?? "?" };
+  });
+}
+
+/** Tasks of one company: all for owner and managers, only the assigned ones for a member. */
+export async function teamTasks(businessId: string): Promise<TaskRow[]> {
+  if (!/^[0-9a-f-]{36}$/i.test(businessId)) return [];
+  const { data } = await (await createClient())
+    .from("team_tasks")
+    .select("id,title,detail,assignee_id,status,due_on,created_at,assignee:profiles!team_tasks_assignee_id_fkey(display_name)")
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  return ((data ?? []) as unknown as (Omit<TaskRow, "assignee"> & { assignee: { display_name: string } | { display_name: string }[] | null })[]).map((r) => ({ ...r, assignee: one(r.assignee)?.display_name ?? null }));
 }

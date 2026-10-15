@@ -192,3 +192,7 @@ export type ActivityRow = {
 export type ActivityVolunteer = { user: Author; status: "joined" | "waitlist" | "confirmed" | "absent"; hours: number | null };
 
 export type JobAlertRow = { id: string; category_id: number | null; city: string | null };
+
+export type ShiftRow = { id: string; user_id: string; person: string; starts_at: string; ends_at: string; note: string | null; clock_in_at: string | null; clock_out_at: string | null; absent: boolean };
+export type TaskStatus = "todo" | "doing" | "done";
+export type TaskRow = { id: string; title: string; detail: string | null; assignee_id: string | null; assignee: string | null; status: TaskStatus; due_on: string | null; created_at: string };

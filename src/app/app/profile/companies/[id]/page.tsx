@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Briefcase, CalendarClock, ChevronRight, FileText, FolderOpen, Globe, LogOut, MessageCircle, X } from "lucide-react";
+import { Briefcase, CalendarClock, CalendarDays, ListChecks, ChevronRight, FileText, FolderOpen, Globe, LogOut, MessageCircle, X } from "lucide-react";
 import { Button, EmptyState, Pill, inputClass } from "@/components/ui";
 import { ShareButton } from "@/components/share-button";
 import { inviteToBusiness, openBusinessChat, removeBusinessMember, setBusinessRole, setCompanyPage, setShowOnProfile } from "@/lib/app/actions";
@@ -47,6 +47,14 @@ export default async function CompanyPage({ params }: Props) {
           <form action={openBusinessChat.bind(null, b.id)}>
             <button type="submit" className={`${btn} border border-stone-300 bg-white hover:bg-brand-50`}><MessageCircle className="size-4" />{t("Team chat")}</button>
           </form>
+        </div>
+      </section>
+
+      <section className="card mt-3 p-4">
+        <h2 className="font-semibold">{t("Team work")}</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href={`/app/profile/companies/${b.id}/schedule`} className={`${btn} bg-brand-500 text-ink hover:bg-brand-400`}><CalendarDays className="size-4" />{t("Schedule")}</Link>
+          <Link href={`/app/profile/companies/${b.id}/tasks`} className={`${btn} border border-stone-300 bg-white hover:bg-brand-50`}><ListChecks className="size-4" />{t("Tasks")}</Link>
         </div>
       </section>
 

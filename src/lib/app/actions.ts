@@ -728,3 +728,76 @@ export async function setShowOnProfile(business: string, formData: FormData) {
   revalidatePath(`/providers/${uid}`);
   redirect(back);
 }
+
+// Team shifts and tasks (migration 0037). Owner and managers plan; a member acts on their own.
+const teamBack = (business: string, page: "schedule" | "tasks") => `/app/profile/companies/${business}/${page}`;
+
+export async function addTeamShift(business: string, formData: FormData) {
+  if (!uuid.test(business)) return;
+  const back = teamBack(business, "schedule");
+  await requireUser(back);
+  const f = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const user = f("person", 36);
+  const day = f("date", 10);
+  const starts = phnomPenhToIso(day, f("start", 5));
+  let ends = phnomPenhToIso(day, f("end", 5));
+  if (!uuid.test(user) || !starts || !ends) redirect(`${back}?error=1`);
+  // An end before the start means the shift runs past midnight.
+  if (new Date(ends!) <= new Date(starts!)) ends = new Date(new Date(ends!).getTime() + 24 * 3600 * 1000).toISOString();
+  const { error } = await (await createClient()).rpc("add_team_shift", { p_business: business, p_user: user, p_starts: starts, p_ends: ends, p_note: f("note", 200) });
+  revalidatePath(back);
+  redirect(`${back}?week=${day}${error ? (error.message.includes("overlap") ? "&error=overlap" : "&error=1") : ""}`);
+}
+
+export async function deleteTeamShift(business: string, shift: string, week: string) {
+  if (!uuid.test(business) || !uuid.test(shift)) return;
+  const back = teamBack(business, "schedule");
+  await requireUser(back);
+  await (await createClient()).rpc("delete_team_shift", { p_shift: shift });
+  revalidatePath(back);
+  redirect(`${back}?week=${/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(week) ? week : ""}`);
+}
+
+export async function clockShift(business: string, shift: string, action: string, week: string) {
+  if (!uuid.test(business) || !uuid.test(shift) || !["in", "out", "absent", "reset"].includes(action)) return;
+  const back = teamBack(business, "schedule");
+  await requireUser(back);
+  const { error } = await (await createClient()).rpc("clock_shift", { p_shift: shift, p_action: action });
+  revalidatePath(back);
+  const w = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(week) ? `week=${week}` : "";
+  redirect(`${back}?${w}${error ? `${w ? "&" : ""}error=clock` : ""}`);
+}
+
+export async function addTeamTask(business: string, formData: FormData) {
+  if (!uuid.test(business)) return;
+  const back = teamBack(business, "tasks");
+  await requireUser(back);
+  const f = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const assignee = f("assignee", 36);
+  const due = f("due", 10);
+  if (f("title", 120).length < 2) redirect(`${back}?error=1`);
+  const { error } = await (await createClient()).rpc("add_team_task", {
+    p_business: business, p_title: f("title", 120), p_detail: f("detail", 500),
+    p_assignee: uuid.test(assignee) ? assignee : null, p_due: /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(due) ? due : null,
+  });
+  revalidatePath(back);
+  redirect(error ? `${back}?error=1` : back);
+}
+
+export async function setTaskStatus(business: string, task: string, status: string) {
+  if (!uuid.test(business) || !uuid.test(task) || !["todo", "doing", "done"].includes(status)) return;
+  const back = teamBack(business, "tasks");
+  await requireUser(back);
+  await (await createClient()).rpc("set_task_status", { p_task: task, p_status: status });
+  revalidatePath(back);
+  redirect(back);
+}
+
+export async function deleteTeamTask(business: string, task: string) {
+  if (!uuid.test(business) || !uuid.test(task)) return;
+  const back = teamBack(business, "tasks");
+  await requireUser(back);
+  await (await createClient()).rpc("delete_team_task", { p_task: task });
+  revalidatePath(back);
+  redirect(back);
+}
