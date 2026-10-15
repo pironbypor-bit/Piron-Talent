@@ -60,3 +60,4 @@ Owner-only control room at /admin/space (menu entry and /choose after login, for
 - Password reset fixed 2026-10-15: the implicit client now uses plain supabase-js (the ssr helper forces pkce and the email link then failed with link expired).
 - Pause blocks the app and server actions, not direct database calls with the person's own token. A full block needs a Supabase auth ban (service role key), not set up.
 - Not done: Khmer for the Space (English only), staff roles with limited views, Sentry (own error table instead).
+- Khmer review sheet 2 (docs/khmer-review-2.html, 23 lines) covers the Khmer added after the first sheet: home search, dropdowns, Payments tab, paused screen, error screen, password reset messages. Pass it to the same Khmer speaker. The Space screens are English only.
