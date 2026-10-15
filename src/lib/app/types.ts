@@ -152,7 +152,9 @@ export type CompanyPublic = {
   activities: { id: string; title: string; place: string | null; city: string | null; starts_at: string; capacity: number; joined: number }[];
   documents: { id: string; name: string; mime: string; bytes: number }[];
 };
+export type WorksAt = { id: string; name: string; job_title: string | null; role: BusinessRole };
 export type BusinessDetail = Omit<BusinessRow, "jobs" | "projects"> & {
+  show_on_profile: boolean;
   page_public: boolean;
   about: string | null;
   team: TeamMember[];

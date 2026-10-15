@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Briefcase, CalendarClock, ChevronRight, FileText, FolderOpen, Globe, LogOut, MessageCircle, X } from "lucide-react";
 import { Button, EmptyState, Pill, inputClass } from "@/components/ui";
 import { ShareButton } from "@/components/share-button";
-import { inviteToBusiness, openBusinessChat, removeBusinessMember, setBusinessRole, setCompanyPage } from "@/lib/app/actions";
+import { inviteToBusiness, openBusinessChat, removeBusinessMember, setBusinessRole, setCompanyPage, setShowOnProfile } from "@/lib/app/actions";
 import { businessPendingInvites, getBusiness, getMe, groupCandidates } from "@/lib/app/queries";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -74,6 +74,17 @@ export default async function CompanyPage({ params }: Props) {
           <p className="mt-3 text-sm text-ink-muted">{b.page_public ? t("The company page is public.") : t("The company page is not public. Only the owner can turn it on.")}</p>
         )}
       </section>
+
+      <form action={setShowOnProfile.bind(null, b.id)} className="card mt-3 flex items-center gap-3 p-4">
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{t("Show this company on my profile")}</p>
+          <p className="text-sm text-ink-muted">{t("Your profile says Works at, with your job title. It appears only while the company page is public.")}</p>
+        </div>
+        <input type="hidden" name="show" value={b.show_on_profile ? "0" : "1"} />
+        <button type="submit" role="switch" aria-checked={b.show_on_profile} aria-label={t("Show this company on my profile")} className={`relative h-6 w-11 shrink-0 rounded-full transition ${b.show_on_profile ? "bg-emerald-500" : "bg-stone-300"}`}>
+          <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition ${b.show_on_profile ? "left-[22px]" : "left-0.5"}`} />
+        </button>
+      </form>
 
       {manager && (
         <>

@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -149,13 +149,14 @@ export async function myPortfolio() {
 export async function getProvider(id: string) {
   const supabase = await createClient();
   const uid = await getUserId();
-  const [{ data }, { data: portfolio }, { data: reviews }, saved, { data: record }, { data: endorsed }] = await Promise.all([
+  const [{ data }, { data: portfolio }, { data: reviews }, saved, { data: record }, { data: endorsed }, { data: works }] = await Promise.all([
     supabase.from("profiles").select(`${AUTHOR},city,district,available_until,bio,price_from,remote,completed_jobs,primary_category_id,profile_skills(skills(name))`).eq("id", id).maybeSingle(),
     supabase.from("portfolio_items").select("id,image_path,caption,sort_order").eq("provider_id", id).order("sort_order"),
     supabase.from("reviews").select(`id,stars,comment,created_at,author:profiles!reviews_author_id_fkey(${AUTHOR})`).eq("subject_id", id).order("created_at", { ascending: false }).limit(10),
     uid ? supabase.from("saved_providers").select("provider_id").eq("user_id", uid).eq("provider_id", id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.rpc("work_record", { p_user: id }),
     supabase.from("endorsements").select("skill").eq("to_user", id),
+    supabase.rpc("profile_works_at", { p_user: id }),
   ]);
   if (!data) return null;
   const counts = new Map<string, number>();
@@ -169,6 +170,7 @@ export async function getProvider(id: string) {
     reviews: ((reviews ?? []) as unknown as { id: string; stars: number; comment: string | null; created_at: string; author: Author | Author[] }[]).map((r) => ({ ...r, author: one(r.author) as Author })),
     record: (record ?? []) as WorkRecordRow[],
     endorsements,
+    worksAt: ((works ?? []) as WorksAt[]),
   };
 }
 
@@ -463,9 +465,10 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   const uid = await getUserId();
   if (!uid || !/^[0-9a-f-]{36}$/i.test(id)) return null;
   const supabase = await createClient();
-  const { data: mine } = await supabase.from("business_members").select("role").eq("business_id", id).eq("user_id", uid).maybeSingle();
+  const { data: mine } = await supabase.from("business_members").select("role,show_on_profile").eq("business_id", id).eq("user_id", uid).maybeSingle();
   if (!mine) return null;
   const role = (mine as { role: BusinessRole }).role;
+  const showOnProfile = !!(mine as { show_on_profile: boolean }).show_on_profile;
   const { data: b } = await supabase.from("businesses").select("id,name,description,city,created_at,conversation_id,page_public,about").eq("id", id).maybeSingle();
   if (!b) return null;
   const manager = role === "owner" || role === "manager";
@@ -480,6 +483,7 @@ export async function getBusiness(id: string): Promise<BusinessDetail | null> {
   return {
     ...(b as Omit<BusinessRow, "jobs" | "projects" | "role"> & { page_public: boolean; about: string | null }),
     role,
+    show_on_profile: showOnProfile,
     team: (team ?? []) as TeamMember[],
     jobs: jobRows.map((j) => ({ ...j, applicants: applicants.filter((a) => a.job_id === j.id).length })),
     posts: (posts ?? []) as BusinessDetail["posts"],

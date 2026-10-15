@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Briefcase, Lightbulb, Plus, Sparkles } from "lucide-react";
+import { Briefcase, HeartHandshake, Lightbulb, Plus, Sparkles } from "lucide-react";
 import { EmptyState, Notice } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { getMe, listPosts, myCounters, myIdentityStatus } from "@/lib/app/queries";
@@ -39,7 +39,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
       <section className="hero-amber rounded-3xl p-4">
         <p className="text-lg font-bold">{me ? t("Good to see you, {name}", { name: me.display_name }) : t("Workspace")}</p>
         <p className="text-sm text-brand-900">{me ? t("What would you like to do today?") : t("Browse without an account, or log in to take part.")}</p>
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           {QUICK.map(({ kind: k, label, Icon, tone }) => (
             <Link key={k} href={`/app/post/new?kind=${k}`} className={`flex flex-col items-center gap-1 rounded-2xl bg-white/90 px-2 py-3 text-center text-xs font-medium shadow-sm hover:bg-white`}>
               <span className={`flex size-9 items-center justify-center rounded-xl ${tone}`}>
@@ -48,6 +48,12 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
               {t(label)}
             </Link>
           ))}
+          <Link href="/app/activities" className="flex flex-col items-center gap-1 rounded-2xl bg-white/90 px-2 py-3 text-center text-xs font-medium shadow-sm hover:bg-white">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-rose-100 text-rose-900">
+              <HeartHandshake className="size-5" />
+            </span>
+            {t("Volunteer")}
+          </Link>
         </div>
       </section>
 

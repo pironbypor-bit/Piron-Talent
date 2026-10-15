@@ -24,7 +24,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
   if (!data) notFound();
   const volunteer = await volunteerRecord(id);
   const blocked = me && me.id !== id ? await iBlocked(id) : false;
-  const { provider: p, portfolio, reviews, record, endorsements } = data;
+  const { provider: p, portfolio, reviews, record, endorsements, worksAt } = data;
   const supabase = await createClient();
   const image = (path: string) => supabase.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
   const path = `${base}/providers/${p.id}`;
@@ -53,6 +53,18 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
             <AvailablePill s={p} t={t} />
             {replyText(t, p) && <span className="text-ink-muted">{replyText(t, p)}</span>}
           </div>
+          {worksAt.length > 0 && (
+            <p className="mt-1 text-sm">
+              {t("Works at")}{" "}
+              {worksAt.map((w, i) => (
+                <span key={w.id}>
+                  {i > 0 && ", "}
+                  <Link href={`/companies/${w.id}`} className="font-medium underline">{w.name}</Link>
+                  {w.job_title ? <span className="text-ink-muted"> ({w.job_title})</span> : null}
+                </span>
+              ))}
+            </p>
+          )}
         </div>
       </header>
       {invited === "1" && <div className="mt-3"><Notice tone="success">{t("Invitation sent. {name} will see it in notifications.", { name: p.display_name })}</Notice></div>}

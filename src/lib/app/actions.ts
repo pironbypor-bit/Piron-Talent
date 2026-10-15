@@ -717,3 +717,14 @@ export async function registerCompanyDocument(business: string, file: { path: st
   revalidatePath(`/app/profile/companies/${business}/documents`);
   return { ok: !error };
 }
+
+/** A member chooses whether this company shows as "Works at" on their own public profile (migration 0036). */
+export async function setShowOnProfile(business: string, formData: FormData) {
+  if (!uuid.test(business)) return;
+  const back = `/app/profile/companies/${business}`;
+  const uid = await requireUser(back);
+  await (await createClient()).rpc("set_show_on_profile", { p_business: business, p_show: String(formData.get("show") ?? "") === "1" });
+  revalidatePath(back);
+  revalidatePath(`/providers/${uid}`);
+  redirect(back);
+}
