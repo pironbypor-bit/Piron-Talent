@@ -37,6 +37,11 @@ export async function logIn(_prev: FormState, formData: FormData): Promise<FormS
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { ok: false, message: loginMessage(error.message), values: echo };
+  // No page asked for: the owner chooses between the app and Piron Work Space, everyone else goes on as before.
+  if (!values.next) {
+    const { data: owner } = await supabase.rpc("is_owner");
+    if (owner === true) redirect("/choose");
+  }
   redirect(safeNext(values.next));
 }
 

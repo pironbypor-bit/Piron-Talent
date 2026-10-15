@@ -60,7 +60,7 @@ export default async function SpaceOverviewPage() {
         <span className="rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white">Owner only</span>
         <span className="text-sm text-ink-muted">{day} · Phnom Penh time</span>
       </header>
-      <p className="mt-1 text-sm"><Link href="/admin" className="underline">Requests and applicants</Link></p>
+      <p className="mt-1 flex gap-4 text-sm"><Link href="/app" className="underline">Open Piron Work</Link><Link href="/admin" className="underline">Requests and applicants</Link></p>
 
       <div className="mt-4 grid gap-4 md:grid-cols-[190px_minmax(0,1fr)]">
         <SpaceNav active="overview" />

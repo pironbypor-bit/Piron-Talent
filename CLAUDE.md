@@ -184,3 +184,5 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 - Payments tab: bottom bar is Home, Payments, Services, Jobs, Messages. /app/payments is the one place for money: totals, invoices list, payout account, jobs to invoice, team pay terms per company, alert settings. Invoices and payout pages highlight this tab. The Profile page links to it instead of holding its own cards.
 
 - Piron Work Space (owner control room, plan in docs/piron-space-plan.html). Step 1 done: /admin/space Overview, owner flag admins.is_owner, audit_log (log_admin_action, called from the admin actions), space_overview(), is_owner() (migration 0045, rule test 07). Link in the top menu for the owner only. Later sections show their step number in the side list.
+
+- Login chooser: after a password login with no page asked for, the owner lands on /choose (Piron Work or Piron Work Space). Everyone else goes on as before. /choose sends non-owners to /app. Preview at /demo/choose. Shared screen: src/components/choose-screen.tsx.

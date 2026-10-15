@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // A marketplace is mostly public. Only these areas need a signed-in person.
-const PROTECTED = ["/dashboard", "/me", "/new", "/messages", "/admin", "/app/profile", "/app/settings", "/app/messages", "/app/post/new", "/app/jobs/new", "/app/jobs/alerts", "/app/activities/new", "/app/notifications", "/app/invoices", "/app/payments"];
+const PROTECTED = ["/dashboard", "/me", "/new", "/messages", "/admin", "/app/profile", "/app/settings", "/app/messages", "/app/post/new", "/app/jobs/new", "/app/jobs/alerts", "/app/activities/new", "/app/notifications", "/app/invoices", "/app/payments", "/choose"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
