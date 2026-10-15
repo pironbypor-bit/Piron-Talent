@@ -215,7 +215,7 @@ export async function createActivity(formData: FormData) {
     p_title: f("title", 120), p_description: f("description", 3000), p_place: f("place", 120),
     p_city: (CITIES as readonly string[]).includes(cityRaw) ? cityRaw : "", p_starts: starts, p_ends: endIso, p_capacity: capacity, p_bring: f("bring", 500),
   });
-  if (error || !data) redirect(`/app/activities/new?error=${error?.message.includes("too many") ? "limit" : "1"}`);
+  if (error || !data) redirect(`/app/activities/new?error=${error?.message.includes("too many") ? "limit" : error?.message.includes("identity check") ? "identity" : "1"}`);
   const company = f("business", 36);
   if (uuid.test(company)) await supabase.rpc("link_activity_company", { p_activity: data, p_business: company });
   revalidatePath("/app/activities");
@@ -434,7 +434,7 @@ export async function setRecordPublic(formData: FormData) {
 }
 
 export async function setNotificationGroup(group: string, formData: FormData) {
-  if (!["projects", "messages", "activities", "reviews"].includes(group)) return;
+  if (!["projects", "messages", "activities", "reviews", "team", "money"].includes(group)) return;
   await requireUser("/app/settings");
   const on = String(formData.get("on") ?? "") === "1";
   await (await createClient()).rpc("set_notification_group", { p_group: group, p_on: on });

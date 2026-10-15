@@ -19,6 +19,14 @@ export default async function NewActivityPage({ searchParams }: { searchParams: 
       <div className="mt-3">
         <PageTitle lead={t("Volunteers get a group chat once they join. You confirm who came, and their hours go on their profile.")}>{t("Organise an activity")}</PageTitle>
       </div>
+      {error === "identity" && (
+        <div className="mb-4">
+          <Notice tone="error">
+            {t("To organise an activity your identity must be checked first.")}{" "}
+            <Link href="/app/profile/identity" className="font-medium underline">{t("Do the identity check")}</Link>
+          </Notice>
+        </div>
+      )}
       {error === "limit" && <div className="mb-4"><Notice tone="error">{t("You already have five open activities. Finish or cancel one first.")}</Notice></div>}
       {error === "1" && <div className="mb-4"><Notice tone="error">{t("Please check the highlighted fields.")}</Notice></div>}
       <form action={createActivity} className="card space-y-4 p-4">

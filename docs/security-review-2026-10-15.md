@@ -22,5 +22,11 @@ Scope: everything built from migration 0032 to 0041 (team terms and pay, company
 
 ## Left as is, with reasons
 - npm audit: 4 high findings, all the glob CLI command injection reached through @opennextjs/cloudflare build tooling. Build time only; not in the running Worker. Do not force a fix without testing the deploy.
-- Trigger functions are executable by anon in the grant list; PostgREST does not expose trigger functions, so this is harmless but untidy. A later migration could revoke it.
+- Trigger functions were executable by anon in the grant list (harmless, PostgREST does not expose them). Closed by migration 0044; triggers verified to still fire.
 - Held payments are locked pending legal advice; nothing handles customer money.
+
+## Live checks added 2026-10-16 (rolling-back tests)
+- Volunteer waiting list: second person waits, is promoted when the first leaves, gets the Activity spot notification and joins the chat.
+- Reminders: all six kinds fire once (quote waiting, confirm the work, deadline tomorrow, availability ending, hire again, activity reminder to organiser and member); a second run sends nothing.
+- Mute groups: a muted group drops the notification, other groups still arrive.
+- Organiser rule: unchecked identity is refused, checked is allowed.

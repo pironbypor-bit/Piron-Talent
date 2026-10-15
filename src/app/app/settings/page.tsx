@@ -107,6 +107,8 @@ export default async function SettingsPage() {
           { key: "messages", label: "Messages", hint: "Messages, requests, groups and comments.", on: !muted.includes("messages") },
           { key: "activities", label: "Activities", hint: "People joining, places opening, cancellations and confirmed hours.", on: !muted.includes("activities") },
           { key: "reviews", label: "Reviews", hint: "A new review of your work.", on: !muted.includes("reviews") },
+          { key: "team", label: "Team work", hint: "Shifts scheduled or cancelled, tasks assigned and done.", on: !muted.includes("team") },
+          { key: "money", label: "Invoices and pay", hint: "Invoices, payments marked or received, pay records and terms, payout account results.", on: !muted.includes("money") },
         ] as const).map((g) => (
           <div key={g.key} className="flex items-center gap-3 px-4 py-3">
             <span className="min-w-0 flex-1">
