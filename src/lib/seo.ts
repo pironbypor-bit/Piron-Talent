@@ -14,14 +14,15 @@ const clean = (s: string | null | undefined, max = 160) => {
  * `path` is the site path of the page; absolute URLs come from metadataBase in the root layout.
  * Pass `image` only when it is a square picture such as an avatar; the card then uses the small layout.
  */
-export function shareMeta({ title, description, path, image, type = "website" }: { title: string; description?: string | null; path: string; image?: string | null; type?: "website" | "profile" | "article" }): Metadata {
+export function shareMeta({ title, description, path, image, generated = false, type = "website" }: { title: string; description?: string | null; path: string; image?: string | null; generated?: boolean; type?: "website" | "profile" | "article" }): Metadata {
   const desc = clean(description) || undefined;
   const picture = image || DEFAULT_OG_IMAGE;
   return {
     title,
     description: desc,
     alternates: { canonical: path },
-    openGraph: { title: `${title} - ${APP_NAME}`, description: desc, url: path, siteName: APP_NAME, type, images: [{ url: picture, ...(image ? {} : { width: 1200, height: 630 }) }] },
-    twitter: { card: image ? "summary" : "summary_large_image", title: `${title} - ${APP_NAME}`, description: desc, images: [picture] },
+    // generated: the page has an opengraph-image file next to it, so no image is named here and Next adds that one.
+    openGraph: { title: `${title} - ${APP_NAME}`, description: desc, url: path, siteName: APP_NAME, type, ...(generated ? {} : { images: [{ url: picture, ...(image ? {} : { width: 1200, height: 630 }) }] }) },
+    twitter: { card: image && !generated ? "summary" : "summary_large_image", title: `${title} - ${APP_NAME}`, description: desc, ...(generated ? {} : { images: [picture] }) },
   };
 }

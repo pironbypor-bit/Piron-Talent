@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Piron Work" };
   const p = data.provider;
   const title = [p.display_name, p.role_line, p.city ? t(p.city) : null].filter(Boolean).join(" · ");
-  return shareMeta({ title, description: p.bio ?? t("Skilled work, with checked identity and real reviews."), path: `/providers/${id}`, image: p.avatar_url, type: "profile" });
+  return shareMeta({ title, description: p.bio ?? t("Skilled work, with checked identity and real reviews."), path: `/providers/${id}`, generated: true, type: "profile" });
 }
 
 /** Public profile, same body as the app page but with the site header and footer. */

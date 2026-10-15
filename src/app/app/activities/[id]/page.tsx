@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Piron Work" };
   const [t, locale] = await Promise.all([getT(), getLocale()]);
   const x = data.activity;
-  return shareMeta({ title: x.title, description: [formatRange(x.starts_at, x.ends_at, locale), x.place, x.city ? t(x.city) : null].filter(Boolean).join(" · "), path: `/app/activities/${id}`, type: "article" });
+  return shareMeta({ title: x.title, description: [formatRange(x.starts_at, x.ends_at, locale), x.place, x.city ? t(x.city) : null].filter(Boolean).join(" · "), path: `/app/activities/${id}`, generated: true, type: "article" });
 }
 
 /** One activity: details, Join or Leave, the group chat for people who are in, and the organiser's list. */

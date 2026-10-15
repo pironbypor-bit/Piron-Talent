@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: c.name,
     description: c.about ?? [c.kind, c.city ? t(c.city) : null].filter(Boolean).join(" · "),
     path: `/companies/${id}`,
+    generated: true,
   });
   return c.is_public ? meta : { ...meta, robots: { index: false, follow: false } };
 }

@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Piron Work" };
   const t = await getT();
   const where = [data.post.place, data.post.remote ? t("Remote") : null].filter(Boolean).join(" · ");
-  return shareMeta({ title: data.post.title, description: [data.post.body, where].filter(Boolean).join(" · "), path: `/app/post/${id}`, type: "article" });
+  return shareMeta({ title: data.post.title, description: [data.post.body, where].filter(Boolean).join(" · "), path: `/app/post/${id}`, generated: true, type: "article" });
 }
 
 export default async function PostPage({ params, searchParams }: Props) {
