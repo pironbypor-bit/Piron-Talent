@@ -128,3 +128,21 @@ export async function getPerson(id: string): Promise<PersonDetail | null> {
   const { data, error } = await supabase.rpc("space_person", { p_id: id });
   return error ? null : (data as PersonDetail | null);
 }
+
+// Marketplace health (migration 0048) ----------------------------------------------------------------------
+
+export type Funnel = { projects: number; with_quote: number; accepted: number; delivered: number; confirmed: number; cancelled: number };
+export type MarketplaceHealth = {
+  funnel_all: Funnel; funnel_30d: Funnel;
+  hours_to_first_quote: number | null; avg_stars: number | null; reviews: number;
+  quotes_waiting_2d: number; no_quote_3d: number;
+  stuck: { id: string; post_id: string; title: string; status: string; days: number; customer: string | null; provider: string | null }[];
+  categories: { name: string; posts: number; providers: number }[];
+  cities: { city: string; posts: number; providers: number }[];
+};
+
+export async function getMarketplace(): Promise<MarketplaceHealth | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_marketplace");
+  return error ? null : (data as MarketplaceHealth | null);
+}
