@@ -51,3 +51,12 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 ## How features are built here
 Migration file in supabase/migrations (applied by hand in the SQL editor) → queries in src/lib/app/queries.ts, writes in src/lib/app/actions.ts (server actions, security-definer functions for anything cross-user) → pages under src/app/app → Khmer strings inserted after "Search": "ស្វែងរក", in src/lib/i18n/km/index.ts → a short note appended to CLAUDE.md → build, commit, push, deploy, verify live as POR → report in plain words with what was verified.
 - Email backup: Brevo key "Piron Work 2" is stored in Vault (brevo_api_key) as of 2026-10-15; a Work delivered test returned 201 from Brevo. Sender leangporpo9@gmail.com (Gmail, may hit spam; later authenticate piron.tech). Key expires 2027-10-15 or after 90 days idle. Hostinger piron.site and pirontalent.space show Payment processing with no cancel control; watch the card statement.
+
+## Piron Work Space (added 2026-10-15, plan in docs/piron-space-plan.html)
+Owner-only control room at /admin/space (menu entry and /choose after login, for the owner account leangporpo9@gmail.com only; admins.is_owner).
+- Step 1 Overview (0045: owner flag, audit_log, space_overview), step 2 People with pause and resume (0047, profiles.paused_at), step 3 Marketplace health (0048), step 4 Errors (0049: app_errors, instrumentation.ts, error.tsx, /api/report-error, alert after 5 repeats in 10 minutes), step 5 Feature switches (0050: feature_flags, my_features, src/lib/app/features.ts; first switch: payments), step 6 Money (0051: finance_entries, the owner's own book, CSV), step 7 Reports, exports and Audit log (0052).
+- Migrations through 0052 are applied on the live database. Rule tests 07 to 14 in supabase/tests.
+- Security fix 0046: authenticated users could set their own identity_checked and completed_jobs. Column grants now whitelist the profile editor columns. Keep trust columns out of that list (docs/security-review-2026-10-15.md addendum).
+- Password reset fixed 2026-10-15: the implicit client now uses plain supabase-js (the ssr helper forces pkce and the email link then failed with link expired).
+- Pause blocks the app and server actions, not direct database calls with the person's own token. A full block needs a Supabase auth ban (service role key), not set up.
+- Not done: Khmer for the Space (English only), staff roles with limited views, Sentry (own error table instead).

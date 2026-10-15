@@ -9,8 +9,8 @@ const ITEMS = [
   { key: "errors", label: "Errors", Icon: Bug, href: "/admin/space/errors", step: 4 },
   { key: "features", label: "Features", Icon: Flag, href: "/admin/space/features", step: 5 },
   { key: "money", label: "Money", Icon: Wallet, href: "/admin/space/money", step: 6 },
-  { key: "reports", label: "Reports", Icon: FileText, href: null, step: 7 },
-  { key: "audit", label: "Audit log", Icon: ScrollText, href: null, step: 7 },
+  { key: "reports", label: "Reports", Icon: FileText, href: "/admin/space/reports", step: 7 },
+  { key: "audit", label: "Audit log", Icon: ScrollText, href: "/admin/space/audit", step: 7 },
 ];
 
 export function SpaceNav({ active }: { active: string }) {

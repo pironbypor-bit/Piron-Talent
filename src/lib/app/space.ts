@@ -233,3 +233,49 @@ export function monthLabel(iso: string): string {
   const [y, m] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 }
+
+// Reports, exports and audit view (migration 0052) -----------------------------------------------------------
+
+export type MonthlyReport = {
+  month: string;
+  people: { new: number; total_at_end: number; providers_now: number; identity_checked_now: number; paused_now: number };
+  market: { projects: number; quotes: number; accepted: number; delivered: number; confirmed: number; reviews: number; avg_stars: number | null; messages: number; companies_new: number };
+  money: { revenue: number; costs: number; profit: number; volume: number };
+  errors: { new: number; seen: number; open_now: number };
+  admin_actions: number;
+  reports_filed: number;
+};
+
+export const EXPORT_KINDS = ["people", "jobs", "invoices"] as const;
+export type ExportKind = (typeof EXPORT_KINDS)[number];
+export type AuditRow = { at: string; action: string; target: string | null; actor: string | null };
+
+export const AUDIT_FILTERS: { value: string; label: string }[] = [
+  { value: "", label: "Everything" },
+  { value: "Identity", label: "Identity checks" },
+  { value: "Report", label: "Reports" },
+  { value: "Dispute", label: "Disputes" },
+  { value: "Payout", label: "Payout accounts" },
+  { value: "Account", label: "Paused or resumed accounts" },
+  { value: "Feature", label: "Feature switches" },
+  { value: "Money", label: "Money entries" },
+  { value: "Error", label: "Errors" },
+];
+
+export async function getReport(month: string | null): Promise<MonthlyReport | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_report", { p_month: month });
+  return error ? null : (data as MonthlyReport | null);
+}
+
+export async function getExportRows(kind: ExportKind): Promise<Record<string, string | number | boolean | null>[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_export", { p_kind: kind });
+  return error ? null : (data as Record<string, string | number | boolean | null>[] | null);
+}
+
+export async function getAudit(prefix: string): Promise<AuditRow[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_audit", { p_prefix: prefix, p_limit: 200 });
+  return error ? null : (data as AuditRow[] | null);
+}
