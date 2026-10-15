@@ -113,8 +113,13 @@ export default async function ProfilePage() {
                 </span>
                 <ChevronRight className="size-4 text-ink-muted" />
               </Link>
+              <div className="flex gap-2 px-4 pb-2.5">
+                <Link href={`/app/profile/companies/${c.id}/documents`} className={chipSecondary}>{t("Documents")}</Link>
+                <Link href={`/app/profile/companies/${c.id}`} className={chipSecondary}>{t("Public page")}</Link>
+              </div>
             </li>
           ))}
+          {companies.length === 0 && <li className="px-4 py-2 text-xs text-ink-muted">{t("Each company gets a Documents area and a public page.")}</li>}
           <li>
             <Link href="/app/profile/companies/new" className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-brand-800 hover:bg-brand-50"><Plus className="size-4" /> {t("Add company")}</Link>
           </li>
