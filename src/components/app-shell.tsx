@@ -83,6 +83,7 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
         {APP_NAME}
       </Link>
       <div className="flex items-center gap-2">
+        {signedIn && <TopMenu base={base} name={name} unread={n} notificationsHref={notificationsHref ?? `${base}/profile#notifications`} logOut={logOut} />}
         <Link href={notificationsHref ?? `${base}/profile#notifications`} aria-label={t("Notifications")} className="relative rounded-full p-2 hover:bg-brand-50">
           <Bell className="size-5" />
           {n > 0 && (
@@ -91,7 +92,6 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
             </span>
           )}
         </Link>
-        {signedIn && <TopMenu base={base} name={name} unread={n} notificationsHref={notificationsHref ?? `${base}/profile#notifications`} logOut={logOut} />}
         {signedIn ? (
           <Link href={`${base}/profile`} aria-label={t("Profile")} className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-brand-200 text-sm font-bold text-brand-900 ring-2 ring-white">
             {avatarUrl ? <img src={avatarUrl} alt="" className="size-full object-cover" /> : name.charAt(0) || "?"}
