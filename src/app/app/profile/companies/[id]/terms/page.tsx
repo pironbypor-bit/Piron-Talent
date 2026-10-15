@@ -4,13 +4,15 @@ import { notFound } from "next/navigation";
 import { Lock } from "lucide-react";
 import { Button, Notice, Pill, inputClass } from "@/components/ui";
 import { addPayRecord, deletePayRecord, markPayPaid, setMemberTerms } from "@/lib/app/actions";
-import { businessPay, businessTerms, getBusiness, getMe } from "@/lib/app/queries";
+import { businessPay, businessTerms, getBusiness, getMe, teamShifts } from "@/lib/app/queries";
+import { addDays, phnomPenhToIso, ppDate, todayPP } from "@/lib/datetime";
 import type { MemberTerms, PayRecordRow, RateUnit } from "@/lib/app/types";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../../../avatar";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ from?: string; to?: string }> };
+const isDay = (v?: string) => !!v && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v);
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -22,8 +24,8 @@ const QTY: Record<RateUnit, string> = { hour: "Hours worked", day: "Days worked"
 const money = (n: number) => `$${n.toFixed(2)}`;
 
 /** Private to the owner and the person: terms of work and pay records. Nothing here is public or shown to other members. */
-export default async function TermsPage({ params }: Props) {
-  const [{ id }, t, locale, me] = await Promise.all([params, getT(), getLocale(), getMe()]);
+export default async function TermsPage({ params, searchParams }: Props) {
+  const [{ id }, sp, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
   const b = await getBusiness(id);
   if (!b || !me) notFound();
   const owner = b.role === "owner";
@@ -31,6 +33,20 @@ export default async function TermsPage({ params }: Props) {
   const termsOf = (uid: string): MemberTerms | undefined => terms.find((x) => x.user_id === uid);
   const people = owner ? b.team.filter((m) => m.role !== "owner") : b.team.filter((m) => m.user_id === me.id);
   const today = new Date().toISOString().slice(0, 10);
+  // Worked hours from the schedule (clocked shifts) for the chosen period; they only prefill the form, the owner decides.
+  const periodTo = isDay(sp.to) ? sp.to! : todayPP();
+  const periodFrom = isDay(sp.from) ? sp.from! : addDays(periodTo, -29);
+  const worked = new Map<string, { hours: number; days: Set<string> }>();
+  if (owner) {
+    const shifts = await teamShifts(id, phnomPenhToIso(periodFrom, "00:00")!, phnomPenhToIso(addDays(periodTo, 1), "00:00")!);
+    for (const sh of shifts) {
+      if (!sh.clock_in_at || !sh.clock_out_at) continue;
+      const w = worked.get(sh.user_id) ?? { hours: 0, days: new Set<string>() };
+      w.hours += (new Date(sh.clock_out_at).getTime() - new Date(sh.clock_in_at).getTime()) / 3600000;
+      w.days.add(ppDate(sh.starts_at));
+      worked.set(sh.user_id, w);
+    }
+  }
 
   return (
     <main className="px-4 pb-24 pt-4">
@@ -39,6 +55,15 @@ export default async function TermsPage({ params }: Props) {
       <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-muted"><Lock className="size-4" />{owner ? t("Only you and each person see their own terms and pay.") : t("Only you and the owner see this.")}</p>
       <div className="mt-3"><Notice tone="info">{t("Piron Work does not move money. It records the hours, the rate and what you paid, so both sides see the same numbers.")}</Notice></div>
 
+      {owner && (
+        <form method="get" className="mt-3 flex flex-wrap items-end gap-2 rounded-xl border border-stone-200 p-3">
+          <label className="text-xs text-ink-muted">{t("From")}<input type="date" name="from" defaultValue={periodFrom} className={`${inputClass} mt-1 py-1.5 text-sm`} /></label>
+          <label className="text-xs text-ink-muted">{t("To")}<input type="date" name="to" defaultValue={periodTo} className={`${inputClass} mt-1 py-1.5 text-sm`} /></label>
+          <Button type="submit" variant="secondary" className="px-3 py-2 text-sm">{t("Show worked hours")}</Button>
+          <p className="w-full text-xs text-ink-muted">{t("Hours come from the Schedule, from shifts that were clocked in and out. They only fill the form below.")}</p>
+        </form>
+      )}
+
       {people.length === 0 && <p className="mt-4 text-sm text-ink-muted">{t("No team members yet.")}</p>}
 
       {people.map((m) => {
@@ -46,6 +71,8 @@ export default async function TermsPage({ params }: Props) {
         const mine = pay.filter((r: PayRecordRow) => r.user_id === m.user_id);
         const owed = mine.filter((r) => r.status === "owed").reduce((n, r) => n + r.amount, 0);
         const unit: RateUnit = tm?.rate_unit ?? "hour";
+        const w = worked.get(m.user_id);
+        const suggest = !w ? "" : unit === "hour" ? String(Math.max(0.5, Math.round(w.hours * 2) / 2)) : unit === "day" ? String(Math.max(1, w.days.size)) : "";
         return (
           <section key={m.user_id} className="card mt-4 p-4">
             <div className="flex items-center gap-3">
@@ -114,12 +141,13 @@ export default async function TermsPage({ params }: Props) {
 
             {owner && (
               <form action={addPayRecord.bind(null, id, m.user_id)} className="mt-3 flex flex-wrap items-end gap-2 rounded-xl bg-stone-50 p-3">
-                <label className="text-xs text-ink-muted">{t("From")}<input type="date" name="from" required defaultValue={today} className={`${inputClass} mt-1 py-1.5 text-sm`} /></label>
-                <label className="text-xs text-ink-muted">{t("To")}<input type="date" name="to" required defaultValue={today} className={`${inputClass} mt-1 py-1.5 text-sm`} /></label>
-                <label className="text-xs text-ink-muted">{t(QTY[unit])}<input type="number" name="quantity" step="0.5" min="0.5" required className={`${inputClass} mt-1 w-24 py-1.5 text-sm`} /></label>
+                <label className="text-xs text-ink-muted">{t("From")}<input type="date" name="from" required defaultValue={periodFrom} className={`${inputClass} mt-1 py-1.5 text-sm`} /></label>
+                <label className="text-xs text-ink-muted">{t("To")}<input type="date" name="to" required defaultValue={periodTo} className={`${inputClass} mt-1 py-1.5 text-sm`} /></label>
+                <label className="text-xs text-ink-muted">{t(QTY[unit])}<input type="number" name="quantity" step="0.5" min="0.5" required defaultValue={suggest} className={`${inputClass} mt-1 w-24 py-1.5 text-sm`} /></label>
                 <input name="note" maxLength={300} placeholder={t("Note")} className={`${inputClass} min-w-0 flex-1 py-1.5 text-sm`} />
                 <Button type="submit" className="px-3 py-2 text-sm" disabled={tm?.rate == null}>{t("Add pay record")}</Button>
                 {tm?.rate == null && <p className="w-full text-xs text-ink-muted">{t("Save a rate first.")}</p>}
+                {w && <p className="w-full text-xs text-ink-muted">{t("From the schedule: {h} h on {d} days in this period.", { h: w.hours.toFixed(1), d: w.days.size })}</p>}
               </form>
             )}
           </section>
