@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DictateButton } from "@/components/dictate-button";
 import { useActionState } from "react";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { categoryLabel, type Category } from "@/lib/category-label";
@@ -54,6 +55,7 @@ export function ProjectForm({ categories, initial }: { categories: Category[]; i
       <Field label={t("What do you need done?")} error={err("details")}>
         <textarea name="details" rows={5} defaultValue={val("details")} className={inputClass} aria-invalid={!!err("details")} />
       </Field>
+      <DictateButton field="details" />
 
       <fieldset>
         <legend className="mb-1.5 text-sm font-medium">

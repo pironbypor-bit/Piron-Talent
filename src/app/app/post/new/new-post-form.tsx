@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { DictateButton } from "@/components/dictate-button";
 import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { createPost } from "@/lib/app/actions";
 import { KIND_LABEL, type Author, type PostRow } from "@/lib/app/types";
@@ -104,6 +105,7 @@ export function NewPostForm({ categories, initialKind = "need_help", rehire, ini
       <Field label={t("Text")} error={err("body")}>
         <textarea name="body" rows={5} defaultValue={val("body")} className={inputClass} aria-invalid={!!err("body")} />
       </Field>
+      <DictateButton field="body" />
       <Field label={t("Category")} optional={t("optional")} error={err("category_id")}>
         <select name="category_id" defaultValue={val("category_id")} className={inputClass}>
           <option value="">{t("Choose a category")}</option>
