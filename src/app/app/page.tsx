@@ -45,7 +45,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
             illustration={<EmptyIllustration kind="posts" />}
             action={
               <Link href="/app/post/new" className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2 font-semibold text-ink hover:bg-brand-400">
-                <Plus className="size-4" /> {t("Write a post")}
+                <Plus className="size-4" /> {t("Post")}
               </Link>
             }
           >
@@ -61,9 +61,9 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
       )}
 
       {list.length > 0 && (
-        <Link href="/app/post/new" className="fixed bottom-20 right-4 z-10 flex items-center gap-2 rounded-full bg-brand-500 px-4 py-3 font-semibold text-ink shadow-lg hover:bg-brand-400" aria-label={t("Write a post")}>
+        <Link href="/app/post/new" className="fixed bottom-20 right-4 z-10 flex items-center gap-2 rounded-full bg-brand-500 px-4 py-3 font-semibold text-ink shadow-lg hover:bg-brand-400" aria-label={t("Post")}>
           <Plus className="size-5" />
-          {t("Write a post")}
+          {t("Post")}
         </Link>
       )}
     </main>

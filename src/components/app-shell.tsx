@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Briefcase, Home, LayoutGrid, LogOut, Menu, MessageCircle, PlusSquare, Settings } from "lucide-react";
+import { Bell, Briefcase, Home, LayoutGrid, LogOut, Menu, MessageCircle, Settings } from "lucide-react";
 import { APP_NAME } from "@/lib/brand";
 import { useT } from "@/lib/i18n/client";
 import { BrandMark } from "./brand";
@@ -12,7 +12,7 @@ import { useLiveCounts } from "./live-counts";
 
 // The app shell from docs/app-ui-plan.md section 3: a top bar and a five-tab bottom bar.
 // Owner decision 2026-10-14 (profile design A): the avatar in the top bar is the Profile button, a menu next to the
-// bell holds Notifications, Settings and Log out, and the fifth tab is Post.
+// bell holds Notifications, Settings and Log out, and the bottom bar has four tabs (Post lives on Home).
 // `base` lets the same shell serve the demo (/demo/app) and the real app (/app).
 
 const TABS = [
@@ -20,7 +20,6 @@ const TABS = [
   { key: "services", label: "Services", Icon: LayoutGrid },
   { key: "jobs", label: "Jobs", Icon: Briefcase },
   { key: "messages", label: "Messages", Icon: MessageCircle },
-  { key: "post/new", label: "Post", Icon: PlusSquare },
 ];
 
 /** The menu next to the bell: Notifications, Settings, Log out (the real app passes its server action). */
@@ -85,7 +84,7 @@ export function TabBar({ base }: { base: string }) {
   const live = useLiveCounts();
   const badge = (key: string) => (key === "messages" ? live?.unreadMessages ?? 0 : 0);
   return (
-    <nav className="print:hidden sticky bottom-0 z-10 grid grid-cols-5 border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label={t("App preview")}>
+    <nav className="print:hidden sticky bottom-0 z-10 grid grid-cols-4 border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label={t("App preview")}>
       {TABS.map(({ key, label, Icon }) => {
         const href = key ? `${base}/${key}` : base;
         const active = key ? path.startsWith(href) : path === base;
