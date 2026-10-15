@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piron Work Space - step by step plan</title>
+<style>
+body{font:16px/1.55 system-ui,Segoe UI,Arial,sans-serif;max-width:820px;margin:24px auto;padding:0 16px;color:#1c1917}
+h1{font-size:26px;margin-bottom:4px} h2{margin-top:32px;font-size:20px;border-top:2px solid #fbbf24;padding-top:14px}
+.sub{color:#78716c;margin-top:0} .box{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 16px;margin:12px 0}
+.step{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:14px 18px;margin:14px 0}
+.tag{display:inline-block;background:#fef3c7;border-radius:999px;padding:1px 10px;font-size:13px;font-weight:600;margin-right:6px}
+ul{margin:6px 0 6px 20px;padding:0} li{margin:3px 0} table{border-collapse:collapse;width:100%} td,th{border:1px solid #e7e5e4;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#fafaf9}
+</style></head><body>
+<h1>Piron Work Space</h1>
+<p class="sub">The owner control room. Step by step build plan. Written 15 October 2026.</p>
+
+<div class="box"><b>Goal.</b> One private place where only you see: how many users, what is broken, which new features are still hidden, and how much money came in and went out. Everything is read-only first, then action buttons are added one by one.</div>
+
+<h2>Step 0. Decisions (defaults I will use unless you change them)</h2>
+<table>
+<tr><th>Question</th><th>Default</th></tr>
+<tr><td>Who can open it?</td><td>Only your account (owner). Other admins keep the current queues but not the Space.</td></tr>
+<tr><td>How are errors collected?</td><td>My own error table in the database (free). Sentry can be added later.</td></tr>
+<tr><td>How do you earn?</td><td>Not decided. The finance screen takes any income type you type in (fee, subscription, listing, other).</td></tr>
+<tr><td>How do alerts reach you?</td><td>In the app (bell) and by email through Brevo.</td></tr>
+<tr><td>Where does it live?</td><td>Under /admin, as a new front page with a side list of sections.</td></tr>
+</table>
+
+<h2>The steps</h2>
+
+<div class="step"><span class="tag">Step 1</span><b>Space shell and Overview</b>
+<ul>
+<li><b>You get:</b> a front page with today's numbers, "needs you now" counts (identity checks, reports, payout reviews, waiting requests), and a system status strip (app, database, email, push, scheduled jobs).</li>
+<li><b>Build:</b> owner flag on the admin record (migration 0045), audit log table, one function that returns the overview numbers, the new page and side list, links to the existing queues.</li>
+<li><b>Demo first:</b> yes, one screen with sample numbers.</li>
+<li><b>Checks:</b> a non-owner cannot read the numbers; every owner action writes an audit line; rule test 07.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 2</span><b>People</b>
+<ul>
+<li><b>You get:</b> total users, new this week and month, providers, identity checked, active in the last 7 days, growth by day, signups by city, a searchable people list with each person's jobs and reports.</li>
+<li><b>Build:</b> people summary and growth functions, people list page with search, person detail page. Suspend and unsuspend buttons come last in this step.</li>
+<li><b>Demo first:</b> no, build on the real numbers.</li>
+<li><b>Checks:</b> no email, phone or ID number is shown; suspend is logged; rule test 08.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 3</span><b>Marketplace health</b>
+<ul>
+<li><b>You get:</b> the funnel (posts, quotes, accepted, delivered, confirmed), time to first quote, cancel rate, average stars, jobs that look stuck, busiest and emptiest categories and cities.</li>
+<li><b>Build:</b> one function per block, a page with simple bars (no chart library needed), a stuck jobs list with a link to open each job.</li>
+<li><b>Checks:</b> numbers match a hand count on the test data.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 4</span><b>Errors</b>
+<ul>
+<li><b>You get:</b> a list of what failed: time, page, action, message, how many times, last seen. A red badge on Overview when something repeats. Mark an error as fixed or ignored.</li>
+<li><b>Build:</b> error table (migration 0046), a small logger used by server actions and a catch-all for page errors, grouping of repeats, an email alert through Brevo when one error repeats 5 times in 10 minutes, a list page and detail page, automatic clean up after 60 days.</li>
+<li><b>Also shows:</b> background job results (emails sent or failed, push sent or failed, reminders ran).</li>
+<li><b>Checks:</b> a person's private text is never stored in an error message; a made-up error appears, groups and alerts; rule test 09.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 5</span><b>Feature switches and change log</b>
+<ul>
+<li><b>You get:</b> a list of features with a switch each: off, only me, chosen people, everyone. You can try a new feature live before anyone else sees it. A log of what was turned on, by whom, and when.</li>
+<li><b>Build:</b> feature table and one check function (migration 0047), a helper the app uses to hide or show a feature, the switches page, and wrapping the first hidden feature. The held payments idea stays a demo only.</li>
+<li><b>Checks:</b> a hidden feature cannot be opened by typing its address; switching is logged; rule test 10.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 6</span><b>Money</b>
+<ul>
+<li><b>You get:</b> revenue entries (date, type, amount, note), cost entries (Cloudflare, Supabase, Brevo, domains, other, with monthly repeat), a monthly view with revenue, costs and profit, and a market volume number: the total of invoices users marked as paid (market size only, not your income).</li>
+<li><b>Build:</b> finance tables, owner only (migration 0048), entry forms, monthly report page, CSV download.</li>
+<li><b>Demo first:</b> yes, the monthly report with sample numbers.</li>
+<li><b>Important:</b> Piron Work does not touch user money. This is your own books. When a payment partner exists later, income can be filled in automatically.</li>
+<li><b>Checks:</b> only the owner can read or write; totals match a hand calculation; rule test 11.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 7</span><b>Reports, exports and audit view</b>
+<ul>
+<li><b>You get:</b> a one page monthly owner report (users, jobs, money, errors) with a print button, CSV downloads for people, jobs, invoices and finance, and a page that shows the audit log.</li>
+<li><b>Build:</b> report page, export routes, audit list with a filter.</li>
+<li><b>Checks:</b> exports exclude private fields; only the owner can download.</li>
+</ul></div>
+
+<div class="step"><span class="tag">Step 8</span><b>Finish</b>
+<ul>
+<li>Full test run: code, database rules, live pages as owner and as a normal user.</li>
+<li>Security review of the new migrations, same as the last one.</li>
+<li>Update the handover and CLAUDE.md. The Space is English only at first; Khmer lines can follow.</li>
+</ul></div>
+
+<h2>What I need from you, and when</h2>
+<ul>
+<li><b>Before step 1:</b> say OK, or change the defaults in step 0.</li>
+<li><b>Before step 4:</b> nothing, unless you prefer Sentry (then you create the account and paste the key).</li>
+<li><b>Before step 6:</b> tell me how you plan to earn, so the income types match.</li>
+<li><b>After each step:</b> open the page as owner and tell me what feels wrong.</li>
+</ul>
+
+<h2>What stays out for now</h2>
+<ul>
+<li>Real payments through Piron Work (locked until legal advice).</li>
+<li>Staff roles with limited views (can be added after step 7).</li>
+<li>Product analytics tools and page view tracking.</li>
+</ul>
+</body></html>
