@@ -177,3 +177,21 @@ export async function getSendLog(): Promise<SendLog | null> {
   const { data, error } = await supabase.rpc("space_send_log");
   return error ? null : (data as SendLog | null);
 }
+
+// Feature switches (migration 0050) -------------------------------------------------------------------------
+
+export type FeatureMode = "off" | "owner" | "people" | "everyone";
+export type FeatureRow = { key: string; title: string; description: string; mode: FeatureMode; updated_at: string; people: { id: string; name: string }[] };
+export type FeatureLogRow = { at: string; action: string; target: string | null };
+
+export async function getFeatureRows(): Promise<FeatureRow[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_features");
+  return error ? null : (data as FeatureRow[] | null);
+}
+
+export async function getFeatureLog(): Promise<FeatureLogRow[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("space_feature_log");
+  return (data as FeatureLogRow[] | null) ?? [];
+}

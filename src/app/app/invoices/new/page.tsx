@@ -6,6 +6,7 @@ import { createInvoice } from "@/lib/app/actions";
 import { invoiceRoom } from "@/lib/app/queries";
 import { money } from "@/lib/app/invoice-labels";
 import { getT } from "@/lib/i18n/server";
+import { requireFeature } from "@/lib/app/features";
 
 type Props = { searchParams: Promise<{ job?: string; error?: string }> };
 
@@ -16,6 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** One invoice for part or all of the agreed price of an accepted job. Only the provider of the job can issue it. */
 export default async function NewInvoicePage({ searchParams }: Props) {
+  await requireFeature("payments");
   const [{ job, error }, t] = await Promise.all([searchParams, getT()]);
   const room = job ? await invoiceRoom(job) : null;
   if (!room || !room.mine) notFound();

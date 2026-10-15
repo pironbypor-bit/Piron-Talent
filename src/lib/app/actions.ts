@@ -8,6 +8,7 @@ import { createClient, getUserId } from "@/lib/supabase/server";
 import { getMe } from "@/lib/app/queries";
 import { fieldErrors, formEntries, type FormState } from "@/lib/validation";
 import { z } from "zod";
+import { requireFeature } from "@/lib/app/features";
 
 // Write helpers for the app. Each runs as the signed-in person; RLS and the security-definer functions in
 // migration 0004 decide what is allowed. Anonymous visitors are sent to /login with a way back.
@@ -811,6 +812,7 @@ const PAY_METHODS = ["cash", "bank", "aba", "wing", "other"];
 const isoDay = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
 export async function createInvoice(formData: FormData) {
+  await requireFeature("payments");
   const job = String(formData.get("job") ?? "");
   if (!uuid.test(job)) return;
   const back = `/app/invoices/new?job=${job}`;
@@ -828,6 +830,7 @@ export async function createInvoice(formData: FormData) {
 
 async function invoiceRpc(id: string, fn: string, args: Record<string, unknown> = {}) {
   if (!uuid.test(id)) return;
+  await requireFeature("payments");
   const back = `/app/invoices/${id}`;
   await requireUser(back);
   const { error } = await (await createClient()).rpc(fn, { p_invoice: id, ...args });
@@ -859,6 +862,7 @@ export async function voidInvoice(id: string) {
 
 /** Where the person would like to be paid; the Piron team checks the name against the ID (migration 0040). No money is handled. */
 export async function savePayoutAccount(formData: FormData) {
+  await requireFeature("payments");
   const back = "/app/profile/payout";
   await requireUser(back);
   const method = String(formData.get("method") ?? "");

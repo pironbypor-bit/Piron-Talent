@@ -12,6 +12,7 @@ import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
 import { WelcomeCard } from "../welcome-card";
 import { AvatarUpload } from "./uploads";
+import { hasFeature } from "@/lib/app/features";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -29,6 +30,7 @@ const chipPrimary = "rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold t
 const chipSecondary = "rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-brand-50";
 
 export default async function ProfilePage() {
+  const payments = await hasFeature("payments");
   const [t, locale, me, counters, identity, companies, invites] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), myBusinesses(), myBusinessInvitations()]);
   if (!me) return null; // the proxy redirects anonymous visitors to /login
   const on = isAvailableNow(me);
@@ -136,13 +138,15 @@ export default async function ProfilePage() {
         </ul>
       </section>
 
-      <Link href="/app/payments" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
-        <span>
-          <span className="block font-semibold">{t("Payments")}</span>
-          <span className="block text-sm text-ink-muted">{t("Invoices, payout account and team pay terms are in the Payments tab.")}</span>
-        </span>
-        <ChevronRight className="size-4 shrink-0 text-ink-muted" />
-      </Link>
+      {payments && (
+        <Link href="/app/payments" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
+          <span>
+            <span className="block font-semibold">{t("Payments")}</span>
+            <span className="block text-sm text-ink-muted">{t("Invoices, payout account and team pay terms are in the Payments tab.")}</span>
+          </span>
+          <ChevronRight className="size-4 shrink-0 text-ink-muted" />
+        </Link>
+      )}
 
       {/* 4. Worker */}
       <section className={card}>

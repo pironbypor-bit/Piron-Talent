@@ -12,6 +12,7 @@ import { getLocale, getT } from "@/lib/i18n/server";
 import { shareMeta } from "@/lib/seo";
 import { AvatarImg } from "../../avatar";
 import { PostCard } from "../../post-card";
+import { hasFeature } from "@/lib/app/features";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string; reported?: string }> };
 
@@ -28,6 +29,7 @@ export default async function PostPage({ params, searchParams }: Props) {
   const [{ id }, { error, reported }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
   const data = await getPost(id);
   if (!data) notFound();
+  const payments = await hasFeature("payments");
   const { post, comments } = data;
   const [panel, invite] = post.kind === "need_help"
     ? await Promise.all([getProjectPanel(post.id), me ? getInviteState(post.id, post.category_id ?? null, post.author.id) : Promise.resolve(null)])
@@ -46,7 +48,7 @@ export default async function PostPage({ params, searchParams }: Props) {
       </div>
       <div className="mt-2"><ShareButton path={path} title={post.title} /></div>
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
-      {panel && <ProjectPanel post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} providerSkills={panel.providerSkills} invite={invite} me={me} t={t} locale={locale} />}
+      {panel && <ProjectPanel payments={payments} post={post} scope={panel.scope} quotes={panel.quotes} job={panel.job} count={panel.count} reviewed={panel.reviewed} dispute={panel.dispute} providerSkills={panel.providerSkills} invite={invite} me={me} t={t} locale={locale} />}
 
       {me && me.id !== post.author.id && (
         <section id="connect" className="mt-4 rounded-2xl border border-brand-300 bg-brand-50 p-4">

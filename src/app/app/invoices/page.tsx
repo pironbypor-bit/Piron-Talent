@@ -7,6 +7,7 @@ import { STATUS_LABEL, STATUS_TONE, money } from "@/lib/app/invoice-labels";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import type { InvoiceRow } from "@/lib/app/types";
+import { requireFeature } from "@/lib/app/features";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -15,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Invoices and payment records: what I issued and what was sent to me. Records only; Piron Work does not move money. */
 export default async function InvoicesPage() {
+  await requireFeature("payments");
   const [t, locale, me, all] = await Promise.all([getT(), getLocale(), getMe(), listInvoices()]);
   if (!me) return null;
   const issued = all.filter((i) => i.issuer_id === me.id);

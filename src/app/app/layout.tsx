@@ -3,13 +3,15 @@ import { TabBar, TopBar } from "@/components/app-shell";
 import { LiveCountsProvider } from "@/components/live-counts";
 import { logOut } from "@/app/auth/actions";
 import { getT } from "@/lib/i18n/server";
+import { getFeatures } from "@/lib/app/features";
 import { countUnread, countUnreadConversations, getMe, isOwner } from "@/lib/app/queries";
 
 export const metadata: Metadata = { title: { default: "Piron Work", template: "%s - Piron Work" } };
 
 /** The real app: same shell as the preview, full width on phones, a phone-wide column on desktop. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const [me, unread, unreadMessages, owner, t] = await Promise.all([getMe(), countUnread(), countUnreadConversations(), isOwner(), getT()]);
+  const [me, unread, unreadMessages, owner, t, features] = await Promise.all([getMe(), countUnread(), countUnreadConversations(), isOwner(), getT(), getFeatures()]);
+  const hiddenTabs = features.includes("payments") ? [] : ["payments"];
   return (
     <LiveCountsProvider userId={me?.id ?? null} unread={unread} unreadMessages={unreadMessages}>
     <div className="bg-stone-100">
@@ -30,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             children
           )}
         </div>
-        <TabBar base="/app" />
+        <TabBar base="/app" hide={hiddenTabs} />
       </div>
     </div>
     </LiveCountsProvider>

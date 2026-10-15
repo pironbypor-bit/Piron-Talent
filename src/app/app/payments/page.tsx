@@ -5,6 +5,7 @@ import { Pill } from "@/components/ui";
 import { getMe, listInvoices, myBusinesses, myJobs, myPayoutAccount } from "@/lib/app/queries";
 import { getT } from "@/lib/i18n/server";
 import type { InvoiceRow } from "@/lib/app/types";
+import { requireFeature } from "@/lib/app/features";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -16,6 +17,7 @@ const PAYOUT_LABEL = { pending: "Waiting for review", approved: "Approved", reje
 
 /** One place for everything about money: invoices, payout account, jobs to invoice, team pay terms. Records only. */
 export default async function PaymentsPage() {
+  await requireFeature("payments");
   const [t, me, invoices, payout, jobs, companies] = await Promise.all([getT(), getMe(), listInvoices(), myPayoutAccount(), myJobs(), myBusinesses()]);
   if (!me) return null;
   const issued = invoices.filter((i) => i.issuer_id === me.id);

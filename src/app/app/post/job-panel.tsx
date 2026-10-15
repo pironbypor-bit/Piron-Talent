@@ -6,10 +6,10 @@ import { formatDate } from "@/lib/dates";
 import type { Locale, T } from "@/lib/i18n/core";
 import { AvatarImg } from "../avatar";
 
-type Props = { job: ProjectJobRow; post: PostRow; quotes: QuoteRow[]; reviewed: boolean; dispute: DisputeRow | null; providerSkills: string[]; me: MeRow | null; t: T; locale: Locale };
+type Props = { job: ProjectJobRow; post: PostRow; quotes: QuoteRow[]; reviewed: boolean; dispute: DisputeRow | null; providerSkills: string[]; me: MeRow | null; payments?: boolean; t: T; locale: Locale };
 
 /** The job record after a quote is accepted: stepper, the next action for whoever is looking, review at the end. */
-export function JobPanel({ job, post, quotes, reviewed, dispute, providerSkills, me, t, locale }: Props) {
+export function JobPanel({ job, post, quotes, reviewed, dispute, providerSkills, me, t, locale, payments = true }: Props) {
   const isCustomer = !!me && me.id === job.customer_id;
   const isProvider = !!me && me.id === job.provider_id;
   const provider = quotes.find((q) => q.id === job.quote_id)?.provider ?? post.author;
@@ -42,7 +42,7 @@ export function JobPanel({ job, post, quotes, reviewed, dispute, providerSkills,
             <Stepper steps={[t("Quote accepted"), t("Work delivered"), t("Customer confirmed"), t("Review left")]} current={current} />
           </div>
           <p className="mt-3 text-xs text-ink-muted">{t("You pay the provider directly, as agreed.")}</p>
-          {(isCustomer || isProvider) && (
+          {payments && (isCustomer || isProvider) && (
             <p className="mt-2 flex flex-wrap gap-3 text-sm">
               {isProvider && <Link href={`/app/invoices/new?job=${job.id}`} className="font-medium underline">{t("Create an invoice")}</Link>}
               <Link href="/app/invoices" className="font-medium underline">{t("Invoices and payments")}</Link>

@@ -10,6 +10,7 @@ import { todayPP } from "@/lib/datetime";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { Dropdown } from "@/components/dropdown";
+import { requireFeature } from "@/lib/app/features";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> };
 
@@ -23,6 +24,7 @@ const small = "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-sm
 
 /** One invoice. Printable. Who can do what follows the status: the customer marks paid, the provider confirms or voids. */
 export default async function InvoicePage({ params, searchParams }: Props) {
+  await requireFeature("payments");
   const [{ id }, { error }, t, locale, me] = await Promise.all([params, searchParams, getT(), getLocale(), getMe()]);
   const inv = await getInvoice(id);
   if (!inv || !me) notFound();

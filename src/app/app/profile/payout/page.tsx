@@ -5,6 +5,7 @@ import { savePayoutAccount } from "@/lib/app/actions";
 import { getMe, myPayoutAccount } from "@/lib/app/queries";
 import { getT } from "@/lib/i18n/server";
 import { Dropdown } from "@/components/dropdown";
+import { requireFeature } from "@/lib/app/features";
 
 type Props = { searchParams: Promise<{ saved?: string; error?: string }> };
 
@@ -19,6 +20,7 @@ const LABEL = { pending: "Waiting for review", approved: "Approved", rejected: "
 
 /** Where the person would like to be paid. The Piron team checks the account holder name against the ID. No money is handled here. */
 export default async function PayoutPage({ searchParams }: Props) {
+  await requireFeature("payments");
   const [{ saved, error }, t, me, acc] = await Promise.all([searchParams, getT(), getMe(), myPayoutAccount()]);
   if (!me) return null;
   const masked = acc ? `•••• ${acc.account_number.slice(-4)}` : "";

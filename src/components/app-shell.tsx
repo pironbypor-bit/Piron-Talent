@@ -107,14 +107,15 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
   );
 }
 
-export function TabBar({ base }: { base: string }) {
+export function TabBar({ base, hide = [] }: { base: string; hide?: string[] }) {
   const t = useT();
   const path = usePathname();
   const live = useLiveCounts();
+  const tabs = TABS.filter((x) => !hide.includes(x.key));
   const badge = (key: string) => (key === "messages" ? live?.unreadMessages ?? 0 : 0);
   return (
-    <nav className="print:hidden sticky bottom-0 z-10 grid grid-cols-5 border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label={t("App preview")}>
-      {TABS.map(({ key, label, Icon, also }) => {
+    <nav className="print:hidden sticky bottom-0 z-10 grid border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} aria-label={t("App preview")}>
+      {tabs.map(({ key, label, Icon, also }) => {
         const href = key ? `${base}/${key}` : base;
         const active = key ? path.startsWith(href) || (also ?? []).some((a) => path.startsWith(base + "/" + a)) : path === base;
         return (
