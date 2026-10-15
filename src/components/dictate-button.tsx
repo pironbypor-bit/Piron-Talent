@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Mic, Square } from "lucide-react";
 import { useLocale, useT } from "@/lib/i18n/client";
 
@@ -34,12 +34,10 @@ export function DictateButton({ field }: { field: string }) {
   const rec = useRef<Rec | null>(null);
   const [state, setState] = useState<"idle" | "listening">("idle");
   const [problem, setProblem] = useState<string | null>(null);
-  const [supported, setSupported] = useState(true);
+  // Whether the browser has a speech recogniser: true on the server render, the real answer once in the browser.
+  const supported = useSyncExternalStore(() => () => {}, () => ctor() !== null, () => true);
 
-  useEffect(() => {
-    setSupported(ctor() !== null);
-    return () => rec.current?.stop();
-  }, []);
+  useEffect(() => () => rec.current?.stop(), []);
 
   const append = (text: string) => {
     const area = holder.current?.closest("form")?.querySelector<HTMLTextAreaElement>(`textarea[name="${field}"]`);
