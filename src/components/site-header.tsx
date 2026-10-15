@@ -58,6 +58,7 @@ export async function SiteFooter() {
           <Link href="/privacy" className="underline hover:text-ink">{t("Privacy")}</Link>
           <Link href="/terms" className="underline hover:text-ink">{t("Terms of use")}</Link>
           <Link href="/providers" className="underline hover:text-ink">{t("Providers")}</Link>
+          <Link href="/services" className="underline hover:text-ink">{t("Services")}</Link>
         </p>
       </div>
     </footer>
