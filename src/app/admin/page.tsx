@@ -38,6 +38,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <Link href="/admin/identity" className="font-medium underline">{t("Identity review")}{waiting.identity > 0 ? ` (${waiting.identity})` : ""}</Link>
         <Link href="/admin/reports" className="font-medium underline">{t("Reports")}{waiting.reports > 0 ? ` (${waiting.reports})` : ""}</Link>
         <Link href="/admin/disputes" className="font-medium underline">{t("Disputes")}{waiting.disputes > 0 ? ` (${waiting.disputes})` : ""}</Link>
+        <Link href="/admin/kpis" className="font-medium underline">{t("Numbers")}</Link>
       </p>
 
       <section className="mb-12">

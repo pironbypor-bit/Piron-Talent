@@ -737,3 +737,19 @@ export async function companyPublic(id: string): Promise<CompanyPublic | null> {
   const { data } = await (await createClient()).rpc("company_public", { p_id: id });
   return (data ?? null) as CompanyPublic | null;
 }
+
+export type AdminKpis = {
+  people: { total: number; new_7d: number; new_30d: number; providers: number; identity_checked: number; with_record: number };
+  market: { projects: number; projects_30d: number; projects_with_quote: number; quotes: number; quotes_30d: number; accepted: number; delivered: number; confirmed: number; cancelled: number; reviews: number; avg_stars: number | null; hours_to_first_quote: number | null };
+  intake: { requests: number; requests_30d: number; applications: number; by_source: { source: string; n: number }[] };
+  community: { companies: number; public_pages: number; open_activities: number; activity_joins: number; messages_7d: number; open_jobs: number };
+  weekly: { week: string; signups: number; projects: number; quotes: number; confirmed: number }[];
+};
+
+/** Owner numbers (migration 0035). Null for anyone who is not an admin. */
+export async function adminKpis(): Promise<AdminKpis | null> {
+  const uid = await getUserId();
+  if (!uid) return null;
+  const { data } = await (await createClient()).rpc("admin_kpis");
+  return (data ?? null) as AdminKpis | null;
+}
