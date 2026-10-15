@@ -80,7 +80,9 @@ export async function createPost(_prev: FormState, formData: FormData): Promise<
   // A rehire goes to one provider first; it opens to everyone after 24 hours unless the author opens it now.
   const invited = fields.kind === "need_help" && invited_provider_id && invited_provider_id !== uid ? invited_provider_id : null;
   const opens_at = invited && !open_now ? new Date(Date.now() + 24 * 3600 * 1000).toISOString() : null;
-  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published", invited_provider_id: invited, opens_at, business_id }).select("id").single();
+  // The poster's city (from the profile) is saved on the project so the owner's city numbers and later filters work.
+  const me = await getMe();
+  const { data, error } = await supabase.from("posts").insert({ ...scope, author_id: uid, status: "published", invited_provider_id: invited, opens_at, business_id, city: me?.city ?? null }).select("id").single();
   if (error || !data) return { ok: false, values, message: "Something went wrong. Please try again." };
   revalidatePath("/app");
   redirect(`/app/post/${data.id}`);

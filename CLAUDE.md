@@ -200,3 +200,5 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 - Space step 6 (Money): /admin/space/money. The owner's own book in finance_entries (migration 0051, rule test 13): revenue and cost entries by month, monthly repeat (stop from a month keeps earlier months), monthly report, 12 month CSV at /admin/space/money/export, and Paid between users (invoices marked received that month, market size only). Piron Work never touches users money. Types are labels in src/lib/app/space.ts (INCOME_TYPES, COST_TYPES); the database accepts any type up to 40 characters.
 
 - Space step 7 (Reports): /admin/space/reports (one page monthly owner report, print or save as PDF, CSV downloads for people, jobs and invoices at /admin/space/reports/export/[kind], no contact details) and /admin/space/audit (every admin action with a filter). Migration 0052 (space_report, space_export, space_audit), rule test 14.
+
+- Projects save the poster's profile city in posts.city when posted (createPost); existing posts were backfilled 2026-10-15. The Space Marketplace city table reads it.
