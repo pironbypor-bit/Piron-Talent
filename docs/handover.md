@@ -30,7 +30,7 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 - Helpers used inside policies on the same table must be security definer; qualify columns in policy subqueries with the table name.
 
 ## State on 2026-10-14
-- Migrations 0001 to 0040 are applied on the live database (latest: 0030 notification preferences, 0031 company team, 0032 team terms and private pay records, 0033 company documents and public page, 0034 storage read fix, 0035 admin numbers, 0036 works-at line, 0037 team shifts and tasks, 0038 task status fix, 0039 invoices and payment records, 0040 verified payout accounts). Worker version latest deploy of 2026-10-15 (voice typing on project forms).
+- Migrations 0001 to 0041 are applied on the live database (latest: 0030 notification preferences, 0031 company team, 0032 team terms and private pay records, 0033 company documents and public page, 0034 storage read fix, 0035 admin numbers, 0036 works-at line, 0037 team shifts and tasks, 0038 task status fix, 0039 invoices and payment records, 0040 verified payout accounts, 0041 Khmer notification titles). Worker version latest deploy of 2026-10-15 (voice typing on project forms).
 - Vault secrets: site_url (https://app.piron.tech), push_hook_secret (set), brevo_api_key (set 2026-10-15, key name Piron Work 2 in Brevo, expires 2027-10-15).
 - Cloudflare secrets: VAPID_PRIVATE_KEY, PUSH_HOOK_SECRET; var NEXT_PUBLIC_VAPID_PUBLIC_KEY in wrangler.jsonc. The same three are in .env.local.
 - Phone notifications: the owner has not yet installed the app on a phone to try the switch in Settings.
@@ -39,6 +39,7 @@ npm run build (must exit 0) → git commit → GCM_GUI_PROMPT=false GCM_INTERACT
 - Payments held through Piron Work (customer pays Piron, Piron releases to the provider, "option 1"): LOCKED and NOT to be built or switched on until the owner has Cambodian legal advice on National Bank of Cambodia licensing (research of 2026-10-15: providing means of payment, taking deposits and issuing e-money are licensed activities; nothing found that exempts a marketplace escrow; a payment service institution licence reportedly needs about $2 million capital and separate customer-fund accounts, unverified). The demo at /demo/app/payments stays as a talking piece. Allowed: invoices and payment records (0039, no money moves) and verified payout accounts (0040). Later path: a licensed payment partner that holds the money (option 3).
 
 ## Open items for the owner
+- Khmer review: all new Khmer text of 2026-10-15 was written by the assistant (about 530 lines: category pages, invoices, payout accounts, demos, admin numbers). Ask a Khmer speaker to read the category pages and the legal and tax wording first.
 - Cancel the two extra Hostinger orders (piron.site, pirontalent.space). Decide clean up or keep of the test-run data (posts "Test loop: cafe logo refresh" x2, the $45 job, review, conversation, closed dispute and report, POR's $40 quote on post fed97023-54d1-47ec-9b2e-276cd2c83157). Optional: WordPress theme styling in Piron amber.
 
 ## Plans the owner approved, in order
