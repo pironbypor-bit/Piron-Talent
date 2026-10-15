@@ -50,7 +50,7 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
   const live = useLiveCounts();
   const n = live?.unread ?? unread;
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-100 bg-white/90 px-4 py-2.5 backdrop-blur">
+    <header className="print:hidden sticky top-0 z-10 flex items-center justify-between border-b border-brand-100 bg-white/90 px-4 py-2.5 backdrop-blur">
       <Link href={base} className="flex items-center gap-2 font-bold tracking-tight">
         <BrandMark className="size-8" />
         {APP_NAME}
@@ -85,7 +85,7 @@ export function TabBar({ base }: { base: string }) {
   const live = useLiveCounts();
   const badge = (key: string) => (key === "messages" ? live?.unreadMessages ?? 0 : 0);
   return (
-    <nav className="sticky bottom-0 z-10 grid grid-cols-5 border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label={t("App preview")}>
+    <nav className="print:hidden sticky bottom-0 z-10 grid grid-cols-5 border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label={t("App preview")}>
       {TABS.map(({ key, label, Icon }) => {
         const href = key ? `${base}/${key}` : base;
         const active = key ? path.startsWith(href) : path === base;

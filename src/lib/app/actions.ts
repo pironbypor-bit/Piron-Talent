@@ -801,3 +801,54 @@ export async function deleteTeamTask(business: string, task: string) {
   revalidatePath(back);
   redirect(back);
 }
+
+// Invoices and payment records (migration 0039). Records only: Piron Work never moves money.
+const PAY_METHODS = ["cash", "bank", "aba", "wing", "other"];
+const isoDay = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+
+export async function createInvoice(formData: FormData) {
+  const job = String(formData.get("job") ?? "");
+  if (!uuid.test(job)) return;
+  const back = `/app/invoices/new?job=${job}`;
+  await requireUser(back);
+  const amount = Number(String(formData.get("amount") ?? "").replace(/,/g, ""));
+  const due = String(formData.get("due") ?? "");
+  if (!(amount > 0)) redirect(`${back}&error=1`);
+  const { data, error } = await (await createClient()).rpc("create_invoice", {
+    p_job: job, p_amount: amount, p_due: isoDay.test(due) ? due : null, p_note: String(formData.get("note") ?? "").trim().slice(0, 500),
+  });
+  if (error || !data) redirect(`${back}&error=${error?.message.includes("over the agreed") ? "over" : "1"}`);
+  revalidatePath("/app/invoices");
+  redirect(`/app/invoices/${data}`);
+}
+
+async function invoiceRpc(id: string, fn: string, args: Record<string, unknown> = {}) {
+  if (!uuid.test(id)) return;
+  const back = `/app/invoices/${id}`;
+  await requireUser(back);
+  const { error } = await (await createClient()).rpc(fn, { p_invoice: id, ...args });
+  revalidatePath(back);
+  revalidatePath("/app/invoices");
+  redirect(error ? `${back}?error=1` : back);
+}
+
+export async function markInvoicePaid(id: string, formData: FormData) {
+  const method = String(formData.get("method") ?? "");
+  const paidOn = String(formData.get("paid_on") ?? "");
+  if (!PAY_METHODS.includes(method)) return;
+  await invoiceRpc(id, "mark_invoice_paid", { p_method: method, p_paid_on: isoDay.test(paidOn) ? paidOn : null, p_ref: String(formData.get("ref") ?? "").trim().slice(0, 60) });
+}
+
+export async function confirmInvoicePayment(id: string, formData: FormData) {
+  const method = String(formData.get("method") ?? "");
+  const paidOn = String(formData.get("paid_on") ?? "");
+  await invoiceRpc(id, "confirm_invoice_payment", { p_method: PAY_METHODS.includes(method) ? method : null, p_paid_on: isoDay.test(paidOn) ? paidOn : null });
+}
+
+export async function rejectInvoicePayment(id: string) {
+  await invoiceRpc(id, "reject_invoice_payment");
+}
+
+export async function voidInvoice(id: string) {
+  await invoiceRpc(id, "void_invoice");
+}

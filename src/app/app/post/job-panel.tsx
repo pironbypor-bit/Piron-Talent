@@ -42,6 +42,12 @@ export function JobPanel({ job, post, quotes, reviewed, dispute, providerSkills,
             <Stepper steps={[t("Quote accepted"), t("Work delivered"), t("Customer confirmed"), t("Review left")]} current={current} />
           </div>
           <p className="mt-3 text-xs text-ink-muted">{t("You pay the provider directly, as agreed.")}</p>
+          {(isCustomer || isProvider) && (
+            <p className="mt-2 flex flex-wrap gap-3 text-sm">
+              {isProvider && <Link href={`/app/invoices/new?job=${job.id}`} className="font-medium underline">{t("Create an invoice")}</Link>}
+              <Link href="/app/invoices" className="font-medium underline">{t("Invoices and payments")}</Link>
+            </p>
+          )}
 
           {job.status === "accepted" && (
             <div className="mt-4 space-y-3">

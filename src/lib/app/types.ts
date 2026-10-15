@@ -196,3 +196,11 @@ export type JobAlertRow = { id: string; category_id: number | null; city: string
 export type ShiftRow = { id: string; user_id: string; person: string; starts_at: string; ends_at: string; note: string | null; clock_in_at: string | null; clock_out_at: string | null; absent: boolean };
 export type TaskStatus = "todo" | "doing" | "done";
 export type TaskRow = { id: string; title: string; detail: string | null; assignee_id: string | null; assignee: string | null; status: TaskStatus; due_on: string | null; created_at: string };
+
+export type InvoiceStatus = "issued" | "paid_claimed" | "received" | "void";
+export type PayMethod = "cash" | "bank" | "aba" | "wing" | "other";
+export type InvoiceRow = {
+  id: string; number: string; job_id: string; issuer_id: string; customer_id: string; issuer_name: string; customer_name: string;
+  title: string; amount: number; currency: string; note: string | null; due_on: string | null; status: InvoiceStatus;
+  paid_method: PayMethod | null; paid_on: string | null; paid_ref: string | null; issued_at: string; claimed_at: string | null; received_at: string | null; void_at: string | null;
+};

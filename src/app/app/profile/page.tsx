@@ -126,6 +126,14 @@ export default async function ProfilePage() {
         </ul>
       </section>
 
+      <Link href="/app/invoices" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
+        <span>
+          <span className="block font-semibold">{t("Invoices and payments")}</span>
+          <span className="block text-sm text-ink-muted">{t("Records of what was agreed and paid. No money moves through Piron Work.")}</span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-ink-muted" />
+      </Link>
+
       {/* 4. Worker */}
       <section className={card}>
         <div className={head}>

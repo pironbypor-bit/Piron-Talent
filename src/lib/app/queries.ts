@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -784,4 +784,39 @@ export async function teamTasks(businessId: string): Promise<TaskRow[]> {
     .order("created_at", { ascending: false })
     .limit(200);
   return ((data ?? []) as unknown as (Omit<TaskRow, "assignee"> & { assignee: { display_name: string } | { display_name: string }[] | null })[]).map((r) => ({ ...r, assignee: one(r.assignee)?.display_name ?? null }));
+}
+
+const INVOICE_COLS = "id,number,job_id,issuer_id,customer_id,issuer_name,customer_name,title,amount,currency,note,due_on,status,paid_method,paid_on,paid_ref,issued_at,claimed_at,received_at,void_at";
+const asInvoice = (r: unknown): InvoiceRow => ({ ...(r as InvoiceRow), amount: Number((r as { amount: number | string }).amount) });
+
+/** Invoices the signed-in person issued or received (row security). */
+export async function listInvoices(): Promise<InvoiceRow[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const { data } = await (await createClient()).from("invoices").select(INVOICE_COLS).order("issued_at", { ascending: false }).limit(200);
+  return (data ?? []).map(asInvoice);
+}
+
+export async function getInvoice(id: string): Promise<InvoiceRow | null> {
+  const uid = await getUserId();
+  if (!uid || !/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const { data } = await (await createClient()).from("invoices").select(INVOICE_COLS).eq("id", id).maybeSingle();
+  return data ? asInvoice(data) : null;
+}
+
+/** What a provider can still invoice on an accepted job: the agreed price minus invoices that are not void. */
+export async function invoiceRoom(jobId: string): Promise<{ title: string; customer: string; agreed: number; used: number; currency: string; mine: boolean; status: string } | null> {
+  const uid = await getUserId();
+  if (!uid || !/^[0-9a-f-]{36}$/i.test(jobId)) return null;
+  const supabase = await createClient();
+  const { data: j } = await supabase.from("project_jobs").select("id,provider_id,customer_id,agreed_price,currency,status,post_id").eq("id", jobId).maybeSingle();
+  if (!j) return null;
+  const job = j as { provider_id: string; customer_id: string; agreed_price: number | string; currency: string; status: string; post_id: string };
+  const [{ data: post }, { data: inv }, { data: cust }] = await Promise.all([
+    supabase.from("posts").select("title").eq("id", job.post_id).maybeSingle(),
+    supabase.from("invoices").select("amount").eq("job_id", jobId).neq("status", "void"),
+    supabase.from("profiles").select("display_name").eq("id", job.customer_id).maybeSingle(),
+  ]);
+  const used = ((inv ?? []) as { amount: number | string }[]).reduce((n, r) => n + Number(r.amount), 0);
+  return { title: (post as { title: string } | null)?.title ?? "", customer: (cust as { display_name: string } | null)?.display_name ?? "", agreed: Number(job.agreed_price), used, currency: job.currency, mine: job.provider_id === uid, status: job.status };
 }
