@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Briefcase, HeartHandshake, Lightbulb, Plus, Sparkles } from "lucide-react";
+import { Plus } from "lucide-react";
 import { EmptyState, Notice } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { getMe, listPosts, myCounters, myIdentityStatus } from "@/lib/app/queries";
@@ -15,11 +15,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const KINDS: (PostKind | "all")[] = ["all", "need_help", "offer_skill", "share_knowledge"];
-const QUICK = [
-  { kind: "need_help", label: "Post a job offer", Icon: Briefcase, tone: "bg-brand-100 text-brand-900" },
-  { kind: "offer_skill", label: "Offer a skill", Icon: Sparkles, tone: "bg-green-100 text-green-900" },
-  { kind: "share_knowledge", label: "Share what you know", Icon: Lightbulb, tone: "bg-stone-100 text-ink" },
-] as const;
 
 /** Home tab: the Workspace on real posts. Filtering is by URL so the page stays a plain server render. */
 export default async function AppHome({ searchParams }: { searchParams: Promise<{ kind?: string; error?: string }> }) {
@@ -36,27 +31,6 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
 
   return (
     <main className="px-4 pb-24 pt-4">
-      <section className="hero-amber rounded-3xl p-4">
-        <p className="text-lg font-bold">{me ? t("Good to see you, {name}", { name: me.display_name }) : t("Workspace")}</p>
-        <p className="text-sm text-brand-900">{me ? t("What would you like to do today?") : t("Browse without an account, or log in to take part.")}</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {QUICK.map(({ kind: k, label, Icon, tone }) => (
-            <Link key={k} href={`/app/post/new?kind=${k}`} className={`flex flex-col items-center gap-1 rounded-2xl bg-white/90 px-2 py-3 text-center text-xs font-medium shadow-sm hover:bg-white`}>
-              <span className={`flex size-9 items-center justify-center rounded-xl ${tone}`}>
-                <Icon className="size-5" />
-              </span>
-              {t(label)}
-            </Link>
-          ))}
-          <Link href="/app/activities" className="flex flex-col items-center gap-1 rounded-2xl bg-white/90 px-2 py-3 text-center text-xs font-medium shadow-sm hover:bg-white">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-rose-100 text-rose-900">
-              <HeartHandshake className="size-5" />
-            </span>
-            {t("Volunteer")}
-          </Link>
-        </div>
-      </section>
-
       {me && <WelcomeCard t={t} steps={steps} />}
       {error && <div className="mt-3"><Notice tone="error">{t("Something went wrong: {error}", { error })}</Notice></div>}
 

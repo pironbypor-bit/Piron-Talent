@@ -57,7 +57,7 @@ export default async function ProfilePage() {
         </div>
         <div className="mt-2 flex gap-2 px-4">
           <Link href="/app/services" className={chipPrimary}>{t("Find a service")}</Link>
-          <Link href="/app/post/new" className={chipSecondary}>{t("Post a project")}</Link>
+          <Link href="/app/post/new?kind=need_help" className={chipSecondary}>{t("Post a project")}</Link>
         </div>
         <Link href="/app/profile/jobs" className={`${row} mt-1`}>{t("My jobs and requests")} <ChevronRight className="size-4 text-ink-muted" /></Link>
       </section>
