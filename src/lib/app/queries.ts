@@ -16,7 +16,7 @@ export const getMe = cache(async (): Promise<MeRow | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select(`${AUTHOR},bio,city,district,is_available,available_until,record_public,price_from,remote,primary_category_id,completed_jobs,profile_skills(skills(name))`)
+    .select(`${AUTHOR},bio,city,district,is_available,available_until,record_public,price_from,remote,primary_category_id,completed_jobs,paused_at,profile_skills(skills(name))`)
     .eq("id", uid)
     .maybeSingle();
   if (!data) return null;

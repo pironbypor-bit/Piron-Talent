@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { CITIES, HAS_DISTRICTS } from "@/lib/cities";
 import { phnomPenhToIso } from "@/lib/datetime";
 import { createClient, getUserId } from "@/lib/supabase/server";
+import { getMe } from "@/lib/app/queries";
 import { fieldErrors, formEntries, type FormState } from "@/lib/validation";
 import { z } from "zod";
 
@@ -16,6 +17,9 @@ const uuid = /^[0-9a-f-]{36}$/i;
 async function requireUser(next: string) {
   const uid = await getUserId();
   if (!uid) redirect(`/login?next=${encodeURIComponent(next)}`);
+  // A paused account cannot write anything; the app layout shows the paused notice.
+  const me = await getMe();
+  if (me?.paused_at) redirect("/app");
   return uid;
 }
 

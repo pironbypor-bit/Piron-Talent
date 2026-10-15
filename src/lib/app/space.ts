@@ -85,3 +85,46 @@ export async function logAdminAction(action: string, target?: string | null): Pr
     console.error("audit log failed:", e instanceof Error ? e.message : e);
   }
 }
+
+// People (migration 0047) ---------------------------------------------------------------------------------
+
+export type PeopleSummary = {
+  total: number; new_7d: number; new_30d: number; providers: number; identity_checked: number; paused: number; active_7d: number;
+  growth: { day: string; n: number }[];
+  cities: { city: string; n: number }[];
+};
+
+export type PersonRow = {
+  id: string; display_name: string; role_line: string | null; city: string | null; created_at: string;
+  is_available: boolean; identity_checked: boolean; paused_at: string | null; last_sign_in_at: string | null;
+  posts: number; jobs: number;
+};
+
+export type PersonDetail = {
+  id: string; display_name: string; role_line: string | null; bio: string | null; city: string | null; district: string | null;
+  created_at: string; is_available: boolean; identity_checked: boolean; completed_jobs: number; paused_at: string | null; is_admin: boolean;
+  last_sign_in_at: string | null; posts: number; quotes: number; jobs_as_customer: number; jobs_as_provider: number;
+  reviews: number; avg_stars: number | null; reports_against: number; reports_filed: number; companies: number;
+  recent_posts: { id: string; title: string; kind: string; status: string; created_at: string }[];
+};
+
+export const PEOPLE_FILTERS = ["all", "providers", "checked", "new", "paused"] as const;
+export type PeopleFilter = (typeof PEOPLE_FILTERS)[number];
+
+export async function getPeopleSummary(): Promise<PeopleSummary | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_people_summary");
+  return error ? null : (data as PeopleSummary | null);
+}
+
+export async function getPeople(q: string, filter: PeopleFilter): Promise<PersonRow[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_people", { p_q: q, p_filter: filter, p_limit: 60 });
+  return error ? null : (data as PersonRow[] | null);
+}
+
+export async function getPerson(id: string): Promise<PersonDetail | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_person", { p_id: id });
+  return error ? null : (data as PersonDetail | null);
+}

@@ -103,6 +103,7 @@ export type MeRow = Author & {
   remote: boolean;
   primary_category_id: number | null;
   completed_jobs: number;
+  paused_at: string | null;
   skills: string[];
 };
 

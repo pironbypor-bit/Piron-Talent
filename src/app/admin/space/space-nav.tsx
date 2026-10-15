@@ -4,7 +4,7 @@ import { BarChart3, Bug, FileText, Flag, LayoutDashboard, ScrollText, Users, Wal
 // Side list of Piron Work Space. A section without a page yet shows the step that builds it.
 const ITEMS = [
   { key: "overview", label: "Overview", Icon: LayoutDashboard, href: "/admin/space", step: 1 },
-  { key: "people", label: "People", Icon: Users, href: null, step: 2 },
+  { key: "people", label: "People", Icon: Users, href: "/admin/space/people", step: 2 },
   { key: "marketplace", label: "Marketplace", Icon: BarChart3, href: null, step: 3 },
   { key: "errors", label: "Errors", Icon: Bug, href: null, step: 4 },
   { key: "features", label: "Features", Icon: Flag, href: null, step: 5 },
