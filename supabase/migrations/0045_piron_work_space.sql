@@ -63,7 +63,7 @@ begin
    'companies', (select count(*) from public.businesses),
    'open_posts', (select count(*) from public.posts where status = 'published'),
    'confirmed_jobs', (select count(*) from public.project_jobs where status = 'confirmed')),
-  'growth', (select jsonb_agg(jsonb_build_object('day', g.d::date, 'n', (select count(*) from public.profiles p where p.created_at >= g.d and p.created_at < g.d + interval '1 day')) order by g.d)
+  'growth', (select jsonb_agg(jsonb_build_object('day', (g.d at time zone 'Asia/Phnom_Penh')::date, 'n', (select count(*) from public.profiles p where p.created_at >= g.d and p.created_at < g.d + interval '1 day')) order by g.d)
    from (select generate_series(d0 - interval '13 days', d0, interval '1 day') as d) g),
   'reminders', (select jsonb_build_object('at', j.start_time, 'status', j.status) from cron.job_run_details j
    where j.jobid = (select jobid from cron.job where jobname = 'piron-reminders') order by j.start_time desc limit 1),
