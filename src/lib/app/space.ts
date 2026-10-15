@@ -47,15 +47,16 @@ async function reachable(url: string, anon: string): Promise<{ ok: boolean; ms: 
 }
 
 /** The overview plus live checks. data is null when the caller is not the owner. */
-export async function getSpaceOverview(): Promise<{ data: SpaceOverview | null; status: StatusRow[] }> {
+export async function getSpaceOverview(): Promise<{ data: SpaceOverview | null; status: StatusRow[]; errors: { open: number; repeating: number } }> {
   const supabase = await createClient();
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const t0 = Date.now();
-  const [{ data, error }, auth, storage] = await Promise.all([
+  const [{ data, error }, auth, storage, badge] = await Promise.all([
     supabase.rpc("space_overview"),
     reachable(`${base}/auth/v1/health`, anon),
     reachable(`${base}/storage/v1/bucket`, anon),
+    getErrorBadge(),
   ]);
   const dbMs = Date.now() - t0;
   const o = (error ? null : data) as SpaceOverview | null;
@@ -73,7 +74,7 @@ export async function getSpaceOverview(): Promise<{ data: SpaceOverview | null; 
     const stale = m === null || m > 90 || (o.reminders && o.reminders.status !== "succeeded");
     status.push({ name: "Scheduled reminders", note: o.reminders ? `Last run ${agoText(o.reminders.at)}` : "Has not run yet", ok: !stale });
   }
-  return { data: o, status };
+  return { data: o, status, errors: badge ?? { open: 0, repeating: 0 } };
 }
 
 /** Writes one line to the audit log. Never blocks the action it describes. */
@@ -145,4 +146,34 @@ export async function getMarketplace(): Promise<MarketplaceHealth | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("space_marketplace");
   return error ? null : (data as MarketplaceHealth | null);
+}
+
+// Errors (migration 0049) -----------------------------------------------------------------------------------
+
+export type ErrorStatus = "open" | "fixed" | "ignored";
+export const ERROR_FILTERS = ["open", "fixed", "ignored", "all"] as const;
+export type ErrorFilter = (typeof ERROR_FILTERS)[number];
+
+export type ErrorRow = {
+  id: number; source: string; message: string; path: string | null; count: number;
+  first_seen: string; last_seen: string; status: ErrorStatus; last_person: string | null;
+};
+export type SendLog = { failed: { at: string; status: number | null; note: string }[]; reminders: { at: string; status: string }[] };
+
+export async function getErrors(filter: ErrorFilter): Promise<ErrorRow[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_errors", { p_status: filter });
+  return error ? null : (data as ErrorRow[] | null);
+}
+
+export async function getErrorBadge(): Promise<{ open: number; repeating: number } | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_errors_badge");
+  return error ? null : (data as { open: number; repeating: number } | null);
+}
+
+export async function getSendLog(): Promise<SendLog | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_send_log");
+  return error ? null : (data as SendLog | null);
 }

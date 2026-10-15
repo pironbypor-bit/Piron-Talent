@@ -14,6 +14,7 @@ Each file is one self-contained block for the Supabase SQL editor. Every block e
 | 08_profile_columns.sql | a person cannot change their own identity or job count |
 | 09_space_people.sql | Piron Work Space People: list, person, pause and resume |
 | 10_space_marketplace.sql | Piron Work Space Marketplace health, owner only |
+| 11_space_errors.sql | Piron Work Space Errors: grouping, alert, owner only |
 
 Notes
 - The blocks use two real account ids (POR and Piron). If they change, replace the two uuids at the top of the file. Test 01 needs the provider (`pv`) to be an account that is not an admin.

@@ -19,7 +19,7 @@ function delta(now: number, before: number): string {
 
 /** Piron Work Space, step 1: the owner Overview. Only the owner gets numbers; everyone else sees "Not allowed". */
 export default async function SpaceOverviewPage() {
-  const { data, status } = await getSpaceOverview();
+  const { data, status, errors } = await getSpaceOverview();
   if (!data) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-12">
@@ -33,6 +33,7 @@ export default async function SpaceOverviewPage() {
     { label: "Payout accounts", n: data.needs.payouts, href: "/admin/payout-accounts" },
     { label: "Project requests", n: data.needs.requests + data.needs.applications, href: "/admin" },
     { label: "Disputes", n: data.needs.disputes, href: "/admin/disputes" },
+    { label: "Open errors", n: errors.open, href: "/admin/space/errors" },
   ];
   const t = data.today;
   const today = [
@@ -65,14 +66,14 @@ export default async function SpaceOverviewPage() {
       <div className="mt-4 grid gap-4 md:grid-cols-[190px_minmax(0,1fr)]">
         <SpaceNav active="overview" />
         <div className="space-y-4">
-          {bad.length > 0 || data.send_failed_24h > 0 ? (
+          {bad.length > 0 || data.send_failed_24h > 0 || errors.repeating > 0 ? (
             <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4">
               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-700" />
               <div className="text-sm">
-                <p className="font-semibold">{bad.length > 0 ? `${bad.map((s) => s.name).join(", ")} ${bad.length === 1 ? "needs" : "need"} a look` : "Some messages failed to send"}</p>
+                <p className="font-semibold">{errors.repeating > 0 ? `${errors.repeating} app error${errors.repeating === 1 ? "" : "s"} repeating right now` : bad.length > 0 ? `${bad.map((s) => s.name).join(", ")} ${bad.length === 1 ? "needs" : "need"} a look` : "Some messages failed to send"}</p>
                 <p className="text-ink-muted">
                   {data.send_failed_24h > 0 ? `${data.send_failed_24h} email or push calls failed in the last 24 hours. ` : ""}
-                  Details are under System status below. The Errors section (step 4) will list app errors.
+                  See System status below and the <Link href="/admin/space/errors" className="underline">Errors</Link> section.
                 </p>
               </div>
             </div>
@@ -85,7 +86,7 @@ export default async function SpaceOverviewPage() {
 
           <section>
             <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-brand-800">Needs you now</h2>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {needs.map((x) => (
                 <Link key={x.label} href={x.href} className={`${card} text-center hover:bg-brand-50 ${x.n === 0 ? "opacity-60" : ""}`}>
                   <span className={`block text-2xl font-bold ${x.n > 0 ? "text-brand-800" : ""}`}>{x.n}</span>

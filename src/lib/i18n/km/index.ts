@@ -453,6 +453,8 @@ const km: Messages = {
   "{n} reviews": "ការវាយតម្លៃ {n}",
   "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
   "Search": "ស្វែងរក",
+  "Something went wrong": "មានបញ្ហាកើតឡើង",
+  "The team has been told. Please try again.": "ក្រុមការងារត្រូវបានជូនដំណឹងហើយ។ សូមព្យាយាមម្តងទៀត។",
   "Your account is paused": "គណនីរបស់អ្នកត្រូវបានផ្អាក",
   "The Piron Work team paused your account. You cannot post, send quotes, message or change your profile for now. If you think this is a mistake, write to pironbypor@gmail.com.": "ក្រុម Piron Work បានផ្អាកគណនីរបស់អ្នក។ អ្នកមិនអាចបង្ហោះ ផ្ញើសម្រង់តម្លៃ ផ្ញើសារ ឬកែប្រវត្តិរូបបានទេសម្រាប់ពេលនេះ។ បើអ្នកគិតថាមានកំហុស សូមសរសេរមក pironbypor@gmail.com។",
   "{n} to confirm": "{n} ត្រូវបញ្ជាក់",

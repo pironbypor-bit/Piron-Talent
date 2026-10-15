@@ -6,7 +6,7 @@ const ITEMS = [
   { key: "overview", label: "Overview", Icon: LayoutDashboard, href: "/admin/space", step: 1 },
   { key: "people", label: "People", Icon: Users, href: "/admin/space/people", step: 2 },
   { key: "marketplace", label: "Marketplace", Icon: BarChart3, href: "/admin/space/marketplace", step: 3 },
-  { key: "errors", label: "Errors", Icon: Bug, href: null, step: 4 },
+  { key: "errors", label: "Errors", Icon: Bug, href: "/admin/space/errors", step: 4 },
   { key: "features", label: "Features", Icon: Flag, href: null, step: 5 },
   { key: "money", label: "Money", Icon: Wallet, href: null, step: 6 },
   { key: "reports", label: "Reports", Icon: FileText, href: null, step: 7 },
