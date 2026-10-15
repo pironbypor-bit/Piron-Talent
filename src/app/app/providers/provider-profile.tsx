@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Button, inputClass, Notice, Pill } from "@/components/ui";
 import { blockUser, inviteToProject, sendHello, startConversation, toggleKeepProvider, unblockUser } from "@/lib/app/actions";
 import { ShareButton } from "@/components/share-button";
-import { contactState, getMe, getProvider, iBlocked, lastConfirmedJobWith, myOpenProjects, volunteerRecord } from "@/lib/app/queries";
+import { contactState, getMe, getProvider, iBlocked, isPayoutVerified, lastConfirmedJobWith, myOpenProjects, volunteerRecord } from "@/lib/app/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -25,6 +25,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
   const volunteer = await volunteerRecord(id);
   const blocked = me && me.id !== id ? await iBlocked(id) : false;
   const { provider: p, portfolio, reviews, record, endorsements, worksAt } = data;
+  const payoutVerified = await isPayoutVerified(p.id);
   const supabase = await createClient();
   const image = (path: string) => supabase.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
   const path = `${base}/providers/${p.id}`;
@@ -50,6 +51,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
             {rating !== null && <Stars rating={rating} />}
             <span className="text-ink-muted">{t("{n} completed jobs", { n: p.completed_jobs })}</span>
             {p.identity_checked && <Pill tone="green">{t("Identity checked")}</Pill>}
+            {payoutVerified && <Pill tone="green">{t("Payout account verified")}</Pill>}
             <AvailablePill s={p} t={t} />
             {replyText(t, p) && <span className="text-ink-muted">{replyText(t, p)}</span>}
           </div>

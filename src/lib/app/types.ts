@@ -204,3 +204,6 @@ export type InvoiceRow = {
   title: string; amount: number; currency: string; note: string | null; due_on: string | null; status: InvoiceStatus;
   paid_method: PayMethod | null; paid_on: string | null; paid_ref: string | null; issued_at: string; claimed_at: string | null; received_at: string | null; void_at: string | null;
 };
+
+export type PayoutMethod = "aba" | "wing" | "bank";
+export type PayoutAccount = { method: PayoutMethod; account_name: string; account_number: string; status: "pending" | "approved" | "rejected"; note: string | null; updated_at: string };

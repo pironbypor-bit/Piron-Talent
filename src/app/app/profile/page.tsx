@@ -134,6 +134,14 @@ export default async function ProfilePage() {
         <ChevronRight className="size-4 shrink-0 text-ink-muted" />
       </Link>
 
+      <Link href="/app/profile/payout" className="card mt-3 flex items-center justify-between px-4 py-3 hover:bg-brand-50">
+        <span>
+          <span className="block font-semibold">{t("Payout account")}</span>
+          <span className="block text-sm text-ink-muted">{t("Where you want to be paid. The team checks the name against your ID.")}</span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-ink-muted" />
+      </Link>
+
       {/* 4. Worker */}
       <section className={card}>
         <div className={head}>

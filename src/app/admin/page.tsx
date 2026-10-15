@@ -20,6 +20,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     );
   }
   const waiting = await adminCounts();
+  const { count: payoutPending } = await supabase.from("payout_accounts").select("user_id", { count: "exact", head: true }).eq("status", "pending").then((r) => ({ count: r.count ?? 0 }));
   const [{ data: requests }, { data: applications }, { count: completed }] = await Promise.all([
     supabase.from("project_requests").select("*").order("created_at", { ascending: false }).limit(200),
     supabase.from("provider_applications").select("*").order("created_at", { ascending: false }).limit(200),
@@ -38,6 +39,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <Link href="/admin/identity" className="font-medium underline">{t("Identity review")}{waiting.identity > 0 ? ` (${waiting.identity})` : ""}</Link>
         <Link href="/admin/reports" className="font-medium underline">{t("Reports")}{waiting.reports > 0 ? ` (${waiting.reports})` : ""}</Link>
         <Link href="/admin/disputes" className="font-medium underline">{t("Disputes")}{waiting.disputes > 0 ? ` (${waiting.disputes})` : ""}</Link>
+        <Link href="/admin/payout-accounts" className="font-medium underline">{t("Payout accounts")}{payoutPending > 0 ? ` (${payoutPending})` : ""}</Link>
         <Link href="/admin/kpis" className="font-medium underline">{t("Numbers")}</Link>
       </p>
 

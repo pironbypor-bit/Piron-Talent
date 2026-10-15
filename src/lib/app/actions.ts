@@ -852,3 +852,16 @@ export async function rejectInvoicePayment(id: string) {
 export async function voidInvoice(id: string) {
   await invoiceRpc(id, "void_invoice");
 }
+
+/** Where the person would like to be paid; the Piron team checks the name against the ID (migration 0040). No money is handled. */
+export async function savePayoutAccount(formData: FormData) {
+  const back = "/app/profile/payout";
+  await requireUser(back);
+  const method = String(formData.get("method") ?? "");
+  const name = String(formData.get("account_name") ?? "").trim().slice(0, 100);
+  const number = String(formData.get("account_number") ?? "").trim().slice(0, 40);
+  if (!["aba", "wing", "bank"].includes(method) || name.length < 2 || number.length < 3) redirect(`${back}?error=1`);
+  const { error } = await (await createClient()).rpc("set_payout_account", { p_method: method, p_name: name, p_number: number });
+  revalidatePath(back);
+  redirect(error ? `${back}?error=1` : `${back}?saved=1`);
+}

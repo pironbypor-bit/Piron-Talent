@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -819,4 +819,19 @@ export async function invoiceRoom(jobId: string): Promise<{ title: string; custo
   ]);
   const used = ((inv ?? []) as { amount: number | string }[]).reduce((n, r) => n + Number(r.amount), 0);
   return { title: (post as { title: string } | null)?.title ?? "", customer: (cust as { display_name: string } | null)?.display_name ?? "", agreed: Number(job.agreed_price), used, currency: job.currency, mine: job.provider_id === uid, status: job.status };
+}
+
+/** The signed-in person's own payout account, if they set one (migration 0040). */
+export async function myPayoutAccount(): Promise<PayoutAccount | null> {
+  const uid = await getUserId();
+  if (!uid) return null;
+  const { data } = await (await createClient()).from("payout_accounts").select("method,account_name,account_number,status,note,updated_at").eq("user_id", uid).maybeSingle();
+  return (data ?? null) as PayoutAccount | null;
+}
+
+/** Public yes or no: approved payout account and a checked identity. */
+export async function isPayoutVerified(userId: string): Promise<boolean> {
+  if (!/^[0-9a-f-]{36}$/i.test(userId)) return false;
+  const { data } = await (await createClient()).rpc("is_payout_verified", { p_user: userId });
+  return data === true;
 }
