@@ -10,6 +10,7 @@ import type { MemberTerms, PayRecordRow, RateUnit } from "@/lib/app/types";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../../../avatar";
+import { Dropdown } from "@/components/dropdown";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ from?: string; to?: string }> };
 const isDay = (v?: string) => !!v && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v);
@@ -90,11 +91,7 @@ export default async function TermsPage({ params, searchParams }: Props) {
                 <textarea name="duties" defaultValue={tm?.duties ?? ""} maxLength={1000} rows={3} placeholder={t("Duties: one line each")} className={inputClass} />
                 <div className="flex gap-2">
                   <input name="rate" type="number" step="0.01" min="0" defaultValue={tm?.rate ?? ""} placeholder={t("Rate")} className={`${inputClass} w-28`} />
-                  <select name="rate_unit" defaultValue={unit} className={`${inputClass} flex-1`}>
-                    <option value="hour">{t("per hour")}</option>
-                    <option value="day">{t("per day")}</option>
-                    <option value="month">{t("per month")}</option>
-                  </select>
+                  <Dropdown name="rate_unit" className="flex-1" defaultValue={unit} label={t("Rate")} options={[{ value: "hour", label: t("per hour") }, { value: "day", label: t("per day") }, { value: "month", label: t("per month") }]} />
                   <Button type="submit" className="px-4 py-2 text-sm">{t("Save terms")}</Button>
                 </div>
               </form>

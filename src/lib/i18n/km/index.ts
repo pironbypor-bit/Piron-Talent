@@ -453,6 +453,8 @@ const km: Messages = {
   "{n} reviews": "ការវាយតម្លៃ {n}",
   "No reviews yet": "មិនទាន់មានការវាយតម្លៃ",
   "Search": "ស្វែងរក",
+  "Choose": "ជ្រើសរើស",
+  "Nothing found": "រកមិនឃើញទេ",
   "Search jobs, skills, posts": "ស្វែងរកការងារ ជំនាញ ប្រកាស",
   "Showing posts that match “{q}”.": "បង្ហាញប្រកាសដែលត្រូវនឹង “{q}”។",
   "No posts match that search.": "គ្មានប្រកាសត្រូវនឹងការស្វែងរកនេះទេ។",

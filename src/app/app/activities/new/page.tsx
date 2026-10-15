@@ -4,6 +4,7 @@ import { Button, Field, Notice, PageTitle, inputClass } from "@/components/ui";
 import { createActivity } from "@/lib/app/actions";
 import { CITIES } from "@/lib/cities";
 import { getT } from "@/lib/i18n/server";
+import { Dropdown } from "@/components/dropdown";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -40,10 +41,7 @@ export default async function NewActivityPage({ searchParams }: { searchParams: 
         </div>
         <Field label={t("Place")} optional={t("optional")}><input name="place" maxLength={120} className={inputClass} /></Field>
         <Field label={t("Province or city")}>
-          <select name="city" defaultValue="Phnom Penh" className={inputClass}>
-            <option value="">{t("All provinces and cities")}</option>
-            {CITIES.map((c) => <option key={c} value={c}>{t(c)}</option>)}
-          </select>
+          <Dropdown name="city" defaultValue="Phnom Penh" options={[{ value: "", label: t("All provinces and cities") }, ...CITIES.map((c) => ({ value: c, label: t(c) }))]} />
         </Field>
         <Field label={t("People needed")}><input name="capacity" type="number" min={1} max={100} defaultValue={10} required className={inputClass} /></Field>
         <Field label={t("What to bring")} optional={t("optional")}><input name="bring" maxLength={500} className={inputClass} /></Field>

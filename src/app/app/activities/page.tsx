@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, Plus, Users } from "lucide-react";
-import { Button, CheckedPill, EmptyState, Pill, inputClass } from "@/components/ui";
+import { Button, CheckedPill, EmptyState, Pill } from "@/components/ui";
 import { listActivities } from "@/lib/app/queries";
 import { CITIES, isCity } from "@/lib/cities";
 import { formatRange } from "@/lib/datetime";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { Dropdown } from "@/components/dropdown";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -27,10 +28,7 @@ export default async function ActivitiesPage({ searchParams }: { searchParams: P
       </section>
 
       <form action="/app/activities" method="get" className="mt-3 flex gap-2">
-        <select name="city" defaultValue={province} className={`${inputClass} min-w-0 flex-1`} aria-label={t("Province or city")}>
-          <option value="">{t("All provinces and cities")}</option>
-          {CITIES.map((c) => <option key={c} value={c}>{t(c)}</option>)}
-        </select>
+        <Dropdown name="city" className="min-w-0 flex-1" defaultValue={province} label={t("Province or city")} options={[{ value: "", label: t("All provinces and cities") }, ...CITIES.map((c) => ({ value: c, label: t(c) }))]} />
         <Button type="submit" variant="secondary" className="px-4 py-2 text-sm">{t("Show")}</Button>
       </form>
 

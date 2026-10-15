@@ -8,6 +8,7 @@ import { categoryLabel, type Category } from "@/lib/category-label";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
 import { submitProjectRequest } from "./actions";
+import { Dropdown } from "@/components/dropdown";
 
 export function ProjectForm({ categories, initial }: { categories: Category[]; initial?: { details?: string; category_id?: string; source?: string } }) {
   const t = useT();
@@ -43,14 +44,7 @@ export function ProjectForm({ categories, initial }: { categories: Category[]; i
         <input name="business_name" defaultValue={val("business_name")} autoComplete="organization" className={inputClass} />
       </Field>
       <Field label={t("Category")} optional={t("optional")} error={err("category_id")}>
-        <select name="category_id" defaultValue={val("category_id")} className={inputClass}>
-          <option value="">{t("Choose a category")}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {categoryLabel(c, locale)}
-            </option>
-          ))}
-        </select>
+        <Dropdown name="category_id" defaultValue={val("category_id")} options={[{ value: "", label: t("Choose a category") }, ...categories.map((c) => ({ value: String(c.id), label: categoryLabel(c, locale) }))]} />
       </Field>
       <Field label={t("What do you need done?")} error={err("details")}>
         <textarea name="details" rows={5} defaultValue={val("details")} className={inputClass} aria-invalid={!!err("details")} />

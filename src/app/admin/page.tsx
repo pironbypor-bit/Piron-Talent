@@ -7,6 +7,7 @@ import { getLocale, getT } from "@/lib/i18n/server";
 import { APPLICANT_STATUSES, formatDate, statusLabel, statusTone, type ProjectRequest, type ProviderApplication } from "@/lib/pilot";
 import { setApplicationStatus } from "./actions";
 import { requireAdmin } from "./guard";
+import { Dropdown } from "@/components/dropdown";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -98,13 +99,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               </div>
               <form action={setApplicationStatus} className="mt-3 flex flex-wrap items-end gap-2">
                 <input type="hidden" name="id" value={a.id} />
-                <select name="status" defaultValue={a.status} className={`${inputClass} w-auto py-1.5 text-sm`} aria-label={t("Status")}>
-                  {APPLICANT_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {statusLabel(t, s)}
-                    </option>
-                  ))}
-                </select>
+                <Dropdown small className="w-auto" name="status" defaultValue={a.status} label={t("Status")} options={APPLICANT_STATUSES.map((s) => ({ value: s, label: statusLabel(t, s) }))} />
                 <input name="note" placeholder={t("Note")} className={`${inputClass} w-64 py-1.5 text-sm`} />
                 <Button variant="secondary" type="submit" className="px-3 py-1.5 text-sm">
                   {t("Save")}

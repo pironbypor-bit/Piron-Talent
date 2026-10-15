@@ -8,6 +8,7 @@ import { todayPP } from "@/lib/datetime";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import type { TaskStatus } from "@/lib/app/types";
+import { Dropdown } from "@/components/dropdown";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> };
 
@@ -87,10 +88,7 @@ export default async function TasksPage({ params, searchParams }: Props) {
             <Field label={t("Details")} optional={t("optional")}><textarea name="detail" rows={2} maxLength={500} className={inputClass} /></Field>
             <div className="grid grid-cols-2 gap-2">
               <Field label={t("Assign to")}>
-                <select name="assignee" className={inputClass} defaultValue="">
-                  <option value="">{t("Nobody yet")}</option>
-                  {b.team.map((m) => <option key={m.user_id} value={m.user_id}>{m.display_name}</option>)}
-                </select>
+                <Dropdown name="assignee" defaultValue="" options={[{ value: "", label: t("Nobody yet") }, ...b.team.map((m) => ({ value: m.user_id, label: m.display_name }))]} />
               </Field>
               <Field label={t("Due")} optional={t("optional")}><input type="date" name="due" className={inputClass} /></Field>
             </div>

@@ -8,6 +8,7 @@ import { categoryLabel, type Category } from "@/lib/category-label";
 import { CITIES, HAS_DISTRICTS } from "@/lib/cities";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
+import { Dropdown } from "@/components/dropdown";
 
 export function EditProfileForm({ me, categories }: { me: MeRow; categories: Category[] }) {
   const t = useT();
@@ -32,14 +33,7 @@ export function EditProfileForm({ me, categories }: { me: MeRow; categories: Cat
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label={t("City")} error={err("city")}>
-          <select name="city" value={city} onChange={(e) => setCity(e.target.value)} className={inputClass}>
-            <option value="">{t("Choose a city")}</option>
-            {CITIES.map((c) => (
-              <option key={c} value={c}>
-                {t(c)}
-              </option>
-            ))}
-          </select>
+          <Dropdown name="city" value={city} onChange={setCity} options={[{ value: "", label: t("Choose a city") }, ...CITIES.map((c) => ({ value: c, label: t(c) }))]} />
         </Field>
         {city === HAS_DISTRICTS && (
           <Field label={t("District")} optional={t("optional")} hint={t("For example: Toul Kork")} error={err("district")}>
@@ -53,14 +47,7 @@ export function EditProfileForm({ me, categories }: { me: MeRow; categories: Cat
         <span>{t("I offer services (show me in Services)")}</span>
       </label>
       <Field label={t("Main category")} optional={t("optional")} error={err("primary_category_id")}>
-        <select name="primary_category_id" defaultValue={val("primary_category_id", me.primary_category_id ? String(me.primary_category_id) : "")} className={inputClass}>
-          <option value="">{t("Choose a category")}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {categoryLabel(c, locale)}
-            </option>
-          ))}
-        </select>
+        <Dropdown name="primary_category_id" defaultValue={val("primary_category_id", me.primary_category_id ? String(me.primary_category_id) : "")} options={[{ value: "", label: t("Choose a category") }, ...categories.map((c) => ({ value: String(c.id), label: categoryLabel(c, locale) }))]} />
       </Field>
       <Field label={t("Skills, separated by commas")} optional={t("optional")} error={err("skills")}>
         <input name="skills" defaultValue={val("skills", me.skills.join(", "))} className={inputClass} />

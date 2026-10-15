@@ -9,6 +9,7 @@ import { addDays, mondayOf, phnomPenhToIso, ppTime, todayPP } from "@/lib/dateti
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import type { ShiftRow } from "@/lib/app/types";
+import { Dropdown } from "@/components/dropdown";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ week?: string; error?: string }> };
 
@@ -123,9 +124,7 @@ export default async function SchedulePage({ params, searchParams }: Props) {
           <h2 className="font-semibold">{t("Add a shift")}</h2>
           <form action={addTeamShift.bind(null, b.id)} className="mt-3 space-y-3">
             <Field label={t("Person")}>
-              <select name="person" required className={inputClass}>
-                {b.team.map((m) => <option key={m.user_id} value={m.user_id}>{m.display_name}{m.job_title ? ` · ${m.job_title}` : ""}</option>)}
-              </select>
+              <Dropdown required name="person" defaultValue={b.team[0]?.user_id ?? ""} options={b.team.map((m) => ({ value: m.user_id, label: m.display_name + (m.job_title ? " · " + m.job_title : "") }))} />
             </Field>
             <div className="grid grid-cols-3 gap-2">
               <Field label={t("Date")}><input type="date" name="date" required defaultValue={today >= days[0] && today <= days[6] ? today : days[0]} className={inputClass} /></Field>

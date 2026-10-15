@@ -9,6 +9,7 @@ import { METHODS, METHOD_LABEL, STATUS_LABEL, STATUS_TONE, money } from "@/lib/a
 import { todayPP } from "@/lib/datetime";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { Dropdown } from "@/components/dropdown";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ error?: string }> };
 
@@ -29,9 +30,7 @@ export default async function InvoicePage({ params, searchParams }: Props) {
   const isCustomer = inv.customer_id === me.id;
   const today = todayPP();
   const methodSelect = (
-    <select name="method" defaultValue="cash" className={inputClass}>
-      {METHODS.map((m) => <option key={m} value={m}>{t(METHOD_LABEL[m])}</option>)}
-    </select>
+    <Dropdown name="method" defaultValue="cash" options={METHODS.map((m) => ({ value: m, label: t(METHOD_LABEL[m]) }))} />
   );
 
   return (

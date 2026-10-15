@@ -178,3 +178,5 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 - Share image limitation: the image generator (satori) has no Khmer shaping engine, so some letter clusters (for example coeng ro) can look slightly off. The fixed words on the cards (Provider, Company, Project, Volunteer activity, city names) are therefore English; the item's own title and subtitle are drawn as the user wrote them. A fix would need a different renderer.
 
 - Rule tests: supabase/tests/01 to 06 (README there). Self-contained, roll back, each with the expected RESULT line. Run the relevant ones after any migration that changes those areas.
+
+- Dropdowns: one component, src/components/dropdown.tsx (design A, owner decision 2026-10-15). Use <Dropdown> instead of a native select: it keeps a hidden native select for the value, so FormData, required and server actions work unchanged. compact = pill for filters, submitOnChange sends the form, search box appears on more than 8 choices. The top-bar menu in src/components/app-shell.tsx uses the same look. Demos: /demo/app/dropdown-a and /demo/app/dropdown-b.

@@ -11,6 +11,7 @@ import { AvailablePill, replyText } from "@/components/signals";
 import { AvatarImg } from "../avatar";
 import { ReportForm } from "../report-form";
 import { Stars } from "@/app/demo/demo-ui";
+import { Dropdown } from "@/components/dropdown";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -152,9 +153,7 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
           <h2 className="font-semibold">{t("Invite to a project")}</h2>
           <form action={inviteToProject.bind(null, p.id)} className="mt-2 flex flex-wrap gap-2">
             <input type="hidden" name="back" value={path} />
-            <select name="post" className={`${inputClass} min-w-0 flex-1`} aria-label={t("Choose a project")}>
-              {projects.map((pj) => <option key={pj.id} value={pj.id}>{pj.title}</option>)}
-            </select>
+            <Dropdown name="post" className="min-w-0 flex-1" defaultValue={projects[0]?.id ?? ""} label={t("Choose a project")} options={projects.map((pj) => ({ value: pj.id, label: pj.title }))} />
             <Button type="submit" className="px-4 py-2 text-sm">{t("Send invitation")}</Button>
           </form>
         </section>

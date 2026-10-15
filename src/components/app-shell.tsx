@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Briefcase, Home, LayoutGrid, LogOut, Menu, MessageCircle, Settings } from "lucide-react";
@@ -23,24 +24,50 @@ const TABS = [
 ];
 
 /** The menu next to the bell: Notifications, Settings, Log out (the real app passes its server action). */
-function TopMenu({ base, notificationsHref, logOut }: { base: string; notificationsHref: string; logOut?: () => Promise<void> }) {
+function TopMenu({ base, name, unread, notificationsHref, logOut }: { base: string; name: string; unread: number; notificationsHref: string; logOut?: () => Promise<void> }) {
   const t = useT();
-  const item = "flex w-full items-center gap-2 px-3 py-2 text-sm font-medium hover:bg-brand-50";
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const down = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", down);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", down);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  const item = "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm hover:bg-brand-50";
   return (
-    <details className="relative">
-      <summary aria-label={t("Menu")} className="flex cursor-pointer list-none items-center rounded-full p-2 hover:bg-brand-50 [&::-webkit-details-marker]:hidden">
+    <div ref={root} className="relative">
+      <button type="button" onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open} aria-label={t("Menu")} className="flex items-center rounded-full p-2 hover:bg-brand-50">
         <Menu className="size-5" />
-      </summary>
-      <div className="absolute right-0 top-11 z-20 w-48 overflow-hidden rounded-2xl border border-stone-200 bg-white py-1 shadow-lg">
-        <Link href={notificationsHref} className={item}><Bell className="size-4 text-ink-muted" />{t("Notifications")}</Link>
-        <Link href={`${base}/settings`} className={item}><Settings className="size-4 text-ink-muted" />{t("Settings")}</Link>
-        {logOut && (
-          <form action={logOut}>
-            <button type="submit" className={item}><LogOut className="size-4 text-ink-muted" />{t("Log out")}</button>
-          </form>
-        )}
-      </div>
-    </details>
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-11 z-40 w-64 overflow-hidden rounded-2xl border border-stone-200 bg-white p-1.5 shadow-xl">
+          <p className="truncate px-3 pb-2 pt-1.5 text-sm font-semibold">{name}</p>
+          <div className="border-t border-stone-100 pt-1">
+            <Link href={notificationsHref} onClick={() => setOpen(false)} className={item}>
+              <Bell className="size-4 text-ink-muted" />
+              <span className="flex-1">{t("Notifications")}</span>
+              {unread > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-semibold">{unread > 9 ? "9+" : unread}</span>}
+            </Link>
+            <Link href={`${base}/settings`} onClick={() => setOpen(false)} className={item}><Settings className="size-4 text-ink-muted" />{t("Settings")}</Link>
+          </div>
+          {logOut && (
+            <form action={logOut} className="mt-1 border-t border-stone-100 pt-1">
+              <button type="submit" className={`${item} text-red-700`}><LogOut className="size-4" />{t("Log out")}</button>
+            </form>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -63,7 +90,7 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
             </span>
           )}
         </Link>
-        {signedIn && <TopMenu base={base} notificationsHref={notificationsHref ?? `${base}/profile#notifications`} logOut={logOut} />}
+        {signedIn && <TopMenu base={base} name={name} unread={n} notificationsHref={notificationsHref ?? `${base}/profile#notifications`} logOut={logOut} />}
         {signedIn ? (
           <Link href={`${base}/profile`} aria-label={t("Profile")} className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-brand-200 text-sm font-bold text-brand-900 ring-2 ring-white">
             {avatarUrl ? <img src={avatarUrl} alt="" className="size-full object-cover" /> : name.charAt(0) || "?"}

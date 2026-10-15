@@ -5,6 +5,7 @@ import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { createJob } from "@/lib/app/actions";
 import { useT } from "@/lib/i18n/client";
 import { idle } from "@/lib/validation";
+import { Dropdown } from "@/components/dropdown";
 
 export function NewJobForm({ businessId, categories }: { businessId?: string; categories: { value: string; label: string }[] }) {
   const t = useT();
@@ -23,17 +24,11 @@ export function NewJobForm({ businessId, categories }: { businessId?: string; ca
         <textarea name="description" rows={5} defaultValue={val("description")} className={inputClass} aria-invalid={!!err("description")} />
       </Field>
       <Field label={t("Category")} optional={t("optional")}>
-        <select name="category_id" defaultValue={val("category_id")} className={inputClass}>
-          <option value="">{t("All categories")}</option>
-          {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-        </select>
+        <Dropdown name="category_id" defaultValue={val("category_id")} options={[{ value: "", label: t("All categories") }, ...categories.map((c) => ({ value: String(c.value), label: c.label }))]} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label={t("Job type")} error={err("job_type")}>
-          <select name="job_type" defaultValue={val("job_type", "freelance")} className={inputClass}>
-            <option value="freelance">{t("Freelance")}</option>
-            <option value="project">{t("Project based")}</option>
-          </select>
+          <Dropdown name="job_type" defaultValue={val("job_type", "freelance")} options={[{ value: "freelance", label: t("Freelance") }, { value: "project", label: t("Project based") }]} />
         </Field>
         <Field label={t("City")} optional={t("optional")} error={err("city")}>
           <input name="city" defaultValue={val("city", "Phnom Penh")} className={inputClass} />
@@ -44,11 +39,7 @@ export function NewJobForm({ businessId, categories }: { businessId?: string; ca
           <input name="pay_amount" inputMode="decimal" defaultValue={val("pay_amount")} className={inputClass} aria-invalid={!!err("pay_amount")} />
         </Field>
         <Field label={t("Pay unit")} error={err("pay_unit")}>
-          <select name="pay_unit" defaultValue={val("pay_unit", "project")} className={inputClass}>
-            <option value="hour">{t("hour")}</option>
-            <option value="day">{t("day")}</option>
-            <option value="project">{t("project")}</option>
-          </select>
+          <Dropdown name="pay_unit" defaultValue={val("pay_unit", "project")} options={[{ value: "hour", label: t("hour") }, { value: "day", label: t("day") }, { value: "project", label: t("project") }]} />
         </Field>
       </div>
       <label className="flex items-center gap-2 text-sm">

@@ -7,6 +7,7 @@ import { Button, Field, Notice, inputClass } from "@/components/ui";
 import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import { checkMrz, normaliseMrz } from "@/lib/mrz";
+import { Dropdown } from "@/components/dropdown";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -124,11 +125,7 @@ export function IdentityFlow({ userId, defaultName }: { userId: string; defaultN
             <input value={d.legal_name} onChange={(e) => setD({ ...d, legal_name: e.target.value })} className={inputClass} autoComplete="name" />
           </Field>
           <Field label={t("ID type")}>
-            <select value={d.id_type} onChange={(e) => setD({ ...d, id_type: e.target.value as Details["id_type"] })} className={inputClass}>
-              <option value="national_id">{t("National ID card")}</option>
-              <option value="passport">{t("Passport")}</option>
-              <option value="other">{t("Other")}</option>
-            </select>
+            <Dropdown value={d.id_type} onChange={(v) => setD({ ...d, id_type: v as Details["id_type"] })} options={[{ value: "national_id", label: t("National ID card") }, { value: "passport", label: t("Passport") }, { value: "other", label: t("Other") }]} />
           </Field>
           <Field label={t("ID number")}>
             <input value={d.id_number} onChange={(e) => setD({ ...d, id_number: e.target.value })} className={inputClass} inputMode="text" autoComplete="off" />

@@ -4,6 +4,7 @@ import { Button, Field, Notice, Pill, inputClass } from "@/components/ui";
 import { savePayoutAccount } from "@/lib/app/actions";
 import { getMe, myPayoutAccount } from "@/lib/app/queries";
 import { getT } from "@/lib/i18n/server";
+import { Dropdown } from "@/components/dropdown";
 
 type Props = { searchParams: Promise<{ saved?: string; error?: string }> };
 
@@ -49,11 +50,7 @@ export default async function PayoutPage({ searchParams }: Props) {
       <form action={savePayoutAccount} className="card mt-3 space-y-4 p-4">
         <h2 className="font-semibold">{acc ? t("Change the account") : t("Add an account")}</h2>
         <Field label={t("Account type")}>
-          <select name="method" defaultValue={acc?.method ?? "aba"} className={inputClass}>
-            <option value="aba">ABA</option>
-            <option value="wing">Wing</option>
-            <option value="bank">{t("Other bank")}</option>
-          </select>
+          <Dropdown name="method" defaultValue={acc?.method ?? "aba"} options={[{ value: "aba", label: "ABA" }, { value: "wing", label: "Wing" }, { value: "bank", label: t("Other bank") }]} />
         </Field>
         <Field label={t("Account holder name")} hint={t("Exactly as on your ID.")}><input name="account_name" required minLength={2} maxLength={100} defaultValue={acc?.account_name ?? ""} className={inputClass} /></Field>
         <Field label={t("Account number or phone")}><input name="account_number" required minLength={3} maxLength={40} className={inputClass} autoComplete="off" /></Field>

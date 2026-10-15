@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bell, X } from "lucide-react";
-import { Button, EmptyState, Field, Notice, inputClass } from "@/components/ui";
+import { Button, EmptyState, Field, Notice } from "@/components/ui";
 import { addJobAlert, removeJobAlert } from "@/lib/app/actions";
 import { getMe, myJobAlerts } from "@/lib/app/queries";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { CITIES } from "@/lib/cities";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { Dropdown } from "@/components/dropdown";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -50,16 +51,10 @@ export default async function JobAlertsPage({ searchParams }: { searchParams: Pr
         <form action={addJobAlert} className="card mt-4 space-y-3 p-4">
           <p className="font-semibold">{t("New alert")}</p>
           <Field label={t("Category")}>
-            <select name="category" defaultValue="" className={inputClass}>
-              <option value="">{t("All categories")}</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{categoryLabel(c, locale)}</option>)}
-            </select>
+            <Dropdown name="category" defaultValue="" options={[{ value: "", label: t("All categories") }, ...categories.map((c) => ({ value: String(c.id), label: categoryLabel(c, locale) }))]} />
           </Field>
           <Field label={t("Province or city")}>
-            <select name="city" defaultValue="" className={inputClass}>
-              <option value="">{t("All provinces and cities")}</option>
-              {CITIES.map((c) => <option key={c} value={c}>{t(c)}</option>)}
-            </select>
+            <Dropdown name="city" defaultValue="" options={[{ value: "", label: t("All provinces and cities") }, ...CITIES.map((c) => ({ value: c, label: t(c) }))]} />
           </Field>
           <Button type="submit">{t("Add alert")}</Button>
         </form>

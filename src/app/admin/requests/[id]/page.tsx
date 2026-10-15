@@ -17,6 +17,7 @@ import {
 } from "@/lib/pilot";
 import { matchRequest, setJobStatus, setRequestStatus } from "../../actions";
 import { requireAdmin } from "../../guard";
+import { Dropdown } from "@/components/dropdown";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -83,13 +84,7 @@ export default async function AdminRequestPage({ params, searchParams }: Params)
       <form action={setRequestStatus} className="mt-6 flex flex-wrap items-end gap-2">
         <input type="hidden" name="id" value={r.id} />
         <Field label={t("Status")}>
-          <select name="status" defaultValue={r.status} className={inputClass}>
-            {REQUEST_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {statusLabel(t, s)}
-              </option>
-            ))}
-          </select>
+          <Dropdown name="status" defaultValue={r.status} options={REQUEST_STATUSES.map((s) => ({ value: s, label: statusLabel(t, s) }))} />
         </Field>
         <Field label={t("Admin note")}>
           <input name="note" className={`${inputClass} w-72`} />
@@ -122,13 +117,7 @@ export default async function AdminRequestPage({ params, searchParams }: Params)
                 <form action={setJobStatus} className="mt-3 flex flex-wrap items-end gap-2">
                   <input type="hidden" name="id" value={j.id} />
                   <input type="hidden" name="request_id" value={r.id} />
-                  <select name="status" defaultValue={j.status} className={`${inputClass} w-auto py-1.5 text-sm`} aria-label={t("Status")}>
-                    {JOB_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {statusLabel(t, s)}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown small className="w-auto" name="status" defaultValue={j.status} label={t("Status")} options={JOB_STATUSES.map((s) => ({ value: s, label: statusLabel(t, s) }))} />
                   <input name="price" inputMode="decimal" placeholder={t("Agreed price (USD)")} className={`${inputClass} w-44 py-1.5 text-sm`} />
                   <input name="note" placeholder={t("Note")} className={`${inputClass} w-56 py-1.5 text-sm`} />
                   <Button variant="secondary" type="submit" className="px-3 py-1.5 text-sm">
@@ -146,14 +135,7 @@ export default async function AdminRequestPage({ params, searchParams }: Params)
         <form action={matchRequest} className="mt-4 space-y-4">
           <input type="hidden" name="request_id" value={r.id} />
           <Field label={t("Provider")}>
-            <select name="application_id" defaultValue="" className={inputClass} required>
-              <option value="">{t("Choose a provider")}</option>
-              {providerList.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name} · {category(p.category_id) ?? p.skills.slice(0, 40)} · {statusLabel(t, p.status)}
-                </option>
-              ))}
-            </select>
+            <Dropdown required name="application_id" defaultValue="" options={[{ value: "", label: t("Choose a provider") }, ...providerList.map((p) => ({ value: p.id, label: `${p.full_name} · ${category(p.category_id) ?? p.skills.slice(0, 40)} · ${statusLabel(t, p.status)}` }))]} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("Agreed price (USD)")} optional={t("optional")}>

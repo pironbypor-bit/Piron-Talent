@@ -4,6 +4,7 @@ import { categoryLabel, getCategories } from "@/lib/categories";
 import { pick, projects } from "@/lib/demo/fixtures";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { Faq, PilotNote, TrustBlock } from "@/components/home-blocks";
+import { Dropdown } from "@/components/dropdown";
 
 const LAUNCH = ["creative", "technology", "documents", "finance"];
 
@@ -30,14 +31,7 @@ export default async function HomeA() {
             {t("What do you need?")}
           </label>
           <input id="home-details" name="details" className={inputClass} placeholder={t("For example: photos of 12 menu items")} />
-          <select name="category" className={`${inputClass} sm:w-56`} defaultValue="" aria-label={t("Category")}>
-            <option value="">{t("Choose a category")}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {categoryLabel(c, locale)}
-              </option>
-            ))}
-          </select>
+          <Dropdown name="category" className="sm:w-56" defaultValue="" label={t("Category")} options={[{ value: "", label: t("Choose a category") }, ...categories.map((c) => ({ value: String(c.id), label: categoryLabel(c, locale) }))]} />
           <Button type="submit">{t("Continue")}</Button>
         </form>
         <p className="mt-3 text-sm text-ink-muted">{t("Free to post. You pay the provider directly.")}</p>

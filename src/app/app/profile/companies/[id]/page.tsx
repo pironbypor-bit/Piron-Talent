@@ -9,6 +9,7 @@ import { businessPendingInvites, getBusiness, getMe, groupCandidates } from "@/l
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../../avatar";
+import { Dropdown } from "@/components/dropdown";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -203,11 +204,7 @@ export default async function CompanyPage({ params }: Props) {
               <textarea name="duties" maxLength={1000} rows={2} placeholder={t("Duties: one line each")} className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm" />
               <div className="flex gap-2">
                 <input name="rate" type="number" step="0.01" min="0" placeholder={t("Rate")} className="w-24 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm" />
-                <select name="rate_unit" defaultValue="hour" className="flex-1 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
-                  <option value="hour">{t("per hour")}</option>
-                  <option value="day">{t("per day")}</option>
-                  <option value="month">{t("per month")}</option>
-                </select>
+                <Dropdown name="rate_unit" className="flex-1" defaultValue="hour" label={t("Rate")} options={[{ value: "hour", label: t("per hour") }, { value: "day", label: t("per day") }, { value: "month", label: t("per month") }]} />
               </div>
               <Button type="submit" className="px-4 py-2 text-sm">{t("Send invitations")}</Button>
             </form>
