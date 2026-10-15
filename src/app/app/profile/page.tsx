@@ -10,6 +10,7 @@ import { isAvailableNow } from "@/components/signals";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../avatar";
+import { WelcomeCard } from "../welcome-card";
 import { AvatarUpload } from "./uploads";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,6 +46,15 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <WelcomeCard
+        t={t}
+        steps={[
+          { label: t("Complete your profile"), href: "/app/profile/edit", done: !!me.role_line },
+          { label: t("Start the identity check"), href: "/app/profile/identity", done: identity !== "none" },
+          { label: t("Write your first post"), href: "/app/post/new", done: counters.posts > 0 },
+        ]}
+      />
 
       {/* 1. Customer */}
       <section className={card}>

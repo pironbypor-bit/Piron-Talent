@@ -24,15 +24,17 @@ export const getMe = cache(async (): Promise<MeRow | null> => {
   return { ...rest, skills: profile_skills.map((s) => s.skills?.name).filter(Boolean) as string[] };
 });
 
-export async function listPosts(limit = 40): Promise<PostRow[]> {
+export async function listPosts(limit = 40, search?: string): Promise<PostRow[]> {
   const supabase = await createClient();
   const uid = await getUserId();
-  const { data } = await supabase
+  // Words typed in the Home search bar: match title or body. Characters that mean something to the filter are removed.
+  const word = (search ?? "").replace(/[^\p{L}\p{N}\p{M} ]+/gu, " ").replace(/ +/g, " ").trim().slice(0, 60);
+  let query = supabase
     .from("posts")
     .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,deliverables,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .eq("status", "published");
+  if (word) query = query.or(`title.ilike.%${word}%,body.ilike.%${word}%`);
+  const { data } = await query.order("created_at", { ascending: false }).limit(limit);
   const rows = (data ?? []) as unknown as (Omit<PostRow, "cheers" | "comments" | "cheered" | "kept" | "author" | "invited"> & { author: Author | Author[]; invited: Author | Author[] | null; post_reactions: unknown; post_comments: unknown })[];
   let mine = new Set<string>();
   let kept = new Set<string>();
