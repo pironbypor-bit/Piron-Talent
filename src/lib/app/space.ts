@@ -195,3 +195,41 @@ export async function getFeatureLog(): Promise<FeatureLogRow[]> {
   const { data } = await supabase.rpc("space_feature_log");
   return (data as FeatureLogRow[] | null) ?? [];
 }
+
+// Money (migration 0051) --------------------------------------------------------------------------------------
+
+export const INCOME_TYPES = ["Service fee", "Subscription", "Paid listing", "Advertising", "Other income"] as const;
+export const COST_TYPES = ["Cloudflare", "Supabase", "Email (Brevo)", "Domain names", "Phone and internet", "Legal and accounting", "Marketing", "Other cost"] as const;
+
+export type MoneyEntry = { id: number; kind: "income" | "cost"; type: string; amount: number; note: string | null; repeats: boolean; starts: string; ends: string | null };
+export type MoneyMonth = { month: string; revenue: number; costs: number; volume: number };
+export type MoneyView = { month: string; entries: MoneyEntry[]; volume: number; months: MoneyMonth[] };
+export type MoneyExportRow = { month: string; kind: "income" | "cost"; type: string; amount: number; note: string | null; repeats: boolean };
+
+export async function getMoney(month: string | null): Promise<MoneyView | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_money", { p_month: month });
+  return error ? null : (data as MoneyView | null);
+}
+
+export async function getMoneyExport(months = 12): Promise<MoneyExportRow[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("space_money_export", { p_months: months });
+  return error ? null : (data as MoneyExportRow[] | null);
+}
+
+/** Month options for the picker: this month and the 11 before it, as YYYY-MM-01 (Phnom Penh time). */
+export function recentMonths(n = 12): string[] {
+  const now = new Date(Date.now() + 7 * 3600 * 1000);
+  const out: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    out.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`);
+  }
+  return out;
+}
+
+export function monthLabel(iso: string): string {
+  const [y, m] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+}
