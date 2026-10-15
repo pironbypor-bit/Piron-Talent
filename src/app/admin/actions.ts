@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAdminAction } from "@/lib/app/space";
 import { APPLICANT_STATUSES, JOB_STATUSES, REQUEST_STATUSES } from "@/lib/pilot";
 
 // Every change goes through the admin_* database functions (migration 0003), which check is_admin() themselves.
@@ -20,6 +21,8 @@ async function call(path: string, fn: string, args: Record<string, unknown>) {
     console.error(`${fn} failed:`, error.message);
     redirect(`${path}?error=1`);
   }
+  const target = Object.values(args).find((v) => typeof v === "string" && uuid.test(v));
+  await logAdminAction(fn.replace(/^admin_/, "").replace(/_/g, " "), typeof target === "string" ? target : null);
   revalidatePath("/admin");
   revalidatePath(path);
   redirect(path);

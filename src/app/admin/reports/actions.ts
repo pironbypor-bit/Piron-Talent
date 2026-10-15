@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAdminAction } from "@/lib/app/space";
 
 export async function setReportStatus(formData: FormData) {
   const id = String(formData.get("id") ?? "");
@@ -12,6 +13,7 @@ export async function setReportStatus(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_set_report_status", { p_id: id, p_status: status, p_note: note });
   if (error) redirect("/admin/reports?error=1");
+  await logAdminAction(`Report ${status}`, id);
   revalidatePath("/admin/reports");
   redirect("/admin/reports");
 }

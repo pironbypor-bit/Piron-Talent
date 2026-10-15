@@ -10,6 +10,7 @@ Each file is one self-contained block for the Supabase SQL editor. Every block e
 | 04_notifications_and_organiser.sql | mute groups, organiser needs a checked identity, trigger functions still fire |
 | 05_waitlist.sql | volunteer waiting list promotion |
 | 06_reminders.sql | all reminder kinds, no duplicates |
+| 07_space_overview.sql | Piron Work Space overview, owner flag, audit log |
 
 Notes
 - The blocks use two real account ids (POR and Piron). If they change, replace the two uuids at the top of the file. Test 01 needs the provider (`pv`) to be an account that is not an admin.

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAdminAction } from "@/lib/app/space";
 
 export async function reviewIdentity(formData: FormData) {
   const id = String(formData.get("id") ?? "");
@@ -12,6 +13,7 @@ export async function reviewIdentity(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_review_identity", { p_id: id, p_status: status, p_note: note });
   if (error) redirect("/admin/identity?error=1");
+  await logAdminAction(`Identity check ${status}`, id);
   revalidatePath("/admin/identity");
   redirect("/admin/identity");
 }

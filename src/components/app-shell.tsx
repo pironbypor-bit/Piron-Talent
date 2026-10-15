@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Briefcase, Home, LayoutGrid, LogOut, Menu, MessageCircle, Settings, Wallet } from "lucide-react";
+import { Bell, Briefcase, Home, LayoutDashboard, LayoutGrid, LogOut, Menu, MessageCircle, Settings, Wallet } from "lucide-react";
 import { APP_NAME } from "@/lib/brand";
 import { useT } from "@/lib/i18n/client";
 import { BrandMark } from "./brand";
@@ -25,7 +25,7 @@ const TABS = [
 ];
 
 /** The menu next to the bell: Notifications, Settings, Log out (the real app passes its server action). */
-function TopMenu({ base, name, unread, notificationsHref, logOut }: { base: string; name: string; unread: number; notificationsHref: string; logOut?: () => Promise<void> }) {
+function TopMenu({ base, name, unread, notificationsHref, logOut, spaceHref }: { base: string; name: string; unread: number; notificationsHref: string; logOut?: () => Promise<void>; spaceHref?: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -60,6 +60,7 @@ function TopMenu({ base, name, unread, notificationsHref, logOut }: { base: stri
               {unread > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-semibold">{unread > 9 ? "9+" : unread}</span>}
             </Link>
             <Link href={`${base}/settings`} onClick={() => setOpen(false)} className={item}><Settings className="size-4 text-ink-muted" />{t("Settings")}</Link>
+            {spaceHref && <Link href={spaceHref} onClick={() => setOpen(false)} className={item}><LayoutDashboard className="size-4 text-ink-muted" />Piron Work Space</Link>}
           </div>
           {logOut && (
             <form action={logOut} className="mt-1 border-t border-stone-100 pt-1">
@@ -72,7 +73,7 @@ function TopMenu({ base, name, unread, notificationsHref, logOut }: { base: stri
   );
 }
 
-export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = null, notificationsHref, logOut }: { base: string; name: string; unread?: number; signedIn?: boolean; avatarUrl?: string | null; notificationsHref?: string; logOut?: () => Promise<void> }) {
+export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = null, notificationsHref, logOut, spaceHref }: { base: string; name: string; unread?: number; signedIn?: boolean; avatarUrl?: string | null; notificationsHref?: string; logOut?: () => Promise<void>; spaceHref?: string }) {
   const t = useT();
   const live = useLiveCounts();
   const n = live?.unread ?? unread;
@@ -83,7 +84,7 @@ export function TopBar({ base, name, unread = 1, signedIn = true, avatarUrl = nu
         {APP_NAME}
       </Link>
       <div className="flex items-center gap-2">
-        {signedIn && <TopMenu base={base} name={name} unread={n} notificationsHref={notificationsHref ?? `${base}/profile#notifications`} logOut={logOut} />}
+        {signedIn && <TopMenu base={base} name={name} unread={n} notificationsHref={notificationsHref ?? `${base}/profile#notifications`} logOut={logOut} spaceHref={spaceHref} />}
         <Link href={notificationsHref ?? `${base}/profile#notifications`} aria-label={t("Notifications")} className="relative rounded-full p-2 hover:bg-brand-50">
           <Bell className="size-5" />
           {n > 0 && (

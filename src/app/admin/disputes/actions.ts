@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAdminAction } from "@/lib/app/space";
 
 export async function resolveDispute(formData: FormData) {
   const id = String(formData.get("id") ?? "");
@@ -12,6 +13,7 @@ export async function resolveDispute(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_resolve_dispute", { p_id: id, p_status: status, p_resolution: resolution });
   if (error) redirect("/admin/disputes?error=1");
+  await logAdminAction(`Dispute ${status}`, id);
   revalidatePath("/admin/disputes");
   redirect("/admin/disputes");
 }

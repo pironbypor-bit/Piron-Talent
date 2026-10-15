@@ -37,6 +37,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <PageTitle lead={t("Completed jobs: {n}", { n: completed ?? 0 })}>Admin</PageTitle>
       {error && <div className="mb-6"><Notice tone="error">{t("Something went wrong. Please try again.")}</Notice></div>}
       <p className="mb-8 flex flex-wrap gap-4">
+        <Link href="/admin/space" className="font-semibold underline">Piron Work Space</Link>
         <Link href="/admin/identity" className="font-medium underline">{t("Identity review")}{waiting.identity > 0 ? ` (${waiting.identity})` : ""}</Link>
         <Link href="/admin/reports" className="font-medium underline">{t("Reports")}{waiting.reports > 0 ? ` (${waiting.reports})` : ""}</Link>
         <Link href="/admin/disputes" className="font-medium underline">{t("Disputes")}{waiting.disputes > 0 ? ` (${waiting.disputes})` : ""}</Link>

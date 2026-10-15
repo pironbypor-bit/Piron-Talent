@@ -360,6 +360,15 @@ export async function adminCounts(): Promise<AdminCounts> {
   return { ...r, total: r.identity + r.reports + r.disputes + r.requests + r.applications };
 }
 
+/** True only for the owner account (admins.is_owner). Used to show the Piron Work Space link. */
+export async function isOwner(): Promise<boolean> {
+  const uid = await getUserId();
+  if (!uid) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("is_owner");
+  return data === true;
+}
+
 export async function isAdmin(): Promise<boolean> {
   const uid = await getUserId();
   if (!uid) return false;
