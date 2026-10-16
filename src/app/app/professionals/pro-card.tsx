@@ -19,10 +19,12 @@ type Props = {
   t: T;
   /** Preview in the editor: no links, no keep button. */
   preview?: boolean;
+  /** When set the main button is Book and goes here; otherwise it is View profile. */
+  bookHref?: string;
 };
 
 /** One card of the Professionals page. Server component: the keep button is a plain form. */
-export function ProCard({ id, card, avatarUrl, checked, availableUntil, rating, reviews, saved = false, path = "/app/professionals", t, preview = false }: Props) {
+export function ProCard({ id, card, avatarUrl, checked, availableUntil, rating, reviews, saved = false, path = "/app/professionals", t, preview = false, bookHref }: Props) {
   const now = isAvailableNow({ available_until: availableUntil });
   const keep = toggleKeepProvider.bind(null, id, path);
   return (
@@ -57,7 +59,7 @@ export function ProCard({ id, card, avatarUrl, checked, availableUntil, rating, 
           {preview ? (
             <span className="rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white">{t("View profile")}</span>
           ) : (
-            <Link href={`/app/providers/${id}`} className="shrink-0 rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">{t("View profile")}</Link>
+            <Link href={bookHref ?? `/app/providers/${id}`} className="shrink-0 rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">{bookHref ? t("Book") : t("View profile")}</Link>
           )}
         </div>
       </div>

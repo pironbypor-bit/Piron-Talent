@@ -913,3 +913,80 @@ export async function resetMyCard() {
   revalidatePath("/app/professionals");
   redirect("/app/profile/card?saved=1");
 }
+
+// Bookings (migration 0055) --------------------------------------------------------------------------------
+
+/** The database says why in plain English; the page shows a short matching line. */
+function bookingError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("too many")) return "limit";
+  if (m.includes("already have an open")) return "open";
+  if (m.includes("not taking bookings")) return "unavailable";
+  if (m.includes("yourself")) return "self";
+  if (m.includes("expired")) return "expired";
+  if (m.includes("price")) return "price";
+  return "failed";
+}
+
+export async function requestBooking(providerId: string, formData: FormData) {
+  await requireFeature("home_pages");
+  if (!uuid.test(providerId)) return;
+  const back = `/app/book/${providerId}`;
+  await requireUser(back);
+  const details = String(formData.get("details") ?? "").trim().slice(0, 1000);
+  const place = String(formData.get("place") ?? "").trim().slice(0, 120);
+  const date = String(formData.get("date") ?? "");
+  const time = String(formData.get("time") ?? "") || "09:00";
+  const budgetText = String(formData.get("budget") ?? "").trim().replace(",", ".");
+  const budget = budgetText === "" ? null : Number(budgetText);
+  if (details.length < 3 || (budget !== null && (!Number.isFinite(budget) || budget < 0 || budget > 99999))) redirect(`${back}?error=fields`);
+  const start = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date) ? phnomPenhToIso(date, time) : null;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("request_booking", { p_provider: providerId, p_details: details, p_start: start, p_place: place || null, p_budget: budget });
+  if (error) redirect(`${back}?error=${bookingError(error.message)}`);
+  revalidatePath("/app/bookings");
+  redirect("/app/bookings?sent=1");
+}
+
+/** The provider's answer to a new request: accept (with the price), suggest another price or time, or decline. */
+export async function answerBooking(id: string, formData: FormData) {
+  await requireFeature("home_pages");
+  if (!uuid.test(id)) return;
+  await requireUser("/app/bookings");
+  const action = String(formData.get("action") ?? "");
+  if (!["accept", "counter", "decline"].includes(action)) return;
+  const priceText = String(formData.get("price") ?? "").trim().replace(",", ".");
+  const price = priceText === "" ? null : Number(priceText);
+  const date = String(formData.get("date") ?? "");
+  const time = String(formData.get("time") ?? "") || "09:00";
+  const start = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date) ? phnomPenhToIso(date, time) : null;
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 200);
+  if (price !== null && (!Number.isFinite(price) || price < 0 || price > 99999)) redirect("/app/bookings?error=price");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("answer_booking", { p_id: id, p_action: action, p_price: price, p_start: start, p_reason: reason || null });
+  if (error) redirect(`/app/bookings?error=${bookingError(error.message)}`);
+  revalidatePath("/app/bookings");
+  redirect(typeof data === "string" ? `/app/post/${data}` : "/app/bookings?done=1");
+}
+
+export async function answerCounter(id: string, accept: boolean) {
+  await requireFeature("home_pages");
+  if (!uuid.test(id)) return;
+  await requireUser("/app/bookings");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("answer_counter", { p_id: id, p_accept: accept });
+  if (error) redirect(`/app/bookings?error=${bookingError(error.message)}`);
+  revalidatePath("/app/bookings");
+  redirect(typeof data === "string" ? `/app/post/${data}` : "/app/bookings?done=1");
+}
+
+export async function cancelBooking(id: string) {
+  await requireFeature("home_pages");
+  if (!uuid.test(id)) return;
+  await requireUser("/app/bookings");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("cancel_booking", { p_id: id });
+  if (error) redirect(`/app/bookings?error=${bookingError(error.message)}`);
+  revalidatePath("/app/bookings");
+  redirect("/app/bookings?done=1");
+}

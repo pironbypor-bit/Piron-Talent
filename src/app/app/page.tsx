@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { EmptyState, Notice } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
-import { getMe, listPosts } from "@/lib/app/queries";
+import { countBookingsForMe, getMe, listPosts } from "@/lib/app/queries";
 import { KIND_LABEL, type PostKind } from "@/lib/app/types";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { PostCard } from "./post-card";
@@ -22,14 +22,14 @@ const KINDS: (PostKind | "all")[] = ["all", "need_help", "offer_skill", "share_k
 export default async function AppHome({ searchParams }: { searchParams: Promise<{ kind?: string; error?: string; q?: string }> }) {
   const [t, locale, me, { kind, error, q }, threePages] = await Promise.all([getT(), getLocale(), getMe(), searchParams, hasFeature("home_pages")]);
   const word = (q ?? "").trim().slice(0, 60);
-  const posts = await listPosts(40, word);
+  const [posts, waiting] = await Promise.all([listPosts(40, word), threePages ? countBookingsForMe() : Promise.resolve(0)]);
   const active = (KINDS as string[]).includes(kind ?? "") ? (kind as PostKind | "all") : "all";
   const here = `/app${active === "all" && !word ? "" : "?"}${[active === "all" ? "" : `kind=${active}`, word ? `q=${encodeURIComponent(word)}` : ""].filter(Boolean).join("&")}`;
   const list = posts.filter((p) => active === "all" || p.kind === active);
 
   return (
     <main className="px-4 pb-24 pt-4">
-      {threePages && <HomeStrip current="posts" t={t} />}
+      {threePages && <HomeStrip current="posts" t={t} badge={waiting} />}
       <form action="/app" method="get" role="search">
         <label htmlFor="home-search" className="sr-only">{t("Search posts")}</label>
         <div className="relative">

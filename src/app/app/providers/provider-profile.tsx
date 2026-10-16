@@ -12,12 +12,13 @@ import { AvatarImg } from "../avatar";
 import { ReportForm } from "../report-form";
 import { Stars } from "@/app/demo/demo-ui";
 import { Dropdown } from "@/components/dropdown";
+import { hasFeature } from "@/lib/app/features";
 
 /* eslint-disable @next/next/no-img-element */
 
 /** One provider profile. `base` is "/app" inside the app and "" on the public site; everything else is the same. */
 export async function ProviderProfile({ id, base, error, reported, invited }: { id: string; base: "/app" | ""; error?: string; reported?: string; invited?: string }) {
-  const [t, locale, me, rehireFrom] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id)]);
+  const [t, locale, me, rehireFrom, canBook] = await Promise.all([getT(), getLocale(), getMe(), lastConfirmedJobWith(id), base === "/app" ? hasFeature("home_pages") : Promise.resolve(false)]);
   const contact = me && me.id !== id ? await contactState(id) : null;
   // "Invite to a project": only for people who are open to work or already talking with me.
   const projects = contact && (contact.state === "open" || contact.state === "conversation") ? await myOpenProjects() : [];
@@ -77,6 +78,9 @@ export async function ProviderProfile({ id, base, error, reported, invited }: { 
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {p.price_from && <span className="rounded-full bg-brand-100 px-3 py-1.5 text-sm font-semibold text-brand-900">{t("From {price}", { price: p.price_from })}</span>}
+        {canBook && me && me.id !== p.id && (
+          <Link href={`/app/book/${p.id}`} className="rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">{t("Book")}</Link>
+        )}
         {rehireFrom && (
           <Link href={`/app/post/new?rehire=${rehireFrom}&to=${p.id}`} className="rounded-full bg-brand-500 px-3 py-1.5 text-sm font-semibold text-ink hover:bg-brand-400">
             {t("Hire again")}

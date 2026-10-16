@@ -211,3 +211,25 @@ export type InvoiceRow = {
 
 export type PayoutMethod = "aba" | "wing" | "bank";
 export type PayoutAccount = { method: PayoutMethod; account_name: string; account_number: string; status: "pending" | "approved" | "rejected"; note: string | null; updated_at: string };
+
+// Bookings (migration 0055) ---------------------------------------------------------------------------------
+
+export type BookingStatus = "requested" | "countered" | "accepted" | "declined" | "cancelled" | "expired";
+export type BookingRow = {
+  id: string;
+  status: BookingStatus;
+  details: string;
+  place: string | null;
+  requested_start: string | null;
+  budget: number | null;
+  counter_price: number | null;
+  counter_start: string | null;
+  agreed_price: number | null;
+  agreed_start: string | null;
+  decline_reason: string | null;
+  post_id: string | null;
+  expires_at: string;
+  created_at: string;
+  mine: "customer" | "provider";
+  other: { id: string; display_name: string; avatar_url: string | null };
+};

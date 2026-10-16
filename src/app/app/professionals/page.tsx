@@ -5,7 +5,7 @@ import { Dropdown } from "@/components/dropdown";
 import { EmptyState } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { requireFeature } from "@/lib/app/features";
-import { getMe, getMyCard, listProviders, type ProviderSort } from "@/lib/app/queries";
+import { countBookingsForMe, getMe, getMyCard, listProviders, type ProviderSort } from "@/lib/app/queries";
 import { resolveCard } from "@/lib/app/cards";
 import { categoryLabel, getCategories } from "@/lib/categories";
 import { CITIES, isCity } from "@/lib/cities";
@@ -24,7 +24,7 @@ type Params = { q?: string; category?: string; city?: string; sort?: string; now
 /** The Services page, upgraded: people as cards, search and filters, then (step 4) a Book button. */
 export default async function ProfessionalsPage({ searchParams }: { searchParams: Promise<Params> }) {
   await requireFeature("home_pages");
-  const [t, locale, categories, params, me, myCard] = await Promise.all([getT(), getLocale(), getCategories(), searchParams, getMe(), getMyCard()]);
+  const [t, locale, categories, params, me, myCard, waiting] = await Promise.all([getT(), getLocale(), getCategories(), searchParams, getMe(), getMyCard(), countBookingsForMe()]);
   const selected = categories.find((c) => String(c.id) === params.category) ?? null;
   const q = (params.q ?? "").trim().slice(0, 60);
   const city = isCity(params.city) ? params.city : "";
@@ -52,7 +52,7 @@ export default async function ProfessionalsPage({ searchParams }: { searchParams
 
   return (
     <main className="px-4 pb-24 pt-4">
-      <HomeStrip current="professionals" t={t} />
+      <HomeStrip current="professionals" t={t} badge={waiting} />
       <div className="flex items-baseline justify-between">
         <h1 className="text-sm font-bold">{t("Available professionals")}</h1>
         <span className="text-xs text-ink-muted">{t("{n} professionals", { n: cards.length })}</span>
@@ -105,7 +105,7 @@ export default async function ProfessionalsPage({ searchParams }: { searchParams
       ) : (
         <div className="mt-3 grid grid-cols-2 gap-3">
           {cards.map(({ p, c }) => (
-            <ProCard key={p.id} id={p.id} card={c} avatarUrl={p.avatar_url} checked={p.identity_checked} availableUntil={p.available_until} rating={p.rating} reviews={p.reviews} saved={p.saved} path={qs({})} t={t} />
+            <ProCard key={p.id} id={p.id} card={c} avatarUrl={p.avatar_url} checked={p.identity_checked} availableUntil={p.available_until} rating={p.rating} reviews={p.reviews} saved={p.saved} path={qs({})} t={t} bookHref={me && me.id === p.id ? undefined : `/app/book/${p.id}`} />
           ))}
         </div>
       )}

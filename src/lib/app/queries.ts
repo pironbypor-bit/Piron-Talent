@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow , ProviderCard } from "./types";
+import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow , ProviderCard, BookingRow } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -855,4 +855,34 @@ export async function getMyCard(): Promise<ProviderCard | null> {
   const supabase = await createClient();
   const { data } = await supabase.from("provider_cards").select("title,services,price_from,city,about").eq("user_id", uid).maybeSingle();
   return (data as ProviderCard | null) ?? null;
+}
+
+/** My bookings, as the customer and as the provider, newest first (RLS shows only mine). */
+export async function listMyBookings(): Promise<BookingRow[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("booking_requests")
+    .select("id,status,details,place,requested_start,budget,counter_price,counter_start,agreed_price,agreed_start,decline_reason,post_id,expires_at,created_at,customer_id,provider_id,customer:profiles!booking_requests_customer_id_fkey(id,display_name,avatar_url),provider:profiles!booking_requests_provider_id_fkey(id,display_name,avatar_url)")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  type P = { id: string; display_name: string; avatar_url: string | null };
+  type R = Omit<BookingRow, "mine" | "other"> & { customer_id: string; provider_id: string; customer: P | P[]; provider: P | P[] };
+  const one = <T,>(v: T | T[]): T => (Array.isArray(v) ? v[0] : v);
+  return ((data ?? []) as unknown as R[]).map((r) => {
+    const mine = r.customer_id === uid ? "customer" : "provider";
+    const { customer, provider, customer_id: _c, provider_id: _p, ...rest } = r;
+    void _c; void _p;
+    return { ...rest, mine, other: mine === "customer" ? one(provider) : one(customer) } as BookingRow;
+  });
+}
+
+/** How many booking requests are waiting for my answer (provider side), for the badge on Home. */
+export async function countBookingsForMe(): Promise<number> {
+  const uid = await getUserId();
+  if (!uid) return 0;
+  const supabase = await createClient();
+  const { count } = await supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("provider_id", uid).eq("status", "requested");
+  return count ?? 0;
 }

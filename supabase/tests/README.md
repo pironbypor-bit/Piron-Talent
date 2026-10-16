@@ -18,6 +18,7 @@ Each file is one self-contained block for the Supabase SQL editor. Every block e
 | 12_feature_switches.sql | Piron Work Space feature switches: off, only me, people, everyone |
 | 13_space_money.sql | Piron Work Space Money: entries, monthly repeat, stop, delete, owner only |
 | 14_space_reports.sql | Piron Work Space monthly report, CSV rows, audit view, owner only |
+| 15_bookings.sql | bookings: request, suggest, accept, decline, cancel, expire, blocks |
 
 Notes
 - The blocks use two real account ids (POR and Piron). If they change, replace the two uuids at the top of the file. Test 01 needs the provider (`pv`) to be an account that is not an admin.
