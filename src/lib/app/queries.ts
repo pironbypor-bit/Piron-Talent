@@ -32,7 +32,8 @@ export async function listPosts(limit = 40, search?: string): Promise<PostRow[]>
   let query = supabase
     .from("posts")
     .select(`id,kind,title,body,place,price_text,category_id,created_at,deadline,budget_min,budget_max,remote,deliverables,invited_provider_id,opens_at,invited:profiles!posts_invited_provider_id_fkey(${AUTHOR}),author:profiles!posts_author_id_fkey(${AUTHOR}),post_reactions(count),post_comments(count)`)
-    .eq("status", "published");
+    .eq("status", "published")
+    .or("opens_at.is.null,opens_at.neq.infinity"); // bookings make a private project (opens_at infinity); it never shows in the feed
   if (word) query = query.or(`title.ilike.%${word}%,body.ilike.%${word}%`);
   const { data } = await query.order("created_at", { ascending: false }).limit(limit);
   const rows = (data ?? []) as unknown as (Omit<PostRow, "cheers" | "comments" | "cheered" | "kept" | "author" | "invited"> & { author: Author | Author[]; invited: Author | Author[] | null; post_reactions: unknown; post_comments: unknown })[];
@@ -308,7 +309,7 @@ export async function myCounters() {
     supabase.from("saved_posts").select("post_id", head).eq("user_id", uid),
     supabase.from("saved_providers").select("provider_id", head).eq("user_id", uid),
     supabase.from("job_applications").select("id", head).eq("applicant_id", uid),
-    supabase.from("posts").select("id", head).eq("author_id", uid),
+    supabase.from("posts").select("id", head).eq("author_id", uid).or("opens_at.is.null,opens_at.neq.infinity"),
   ]);
   return { savedPosts: a.count ?? 0, savedProviders: b.count ?? 0, applications: c.count ?? 0, posts: d.count ?? 0 };
 }
@@ -648,7 +649,7 @@ export async function myOpenProjects(): Promise<{ id: string; title: string }[]>
   const uid = await getUserId();
   if (!uid) return [];
   const supabase = await createClient();
-  const { data } = await supabase.from("posts").select("id,title").eq("author_id", uid).eq("kind", "need_help").eq("status", "published").order("created_at", { ascending: false }).limit(20);
+  const { data } = await supabase.from("posts").select("id,title").eq("author_id", uid).eq("kind", "need_help").eq("status", "published").or("opens_at.is.null,opens_at.neq.infinity").order("created_at", { ascending: false }).limit(20);
   const posts = (data ?? []) as { id: string; title: string }[];
   if (posts.length === 0) return [];
   const { data: jobs } = await supabase.from("project_jobs").select("post_id").in("post_id", posts.map((p) => p.id)).in("status", ["accepted", "delivered", "confirmed"]);
