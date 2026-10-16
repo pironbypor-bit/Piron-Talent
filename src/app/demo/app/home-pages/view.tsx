@@ -118,7 +118,7 @@ export function HomePagesDemo() {
       <div className="flex gap-2">
         {btn("posts", "Posts")}
         {btn("pros", "Professionals")}
-        {btn("book", "My bookings", waitingForMe)}
+        {btn("book", "Bookings", waitingForMe)}
       </div>
       {toast && <p className="mt-3 rounded-xl bg-green-100 px-3 py-2 text-sm text-green-900" role="status">{toast}</p>}
       <div className="mt-4">

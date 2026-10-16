@@ -71,9 +71,11 @@ export function Professionals({ mine, onBook }: { mine: MyCard; onBook: (name: s
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, service or skill" className="w-full rounded-full border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm outline-none focus:border-brand-500" />
       </label>
-      <div className="mt-2 grid grid-cols-3 gap-2">
+      <div className="mt-2 grid grid-cols-2 gap-2">
         <Dropdown compact label="Category" value={cat} onChange={setCat} options={CATS.map((c) => ({ value: c, label: c }))} />
         <Dropdown compact label="City" value={city} onChange={setCity} options={CITIES.map((c) => ({ value: c, label: c }))} />
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-2">
         <Dropdown compact label="Sort" value={sort} onChange={setSort} options={[{ value: "rated", label: "Best rated" }, { value: "price", label: "Lowest price" }, { value: "jobs", label: "Most reviewed" }]} />
       </div>
       <div className="mt-2 flex gap-2">
