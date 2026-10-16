@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow , ProviderCard, BookingRow } from "./types";
+import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow , ProviderCard, BookingRow, MyApplication, MyQuote } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -885,4 +885,30 @@ export async function countBookingsForMe(): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("provider_id", uid).eq("status", "requested");
   return count ?? 0;
+}
+
+/** Job listings I applied to. */
+export async function myApplications(): Promise<MyApplication[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("job_applications").select("id,status,created_at,job:jobs(id,title,city)").eq("applicant_id", uid).order("created_at", { ascending: false }).limit(100);
+  type R = Omit<MyApplication, "job"> & { job: MyApplication["job"] | MyApplication["job"][] | null };
+  return ((data ?? []) as unknown as R[]).flatMap((r) => {
+    const job = Array.isArray(r.job) ? r.job[0] : r.job;
+    return job ? [{ ...r, job }] : [];
+  });
+}
+
+/** Quotes I sent on other people's projects that are not a job yet (accepted ones show as jobs). */
+export async function myQuotes(): Promise<MyQuote[]> {
+  const uid = await getUserId();
+  if (!uid) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("quotes").select("id,status,price,created_at,post:posts(id,title)").eq("provider_id", uid).not("post_id", "is", null).neq("status", "accepted").order("created_at", { ascending: false }).limit(100);
+  type R = Omit<MyQuote, "post"> & { post: MyQuote["post"] | MyQuote["post"][] | null };
+  return ((data ?? []) as unknown as R[]).flatMap((r) => {
+    const post = Array.isArray(r.post) ? r.post[0] : r.post;
+    return post ? [{ ...r, post }] : [];
+  });
 }

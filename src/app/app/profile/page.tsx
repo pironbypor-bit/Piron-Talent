@@ -71,7 +71,7 @@ export default async function ProfilePage() {
           <Link href="/app/services" className={chipPrimary}>{t("Find a service")}</Link>
           <Link href="/app/post/new?kind=need_help" className={chipSecondary}>{t("Post a project")}</Link>
         </div>
-        <Link href="/app/profile/jobs" className={`${row} mt-1`}>{t("My jobs and requests")} <ChevronRight className="size-4 text-ink-muted" /></Link>
+        <Link href={threePages ? "/app/bookings" : "/app/profile/jobs"} className={`${row} mt-1`}>{t("My jobs and requests")} <ChevronRight className="size-4 text-ink-muted" /></Link>
       </section>
 
       {/* 2. Provider */}

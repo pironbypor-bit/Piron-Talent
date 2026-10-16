@@ -3,6 +3,8 @@ import Link from "next/link";
 import { EmptyState, Pill } from "@/components/ui";
 import { EmptyIllustration } from "@/components/illustrations";
 import { myJobs } from "@/lib/app/queries";
+import { redirect } from "next/navigation";
+import { hasFeature } from "@/lib/app/features";
 import { formatDate } from "@/lib/dates";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { AvatarImg } from "../../avatar";
@@ -17,6 +19,8 @@ const TONE: Record<string, "amber" | "green" | "neutral" | "red"> = { accepted: 
 
 /** Jobs I am part of, as customer or provider, linking back to the project page where the actions live. */
 export default async function MyJobsPage() {
+  // Home in three pages: this list now lives in Bookings (jobs, applications, quotes and bookings together).
+  if (await hasFeature("home_pages")) redirect("/app/bookings?type=jobs");
   const [t, locale, jobs] = await Promise.all([getT(), getLocale(), myJobs()]);
   return (
     <main className="px-4 pb-24 pt-4">

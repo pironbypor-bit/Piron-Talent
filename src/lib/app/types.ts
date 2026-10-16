@@ -233,3 +233,8 @@ export type BookingRow = {
   mine: "customer" | "provider";
   other: { id: string; display_name: string; avatar_url: string | null };
 };
+
+// The Bookings page lists several kinds of things in one list ---------------------------------------------
+
+export type MyApplication = { id: string; status: "submitted" | "shortlisted" | "accepted" | "rejected" | "withdrawn"; created_at: string; job: { id: string; title: string; city: string | null } };
+export type MyQuote = { id: string; status: string; price: number; created_at: string; post: { id: string; title: string } };
