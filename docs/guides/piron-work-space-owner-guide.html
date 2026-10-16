@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Piron Work Space - Owner guide</title><link rel="stylesheet" href="guide.css"></head><body>
+
+<section class="cover dark">
+  <div class="brand">PIRON WORK SPACE</div>
+  <h1>The owner&rsquo;s<br>control room</h1>
+  <div class="sub">How to read the numbers, answer the queues, switch features and keep your own book. Part 2 of 2.</div>
+  <div class="badge">Owner only. Do not share.</div>
+  <div class="meta">Version of 16 October 2026 &nbsp;|&nbsp; app.piron.tech/admin/space<br>Owner account: leangporpo9@gmail.com<br>The first guide, Piron Work, is for everyone.</div>
+</section>
+
+<h2 style="border-top:0;margin-top:0">What is in this guide</h2>
+<div class="toc">
+<div>1. What the Space is</div><div>2. How to open it</div><div>3. Overview</div><div>4. The queues</div>
+<div>5. People</div><div>6. Marketplace</div><div>7. Errors</div><div>8. Features</div>
+<div>9. Money</div><div>10. Reports</div><div>11. Audit log</div><div>12. Daily, weekly, monthly</div>
+<div>13. Safety and limits</div><div>14. Problems and answers</div>
+</div>
+
+<h2>1. What the Space is</h2>
+<p>Piron Work Space is a private area for you, the owner. It answers five questions:</p>
+<table>
+<tr><th>Question</th><th>Section</th></tr>
+<tr><td>How many people use Piron Work and what is new?</td><td>Overview, People</td></tr>
+<tr><td>Is the marketplace actually working?</td><td>Marketplace</td></tr>
+<tr><td>What is broken right now?</td><td>Overview status, Errors</td></tr>
+<tr><td>Which new feature is hidden, and who can see it?</td><td>Features</td></tr>
+<tr><td>How much came in and went out?</td><td>Money, Reports</td></tr>
+</table>
+<div class="note"><b>Only the owner account can open it.</b> Any other person, even another admin, sees &ldquo;Not allowed&rdquo; and receives no numbers. Everything you do in it is written to the audit log.</div>
+
+<h2>2. How to open it</h2>
+<ol class="steps">
+<li>Log in with the owner account. You land on a page with two cards: <b>Piron Work</b> (the app) and <b>Piron Work Space</b> (the control room). Choose the Space.</li>
+<li>Later, click the <b>Piron Work logo</b> at any time to come back to the same two cards.</li>
+<li>Inside the app, open the <b>Menu</b> (three lines) and choose <b>Piron Work Space</b>.</li>
+<li>Or go straight to <b>app.piron.tech/admin/space</b>.</li>
+</ol>
+<h3>Moving around</h3>
+<p>The side list has Overview, People, Marketplace, Errors, Features, Money, Reports and Audit log. On a phone the list scrolls sideways. At the top, <span class="k">Open Piron Work</span> goes back to the app and <span class="k">Requests and applicants</span> opens the older admin page.</p>
+<p>The Space is in English only.</p>
+
+<h2>3. Overview</h2>
+<p>The first page. Read it from top to bottom in about a minute.</p>
+<table>
+<tr><th>Block</th><th>What it tells you</th></tr>
+<tr><td>Top bar</td><td>Green <b>Everything is working</b>, or amber with what needs a look: a service that did not answer, failed emails or push messages, or an app error repeating.</td></tr>
+<tr><td>Needs you now</td><td>Six tiles with counts: Identity checks, Reports, Payout accounts, Project requests (with provider applicants), Disputes, Open errors. Each one opens its queue.</td></tr>
+<tr><td>Today</td><td>New users, new posts, quotes sent, jobs accepted, jobs confirmed, each against yesterday, and people signed in today. Times are Phnom Penh.</td></tr>
+<tr><td>New users, last 14 days</td><td>A small bar chart. Hover a bar for the day and number.</td></tr>
+<tr><td>Totals</td><td>Users, providers, identity checked, companies, open posts, confirmed jobs.</td></tr>
+<tr><td>System status</td><td>A dot for App, Database, Sign-in service, File storage, Email, Push messages and Scheduled reminders. Green is fine, red needs action.</td></tr>
+<tr><td>Recent admin actions</td><td>The last six things an admin did.</td></tr>
+</table>
+<h3>What a red dot means</h3>
+<table>
+<tr><th>Dot</th><th>Meaning and what to do</th></tr>
+<tr><td>Database or Sign-in service</td><td>Supabase did not answer. Check status.supabase.com and wait a few minutes. If it stays red, open the Supabase dashboard.</td></tr>
+<tr><td>File storage</td><td>Uploads such as ID photos and documents may fail. Same checks as above.</td></tr>
+<tr><td>Email or Push</td><td>At least one email or push call failed in the last 24 hours. Open <b>Errors</b> and read &ldquo;Failed emails and push messages&rdquo;.</td></tr>
+<tr><td>Scheduled reminders</td><td>The reminder job has not succeeded in the last 90 minutes. Open <b>Errors</b> and read &ldquo;Reminder runs&rdquo;.</td></tr>
+</table>
+
+<h2>4. The queues</h2>
+<p>These are the things people are waiting for you to decide. Open each from the tile on the Overview.</p>
+<table>
+<tr><th>Queue</th><th>What to do</th></tr>
+<tr><td>Identity checks</td><td>Open the request: you see the written details (legal name, ID type, ID number, date of birth, machine-readable line if given) and two photos (the ID and the selfie holding it). Check the details match the photo and the face matches the ID. Choose <b>checked</b> or <b>rejected</b> and write a short note. The person is told within two working days.</td></tr>
+<tr><td>Reports</td><td>Read what was reported and open the post or person. Set it to <b>Reviewing</b>, <b>Resolved</b> or <b>Dismissed</b> and add a note. If it is a scam or abuse, also pause the person (section 5).</td></tr>
+<tr><td>Disputes</td><td>Read both sides on the job. Contact them if you need more. Set <b>Reviewing</b>, then <b>Resolved</b> or <b>Dismissed</b>, with a resolution note both people can understand.</td></tr>
+<tr><td>Payout accounts</td><td>Compare the account holder name with the person&rsquo;s checked ID name. <b>Approve</b> only when they match; otherwise <b>reject</b> with a reason. A person can use a payout account as verified only if their identity is checked and the account is approved. Any change by the person sends it back for review.</td></tr>
+<tr><td>Project requests and applicants</td><td>Requests from the public form and providers who applied to join. Set a status, add a note, and match a request to a provider when you can help.</td></tr>
+</table>
+<div class="note">Every decision you press is written to the audit log with your name and the time.</div>
+
+<h2>5. People</h2>
+<h3>The page</h3>
+<ul>
+<li><b>Stat cards:</b> people, new this week, new this month, providers, identity checked, signed in over 7 days.</li>
+<li><b>30-day chart</b> of new people, and <b>Where they are</b> (cities).</li>
+<li><b>Search</b> by name, role or city, and a drop-down: Everyone, Providers, Identity checked, New this week, Paused. The list shows up to 60, newest first.</li>
+</ul>
+<h3>One person</h3>
+<p>Open any row to see: joined date, last signed in, posts, quotes sent, jobs as customer and as provider, confirmed jobs, reviews and stars, reports against them and reports they filed, companies, and their latest posts. A link opens their public profile.</p>
+<div class="warn"><b>You never see email, phone, address or ID number here.</b> Those stay private. Identity photos are in the Identity queue only.</div>
+<h3>Pause or resume an account</h3>
+<ol class="steps">
+<li>Open the person. At the bottom, type a short <b>reason</b> and press <span class="k">Pause account</span>.</li>
+<li>The person can still log in but sees &ldquo;Your account is paused&rdquo; and cannot post, quote, message or change anything. Their provider card and public record are hidden.</li>
+<li>To undo, open the same person and press <span class="k">Resume account</span>. They must turn their provider switch on again themselves.</li>
+</ol>
+<ul>
+<li>You cannot pause yourself or another admin.</li>
+<li>Use it for scams and abuse. It is logged with your reason.</li>
+<li><b>Limit:</b> it stops the app. A technical person calling the database directly with their own token is not stopped. A full block needs a login ban, not set up yet.</li>
+</ul>
+
+<h2>6. Marketplace</h2>
+<p>Counts only; no private text.</p>
+<table>
+<tr><th>Block</th><th>How to read it</th></tr>
+<tr><td>Funnel (30 days and all time)</td><td>Projects posted &rarr; got a quote &rarr; quote accepted &rarr; work delivered &rarr; confirmed. Each line shows the percentage of the line before. A big drop shows where the marketplace leaks. Each project is counted in the period it was posted.</td></tr>
+<tr><td>Time to first quote</td><td>The middle waiting time in hours. Under 24 hours is good for a small market.</td></tr>
+<tr><td>Average stars</td><td>With the number of reviews.</td></tr>
+<tr><td>Cancel rate</td><td>Cancelled jobs as a share of accepted jobs.</td></tr>
+<tr><td>Quotes waiting 2+ days</td><td>Customers have not answered. A gentle message may help.</td></tr>
+<tr><td>Projects with no quote 3+ days</td><td>Nobody answered. Consider inviting providers or checking the category.</td></tr>
+<tr><td>Jobs that look stuck</td><td>Accepted over 7 days with no delivery, or delivered over 3 days with no confirmation. Click a row to open the job and nudge both people.</td></tr>
+<tr><td>Busiest categories / Needs more providers</td><td>Projects in the last 90 days against providers in that category. Recruit where customers ask and few answer.</td></tr>
+<tr><td>Cities</td><td>Projects and providers by city. &ldquo;Not set&rdquo; means no city saved.</td></tr>
+</table>
+
+<h2>7. Errors</h2>
+<p>When something breaks for a person, the app tells you here.</p>
+<ul>
+<li><b>Grouping:</b> the same error is one line with a count, where it happened (page, button or form, background call, phone), who it last hit and when.</li>
+<li><b>Alert:</b> if one error happens 5 times in 10 minutes you get a bell notification and an email. At most once an hour per error, and at most 3 alerts an hour in total.</li>
+<li><b>Buttons:</b> <span class="k">Fixed</span> closes it (it reopens by itself if it happens again), <span class="k">Ignore</span> hides noise, <span class="k">Reopen</span> brings it back. Use the drop-down for Open, Fixed, Ignored or All.</li>
+<li><b>Failed emails and push messages:</b> the last failed calls with the address removed.</li>
+<li><b>Reminder runs:</b> the last 8 runs of the reminder job (every 30 minutes).</li>
+<li><b>Kept for 60 days</b>, then deleted automatically.</li>
+</ul>
+<div class="tip"><b>Check the alarm.</b> Press <span class="k">Send a test error</span>. You see the error screen, then a line &ldquo;Test error from Piron Work Space&rdquo; appears. Mark it Fixed. Do this after any big change.</div>
+<p>If an error is a bug, copy its message and page and send them to your developer or to Claude together with what you pressed.</p>
+
+<h2>8. Features</h2>
+<p>A switch for each feature, so you can try something on yourself before anyone else sees it.</p>
+<table>
+<tr><th>Setting</th><th>Who sees the feature</th></tr>
+<tr><td>Off</td><td>Nobody, not even you.</td></tr>
+<tr><td>Only me</td><td>Only your account. Use this to test a new feature live.</td></tr>
+<tr><td>Chosen people</td><td>You and the people you add. Use it for a small trial.</td></tr>
+<tr><td>Everyone</td><td>Released to all.</td></tr>
+</table>
+<ol class="steps">
+<li>Open <b>Features</b> and choose the setting in the drop-down next to the feature. It saves at once.</li>
+<li>For <b>Chosen people</b>, search and pick a person under the feature and press <span class="k">Add</span>. Press <span class="k">Remove</span> next to a name to take them out.</li>
+<li>A change takes effect on the next page the person opens.</li>
+<li>The <b>Change log</b> at the bottom shows who changed what and when.</li>
+</ol>
+<h3>The switches today</h3>
+<table>
+<tr><th>Feature</th><th>Currently</th><th>What turning it off hides</th></tr>
+<tr><td>Payments tab, invoices and payout account</td><td>Everyone</td><td>The Payments tab, the invoice pages, the payout account page and their buttons.</td></tr>
+</table>
+<p>New switches arrive with each new feature, starting at <b>Off</b>. Ask for a switch when you ask for a feature. Payments held through Piron Work is not built and has no switch.</p>
+
+<h2>9. Money</h2>
+<p>This is <b>your own book</b>: what comes in and what goes out for Piron Work. Piron Work does not touch users&rsquo; money.</p>
+<h3>Reading the page</h3>
+<ul>
+<li>Choose a month in the drop-down (the last 12).</li>
+<li><b>Revenue</b>, <b>Costs</b> and <b>Profit</b> (red if negative) for that month.</li>
+<li><b>Paid between users:</b> invoices people marked as received that month. It shows the size of the market. It is not your income.</li>
+<li><b>Last 6 months</b> table with a total row.</li>
+</ul>
+<h3>Adding an entry</h3>
+<ol class="steps">
+<li>Choose the month at the top.</li>
+<li>Pick a <b>revenue type</b> (Service fee, Subscription, Paid listing, Advertising, Other income) and a <b>cost type</b> (Cloudflare, Supabase, Email, Domain names, Phone and internet, Legal and accounting, Marketing, Other cost).</li>
+<li>Type the amount in US dollars and an optional note.</li>
+<li>Tick <b>Repeats every month</b> for things that renew, such as hosting.</li>
+<li>Press <span class="k">Add as revenue</span> or <span class="k">Add as cost</span>. It uses the matching type.</li>
+</ol>
+<ul>
+<li><b>Monthly entries</b> count in that month and every month after, until you press <span class="k">Stop</span>. Earlier months keep them.</li>
+<li><b>One-off entries</b> have a <span class="k">Delete</span> button. Deleting is logged.</li>
+<li><b>Download CSV (12 months)</b> gives every entry that counts, month by month, for your accountant.</li>
+</ul>
+<div class="warn">This is a simple book, not an accounting system or tax advice. Keep receipts and ask your accountant how to report income.</div>
+
+<h2>10. Reports</h2>
+<h3>Monthly owner report</h3>
+<p>Choose a month. You get one page with four blocks: <b>People</b>, <b>Marketplace</b>, <b>Money</b> and <b>System and care</b> (new errors, open errors, reports filed, admin actions). Press <span class="k">Print or save as PDF</span> to print only the report, without menus.</p>
+<h3>CSV downloads</h3>
+<table>
+<tr><th>File</th><th>Columns</th></tr>
+<tr><td>People</td><td>Name, role, city, joined, provider, identity checked, confirmed jobs, paused, posts</td></tr>
+<tr><td>Jobs</td><td>Project, status, agreed price, customer, provider, started, delivered, confirmed</td></tr>
+<tr><td>Invoices</td><td>Number, from, to, title, amount, currency, status, issued, received</td></tr>
+</table>
+<p>No email, phone or ID number is in any file. The money entries have their own download on the Money page. Files open in Excel or Google Sheets.</p>
+
+<h2>11. Audit log</h2>
+<p>Every admin action in one list, newest first, with who did it and when. Nobody can edit or delete a line.</p>
+<ul>
+<li>Identity checks, reports, disputes and payout accounts decided.</li>
+<li>Accounts paused or resumed (with your reason).</li>
+<li>Feature switches and people added to a feature.</li>
+<li>Money entries added, stopped or deleted.</li>
+<li>Errors marked fixed, ignored or reopened.</li>
+</ul>
+<p>Use the drop-down to show one kind. The last 200 are shown.</p>
+
+<h2>12. Daily, weekly, monthly</h2>
+<table>
+<tr><th>When</th><th>Do this</th><th>Time</th></tr>
+<tr><td>Every day</td><td>Open the Overview. Read the top bar. Clear <b>Needs you now</b>: identity checks first (people wait up to two working days), then reports and disputes. Glance at System status.</td><td>5 to 10 minutes</td></tr>
+<tr><td>Every week</td><td>Open <b>Marketplace</b>: read the funnel, nudge stuck jobs and quotes waiting, note categories that need providers. Open <b>Errors</b> and close what is fixed.</td><td>15 minutes</td></tr>
+<tr><td>Every month</td><td>Add revenue and costs in <b>Money</b>. Open <b>Reports</b>, choose last month, save the PDF and download the CSVs. Skim the <b>Audit log</b>.</td><td>30 minutes</td></tr>
+<tr><td>After a new feature</td><td>Set its switch to <b>Only me</b>, try it, then <b>Chosen people</b>, then <b>Everyone</b>. Press <b>Send a test error</b> once to check the alarm.</td><td>As needed</td></tr>
+</table>
+
+<h2>13. Safety and limits</h2>
+<ul>
+<li><b>Protect the owner login.</b> Use a strong password you do not use anywhere else. Log out on shared computers. Anyone with this login sees everything above.</li>
+<li><b>Owner only is enforced by the database,</b> not only by hiding buttons. Other accounts get nothing back.</li>
+<li><b>Private details stay private.</b> Emails, phone numbers, addresses and ID numbers are not shown or exported in the Space.</li>
+<li><b>Secrets</b> (email key, push keys) live in Cloudflare and Supabase, never in the app pages. Never paste them into chat or documents.</li>
+<li><b>Pause is not a login ban.</b> See section 5.</li>
+<li><b>Payments through Piron Work are locked.</b> Holding or moving users&rsquo; money needs legal advice on National Bank of Cambodia licensing first. Nothing in the Space turns it on.</li>
+<li><b>English only.</b> The Space screens have no Khmer yet.</li>
+</ul>
+
+<h2>14. Problems and answers</h2>
+<table>
+<tr><th>Problem</th><th>What to do</th></tr>
+<tr><td>&ldquo;Not allowed&rdquo;</td><td>You are logged in with another account. Log out and use the owner account.</td></tr>
+<tr><td>No chooser after login</td><td>You were sent to a page you asked for first. Click the logo to get the two cards. The menu entry also works.</td></tr>
+<tr><td>The numbers look old</td><td>Reload the page. The Space reads the live database each time.</td></tr>
+<tr><td>A red dot stays red</td><td>Check Supabase and Cloudflare status pages, then open Errors. If it lasts over an hour, send the dot name and time to your developer.</td></tr>
+<tr><td>I did not get an error alert</td><td>Alerts need the email key. Press <b>Send a test error</b>; if the line appears but no email arrives, check the email key in Supabase Vault.</td></tr>
+<tr><td>I turned off Payments by mistake</td><td>Features &rarr; the feature &rarr; <b>Everyone</b>. It takes effect on the next page.</td></tr>
+<tr><td>I paused the wrong person</td><td>Open them in People and press <b>Resume account</b>. Ask them to turn the provider switch on again.</td></tr>
+<tr><td>A Money entry is wrong</td><td>Delete it (one-off) or Stop it (monthly) and add the right one. Both are logged.</td></tr>
+</table>
+
+<h3>Addresses</h3>
+<table>
+<tr><th>Part</th><th>Address</th></tr>
+<tr><td>Chooser</td><td>app.piron.tech/choose</td></tr>
+<tr><td>Overview</td><td>app.piron.tech/admin/space</td></tr>
+<tr><td>People, Marketplace, Errors</td><td>/admin/space/people, /admin/space/marketplace, /admin/space/errors</td></tr>
+<tr><td>Features, Money, Reports, Audit</td><td>/admin/space/features, /admin/space/money, /admin/space/reports, /admin/space/audit</td></tr>
+<tr><td>Queues</td><td>/admin/identity, /admin/reports, /admin/disputes, /admin/payout-accounts, /admin</td></tr>
+</table>
+<div class="note">Piron Work is run from Phnom Penh. Questions: <b>pironbypor@gmail.com</b></div>
+
+</body></html>
