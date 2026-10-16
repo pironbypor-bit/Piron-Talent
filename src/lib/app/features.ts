@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 // To add a switch: insert a row into feature_flags (new migration), then wrap the feature with hasFeature(key)
 // for links and requireFeature(key) at the top of its pages and server actions.
 
-export type FeatureKey = "payments";
+export type FeatureKey = "payments" | "home_pages";
 
 export const getFeatures = cache(async (): Promise<string[]> => {
   const supabase = await createClient();

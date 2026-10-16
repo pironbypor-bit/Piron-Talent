@@ -17,7 +17,7 @@ import { useLiveCounts } from "./live-counts";
 // `base` lets the same shell serve the demo (/demo/app) and the real app (/app).
 
 const TABS = [
-  { key: "", label: "Home", Icon: Home },
+  { key: "", label: "Home", Icon: Home, also: ["professionals", "bookings"] },
   { key: "payments", label: "Payments", Icon: Wallet, also: ["invoices", "profile/payout"] },
   { key: "services", label: "Services", Icon: LayoutGrid },
   { key: "jobs", label: "Jobs", Icon: Briefcase },
@@ -117,7 +117,7 @@ export function TabBar({ base, hide = [] }: { base: string; hide?: string[] }) {
     <nav className="print:hidden sticky bottom-0 z-10 grid border-t border-brand-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} aria-label={t("App preview")}>
       {tabs.map(({ key, label, Icon, also }) => {
         const href = key ? `${base}/${key}` : base;
-        const active = key ? path.startsWith(href) || (also ?? []).some((a) => path.startsWith(base + "/" + a)) : path === base;
+        const active = key ? path.startsWith(href) || (also ?? []).some((a) => path.startsWith(base + "/" + a)) : path === base || (also ?? []).some((a) => path.startsWith(base + "/" + a));
         return (
           <Link key={key} href={href} aria-current={active ? "page" : undefined} className={`relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${active ? "text-brand-700" : "text-ink-muted hover:text-ink"}`}>
             {active && <span className="absolute top-0 h-0.5 w-8 rounded-full bg-brand-500" aria-hidden="true" />}

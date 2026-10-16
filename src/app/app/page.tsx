@@ -7,6 +7,8 @@ import { getMe, listPosts } from "@/lib/app/queries";
 import { KIND_LABEL, type PostKind } from "@/lib/app/types";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { PostCard } from "./post-card";
+import { HomeStrip } from "./home-strip";
+import { hasFeature } from "@/lib/app/features";
 import { KindSelect } from "./kind-select";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,7 +20,7 @@ const KINDS: (PostKind | "all")[] = ["all", "need_help", "offer_skill", "share_k
 
 /** Home tab: the Workspace on real posts. Filtering is by URL so the page stays a plain server render. */
 export default async function AppHome({ searchParams }: { searchParams: Promise<{ kind?: string; error?: string; q?: string }> }) {
-  const [t, locale, me, { kind, error, q }] = await Promise.all([getT(), getLocale(), getMe(), searchParams]);
+  const [t, locale, me, { kind, error, q }, threePages] = await Promise.all([getT(), getLocale(), getMe(), searchParams, hasFeature("home_pages")]);
   const word = (q ?? "").trim().slice(0, 60);
   const posts = await listPosts(40, word);
   const active = (KINDS as string[]).includes(kind ?? "") ? (kind as PostKind | "all") : "all";
@@ -27,6 +29,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
 
   return (
     <main className="px-4 pb-24 pt-4">
+      {threePages && <HomeStrip current="posts" t={t} />}
       <form action="/app" method="get" role="search">
         <label htmlFor="home-search" className="sr-only">{t("Search posts")}</label>
         <div className="relative">

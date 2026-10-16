@@ -204,3 +204,5 @@ Q1 2027 concierge pilot first: landing page, waitlist/intake forms, manual match
 - Projects save the poster's profile city in posts.city when posted (createPost); existing posts were backfilled 2026-10-15. The Space Marketplace city table reads it.
 
 - instrumentation.ts keeps the worker alive with getCloudflareContext().ctx.waitUntil, otherwise the error report was cancelled when the response ended on Cloudflare (found by the 2026-10-15 test run). Verified: Send a test error now creates an Errors line.
+
+- Home in three pages (plan docs/piron-home-three-pages-plan.html). Step 2 done: feature switch home_pages (0053, starts Only me), HomeStrip (src/app/app/home-strip.tsx) on Home, placeholder pages /app/professionals and /app/bookings behind requireFeature. Later steps: automatic editable unpublishable cards from profiles, Book flow, bookings page. The old Services tab stays until step 3 replaces it. Demo: /demo/app/home-pages.
