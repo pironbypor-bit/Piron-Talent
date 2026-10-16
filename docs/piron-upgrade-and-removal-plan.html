@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Upgrade and removal plan - Home in three pages</title>
+<style>
+body{font:16px/1.55 system-ui,Segoe UI,Arial,sans-serif;max-width:880px;margin:24px auto;padding:0 16px;color:#1c1917}
+h1{font-size:26px;margin-bottom:4px} h2{margin-top:34px;font-size:20px;border-top:2px solid #fbbf24;padding-top:14px} h3{font-size:16px;margin:18px 0 4px}
+.sub{color:#78716c;margin-top:0} .box{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 16px;margin:12px 0}
+.ok{background:#ecfdf5;border-color:#86efac} .no{background:#fef2f2;border-color:#fca5a5}
+.step{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:14px 18px;margin:14px 0}
+.tag{display:inline-block;background:#fef3c7;border-radius:999px;padding:1px 10px;font-size:13px;font-weight:600;margin-right:6px}
+ul{margin:6px 0 6px 20px;padding:0} li{margin:3px 0} table{border-collapse:collapse;width:100%;margin:8px 0;font-size:15px} td,th{border:1px solid #e7e5e4;padding:6px 10px;text-align:left;vertical-align:top} th{background:#fafaf9}
+code{background:#f5f5f4;padding:0 4px;border-radius:4px}
+</style></head><body>
+<h1>Upgrade and removal plan</h1>
+<p class="sub">Home in three pages, without duplicates. Written 16 October 2026. This replaces the build steps in <code>piron-home-three-pages-plan.html</code>; the card rules there (automatic, editable, unpublish) still stand.</p>
+
+<div class="box"><b>One rule.</b> Every thing in the app has exactly one home. Where a new page would repeat an old one, the old one is <b>upgraded in place</b> and the extra door is <b>removed</b>.</div>
+
+<h2>1. The map: before and after</h2>
+<table>
+<tr><th>Thing people do</th><th>Today</th><th>After</th><th>What happens</th></tr>
+<tr><td>Read posts</td><td>Home</td><td>Home, button <b>Posts</b></td><td>Same page. Gets the three buttons.</td></tr>
+<tr><td>Find a provider</td><td>Services tab (<code>/app/services</code>)</td><td>Home, button <b>Professionals</b> (<code>/app/professionals</code>)</td><td><b>Upgrade and move.</b> The Services page becomes Professionals: card layout, Book, editable card. The Services tab is <b>removed</b> from the bottom bar.</td></tr>
+<tr><td>See my jobs, requests, applications</td><td>Profile &rarr; <i>My jobs and requests</i> (<code>/app/profile/jobs</code>) and the <i>applications</i> count under Looking for work</td><td>Home, button <b>Bookings</b> (<code>/app/bookings</code>)</td><td><b>Upgrade and move.</b> The &ldquo;My jobs and requests&rdquo; page becomes Bookings and also lists bookings and applications. The Profile row becomes a link to it.</td></tr>
+<tr><td>Work listings, alerts</td><td>Jobs tab</td><td>Jobs tab</td><td><b>No change.</b> This is for employers hiring workers; it is a different thing.</td></tr>
+<tr><td>Post a project and get quotes</td><td>Post button</td><td>Post button</td><td><b>No change.</b></td></tr>
+<tr><td>Book a person directly</td><td>Not possible</td><td>Book button on a card and on the profile</td><td><b>New.</b></td></tr>
+</table>
+
+<h2>2. What is removed</h2>
+<table>
+<tr><th>Removed</th><th>Replaced by</th><th>Safety net</th></tr>
+<tr><td>Services tab in the bottom bar</td><td>The <b>Professionals</b> button on Home</td><td>The bottom bar becomes Home, Payments, Jobs, Messages (4 tabs).</td></tr>
+<tr><td><code>/app/services</code> as a page of its own</td><td><code>/app/professionals</code></td><td>The old address <b>redirects</b> to the new one with the same search and filters, so saved links and shared links keep working.</td></tr>
+<tr><td>The old list rows of providers</td><td>The card grid</td><td>Same data, same filters, same &ldquo;Keep&rdquo;. Nothing is lost.</td></tr>
+<tr><td><code>/app/profile/jobs</code> as a page of its own</td><td><code>/app/bookings</code></td><td>Redirect, and notification links that point to it keep working.</td></tr>
+<tr><td>The placeholder pages built in step 2</td><td>The real pages</td><td>They are the same addresses, so nothing to redirect.</td></tr>
+<tr><td>The three-button strip being separate from the switch</td><td>One switch, <i>Home in three pages</i></td><td>Off means everything goes back to today&rsquo;s app.</td></tr>
+</table>
+<div class="box ok"><b>Kept on purpose:</b> the Jobs tab, the Post button, Messages, Payments, the public provider directory at <code>/providers</code> (for visitors who are not logged in and for search engines), and the provider profile page (the card always links to it).</div>
+<div class="box no"><b>Not removed:</b> the existing quote, accept, deliver, confirm, review, invoice and dispute steps. Booking reuses them, so there is no second job system.</div>
+
+<h2>3. Every place that must change</h2>
+<table>
+<tr><th>Where</th><th>Now</th><th>Change</th></tr>
+<tr><td>Bottom bar</td><td>Services tab</td><td>Remove it when the switch is on for that person.</td></tr>
+<tr><td>Profile &rarr; I need work done</td><td>Chip <i>Find a service</i> to <code>/app/services</code>; row <i>My jobs and requests</i></td><td>Chip goes to Professionals; row goes to Bookings.</td></tr>
+<tr><td>Profile &rarr; Looking for work</td><td>&ldquo;N applications&rdquo; text</td><td>Count links to Bookings, filtered to applications.</td></tr>
+<tr><td>Project page (&ldquo;Find more in Services&rdquo;)</td><td>Link to <code>/app/services</code></td><td>Link to Professionals, wording &ldquo;Find more professionals&rdquo;.</td></tr>
+<tr><td>Provider profile (back link)</td><td>Back to Services</td><td>Back to Professionals.</td></tr>
+<tr><td>Provider profile (buttons)</td><td>Say hello, Invite to a project, Request a quote</td><td>Adds <b>Book</b>. The other three stay.</td></tr>
+<tr><td>Profile &rarr; I offer a service</td><td>Visible switch, Available this week, <i>My service</i></td><td>Adds <b>Edit my card</b> with the Published switch (the same switch as Visible).</td></tr>
+<tr><td>Server actions that refresh the page after a change</td><td>Refresh <code>/app/services</code></td><td>Refresh <code>/app/professionals</code> too.</td></tr>
+<tr><td>Demo shell, both PDF guides, handover, CLAUDE.md</td><td>Mention Services</td><td>Updated at the end.</td></tr>
+<tr><td>Khmer</td><td>Services labels</td><td>New lines for Professionals, Bookings, Book, card editor; the review sheet gets them.</td></tr>
+</table>
+
+<h2>4. Build steps (each one can be switched off)</h2>
+<div class="step"><span class="tag">Step 3a</span><b>Upgrade Services into Professionals.</b>
+<ul>
+<li>Cards read the profile automatically; edited fields from the new card table (already created and tested) replace them.</li>
+<li>Page: search, category, city, sort, Available now, Identity checked, Keep, the card grid.</li>
+<li>Card needs a role line, a city and a price from to appear. Others see the &ldquo;Needs details&rdquo; checklist on their own card.</li>
+<li>The button says <b>View profile</b> for now (Book arrives in step 4).</li>
+<li><code>/app/services</code> redirects here when the switch is on.</li>
+</ul>
+<i>Rollback:</i> switch Off and Services is the page it is today.</div>
+<div class="step"><span class="tag">Step 3b</span><b>My card.</b> One screen for the person: Published switch, name on the card, services line, price from, city, short description, <i>Use profile details again</i>, and a preview. Reached from Profile and from the Professionals page.</div>
+<div class="step"><span class="tag">Step 3c</span><b>Remove the Services tab</b> from the bottom bar and fix every link in section 3. Old addresses redirect.</div>
+<div class="step"><span class="tag">Step 4</span><b>Book.</b> Request, accept, suggest another price or time, decline, expire after 48 hours. When agreed it becomes a normal job. The button on cards changes from View profile to <b>Book</b>.</div>
+<div class="step"><span class="tag">Step 5</span><b>Upgrade My jobs and requests into Bookings.</b> Same page, now also listing bookings and applications, with filters and next actions. <code>/app/profile/jobs</code> redirects to it; Profile rows link to it.</div>
+<div class="step"><span class="tag">Step 6</span><b>Notifications, 24-hour reminder, Khmer, owner numbers</b> (bookings in the Marketplace funnel and the monthly report).</div>
+<div class="step"><span class="tag">Step 7</span><b>Test run and security review,</b> update both PDF guides and the handover, then set the switch to <b>Everyone</b> when you say so.</div>
+
+<h2>5. Risks and how they are handled</h2>
+<table>
+<tr><th>Risk</th><th>Handling</th></tr>
+<tr><td>Someone has a saved link to Services or a provider list</td><td>Permanent redirects, search words and filters carried over.</td></tr>
+<tr><td>Existing providers vanish because their profile is thin</td><td>Before switching to Everyone I list who would be hidden and tell them; the profile page and the old public directory stay.</td></tr>
+<tr><td>Two ways to hire confuse people</td><td>Plain labels: <b>Jobs</b> (employers hiring workers), <b>Post</b> (a project, you get quotes), <b>Book</b> (choose a person now). Short explainers in both guides.</td></tr>
+<tr><td>Fake bookings or spam</td><td>Daily limit, no self-booking, blocked and paused people cannot book, reviews only after a confirmed job.</td></tr>
+<tr><td>Removing the tab hurts visitors who are logged out</td><td>The public directory at /providers is not touched.</td></tr>
+</table>
+
+<h2>6. What stays the same for users</h2>
+<ul>
+<li>No new account, no new fees, no money moves through Piron Work.</li>
+<li>Everything they can do today still works, from the same buttons or a clearly marked new one.</li>
+<li>Until the switch is Everyone, only you see any of it.</li>
+</ul>
+
+<h2>7. Decisions</h2>
+<table>
+<tr><th>#</th><th>Question</th><th>Recommendation</th></tr>
+<tr><td>1</td><td>Remove the Services tab from the bottom bar?</td><td>Yes (step 3c).</td></tr>
+<tr><td>2</td><td>Move &ldquo;My jobs and requests&rdquo; into Bookings and redirect the old page?</td><td>Yes (step 5).</td></tr>
+<tr><td>3</td><td>Keep the public directory <code>/providers</code> for logged-out visitors?</td><td>Yes, unchanged.</td></tr>
+<tr><td>4</td><td>Companies can have cards too?</td><td>Yes, but as a later step (4b) so people cards ship first.</td></tr>
+</table>
+<p>Say <b>&ldquo;approved&rdquo;</b> and I start step 3a.</p>
+</body></html>
