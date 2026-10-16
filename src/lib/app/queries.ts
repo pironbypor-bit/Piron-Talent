@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { isCity } from "@/lib/cities";
 import { createClient, getUserId } from "@/lib/supabase/server";
-import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow } from "./types";
+import type { PayoutAccount, InvoiceRow, ShiftRow, TaskRow, WorksAt, CompanyDoc, CompanyPublic, MemberTerms, PayRecordRow, BusinessInvitationRow, BusinessRole, TeamMember, JobAlertRow, BlockedPerson, ActivityMine, ActivityRow, ActivityVolunteer, InvitationRow, InviteCandidate, InviteState, ConversationDetail, ContactState, MessageRequestRow, WorkRecordRow, BusinessDetail, BusinessRow, Author, CommentRow, ConversationRow, JobRow, MeRow, MessageRow, NotificationRow, PostRow, ProjectJobRow, ProjectScope, ProviderRow, QuoteRow, DisputeRow , ProviderCard } from "./types";
 
 // Read helpers for the app. Every query runs as the visitor (RLS applies); anonymous visitors can browse.
 
@@ -104,7 +104,7 @@ export async function listProviders(opts: { categoryId?: number; q?: string; rem
   }
   let query = supabase
     .from("profiles")
-    .select(`${AUTHOR},city,district,available_until,bio,price_from,remote,completed_jobs,primary_category_id,created_at,profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
+    .select(`${AUTHOR},city,district,available_until,bio,price_from,remote,completed_jobs,primary_category_id,created_at,provider_cards(title,services,price_from,city,about),profile_skills(skills(name)),reviews!reviews_subject_id_fkey(stars)`)
     .eq("is_available", true)
     .limit(60);
   if (opts.categoryId) query = query.eq("primary_category_id", opts.categoryId);
@@ -117,7 +117,7 @@ export async function listProviders(opts: { categoryId?: number; q?: string; rem
     query = query.or(parts.join(","));
   }
   const { data } = await query;
-  type Row = Omit<ProviderRow, "skills" | "saved" | "reply_minutes" | "replies"> & SkillJoin & { created_at: string; reviews: { stars: number }[] };
+  type Row = Omit<ProviderRow, "skills" | "saved" | "reply_minutes" | "replies" | "card"> & SkillJoin & { created_at: string; reviews: { stars: number }[]; provider_cards: ProviderCard | ProviderCard[] | null };
   const rows = (data ?? []) as unknown as Row[];
   let saved = new Set<string>();
   if (uid && rows.length) {
@@ -129,7 +129,8 @@ export async function listProviders(opts: { categoryId?: number; q?: string; rem
     const n = r.reviews?.length ?? 0;
     const rating = n ? r.reviews.reduce((a, x) => a + x.stars, 0) / n : null;
     const sig = signals.get(r.id) ?? { reply_minutes: null, replies: 0 };
-    return { ...withSkills(r), ...sig, saved: saved.has(r.id), rating, reviews: n };
+    const card = Array.isArray(r.provider_cards) ? (r.provider_cards[0] ?? null) : r.provider_cards;
+    return { ...withSkills(r), ...sig, saved: saved.has(r.id), rating, reviews: n, card };
   });
   const sort = opts.sort ?? "rated";
   out.sort((a, b) =>
@@ -845,4 +846,13 @@ export async function isPayoutVerified(userId: string): Promise<boolean> {
   if (!/^[0-9a-f-]{36}$/i.test(userId)) return false;
   const { data } = await (await createClient()).rpc("is_payout_verified", { p_user: userId });
   return data === true;
+}
+
+/** The person's own edited card fields (null columns follow the profile). */
+export async function getMyCard(): Promise<ProviderCard | null> {
+  const uid = await getUserId();
+  if (!uid) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.from("provider_cards").select("title,services,price_from,city,about").eq("user_id", uid).maybeSingle();
+  return (data as ProviderCard | null) ?? null;
 }

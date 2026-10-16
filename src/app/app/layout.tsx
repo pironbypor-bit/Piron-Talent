@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: { default: "Piron Work", template: "%
 /** The real app: same shell as the preview, full width on phones, a phone-wide column on desktop. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [me, unread, unreadMessages, owner, t, features] = await Promise.all([getMe(), countUnread(), countUnreadConversations(), isOwner(), getT(), getFeatures()]);
-  const hiddenTabs = features.includes("payments") ? [] : ["payments"];
+  const hiddenTabs = [...(features.includes("payments") ? [] : ["payments"]), ...(features.includes("home_pages") ? ["services"] : [])];
   return (
     <LiveCountsProvider userId={me?.id ?? null} unread={unread} unreadMessages={unreadMessages}>
     <div className="bg-stone-100">

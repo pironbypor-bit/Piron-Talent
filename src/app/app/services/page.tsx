@@ -9,6 +9,8 @@ import { categoryLabel, getCategories } from "@/lib/categories";
 import { CITIES, isCity } from "@/lib/cities";
 import { ProviderFilters } from "@/components/provider-filters";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { redirect } from "next/navigation";
+import { hasFeature } from "@/lib/app/features";
 import { AvailablePill, replyText } from "@/components/signals";
 import { AvatarImg } from "../avatar";
 
@@ -21,7 +23,13 @@ export async function generateMetadata(): Promise<Metadata> {
 type Params = { category?: string; q?: string; remote?: string; city?: string; sort?: string };
 
 export default async function ServicesPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const [t, locale, categories, params] = await Promise.all([getT(), getLocale(), getCategories(), searchParams]);
+  const [t, locale, categories, params, threePages] = await Promise.all([getT(), getLocale(), getCategories(), searchParams, hasFeature("home_pages")]);
+  // Home in three pages: this page is now Professionals. Old and shared links keep their search words.
+  if (threePages) {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) sp.set(k, v);
+    redirect(`/app/professionals${sp.toString() ? `?${sp}` : ""}`);
+  }
   const selected = categories.find((c) => String(c.id) === params.category) ?? null;
   const q = (params.q ?? "").trim().slice(0, 60);
   const remote = params.remote === "1";

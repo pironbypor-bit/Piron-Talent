@@ -6,9 +6,9 @@ import { CITIES, HAS_DISTRICTS } from "@/lib/cities";
 import { phnomPenhToIso } from "@/lib/datetime";
 import { createClient, getUserId } from "@/lib/supabase/server";
 import { getMe } from "@/lib/app/queries";
+import { requireFeature } from "@/lib/app/features";
 import { fieldErrors, formEntries, type FormState } from "@/lib/validation";
 import { z } from "zod";
-import { requireFeature } from "@/lib/app/features";
 
 // Write helpers for the app. Each runs as the signed-in person; RLS and the security-definer functions in
 // migration 0004 decide what is allowed. Anonymous visitors are sent to /login with a way back.
@@ -874,4 +874,42 @@ export async function savePayoutAccount(formData: FormData) {
   const { error } = await (await createClient()).rpc("set_payout_account", { p_method: method, p_name: name, p_number: number });
   revalidatePath(back);
   redirect(error ? `${back}?error=1` : `${back}?saved=1`);
+}
+
+// Professional card (migration 0054) -----------------------------------------------------------------------
+
+/** Save what the person changed on their card, and the Published switch (the same switch as "I offer a service"). */
+export async function saveMyCard(formData: FormData) {
+  await requireFeature("home_pages");
+  const uid = await requireUser("/app/profile/card");
+  const pick = (k: string, max: number) => {
+    const v = String(formData.get(k) ?? "").trim().slice(0, max);
+    return v === "" ? null : v;
+  };
+  const city = pick("city", 40);
+  if (city && !(CITIES as readonly string[]).includes(city)) redirect("/app/profile/card?error=1");
+  const supabase = await createClient();
+  const { error } = await supabase.from("provider_cards").upsert({
+    user_id: uid,
+    title: pick("title", 60),
+    services: pick("services", 100),
+    price_from: pick("price_from", 40),
+    city,
+    about: pick("about", 280),
+  });
+  if (error) redirect("/app/profile/card?error=1");
+  await supabase.from("profiles").update({ is_available: formData.get("published") === "on" }).eq("id", uid);
+  revalidatePath("/app/professionals");
+  revalidatePath("/app/profile");
+  redirect("/app/profile/card?saved=1");
+}
+
+/** Go back to the profile details: removes the person's edits. */
+export async function resetMyCard() {
+  await requireFeature("home_pages");
+  const uid = await requireUser("/app/profile/card");
+  const supabase = await createClient();
+  await supabase.from("provider_cards").delete().eq("user_id", uid);
+  revalidatePath("/app/professionals");
+  redirect("/app/profile/card?saved=1");
 }

@@ -30,7 +30,7 @@ const chipPrimary = "rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold t
 const chipSecondary = "rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-semibold hover:bg-brand-50";
 
 export default async function ProfilePage() {
-  const payments = await hasFeature("payments");
+  const [payments, threePages] = await Promise.all([hasFeature("payments"), hasFeature("home_pages")]);
   const [t, locale, me, counters, identity, companies, invites] = await Promise.all([getT(), getLocale(), getMe(), myCounters(), myIdentityStatus(), myBusinesses(), myBusinessInvitations()]);
   if (!me) return null; // the proxy redirects anonymous visitors to /login
   const on = isAvailableNow(me);
@@ -99,6 +99,7 @@ export default async function ProfilePage() {
           </div>
         )}
         <Link href="/app/profile/edit" className={`${row} mt-1`}>{me.is_available ? t("My service") : t("Set up my service")} <ChevronRight className="size-4 text-ink-muted" /></Link>
+        {threePages && <Link href="/app/profile/card" className={row}>{t("My card")} <ChevronRight className="size-4 text-ink-muted" /></Link>}
       </section>
 
       {/* 3. Companies */}

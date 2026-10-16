@@ -37,7 +37,10 @@ export type PostRow = {
 export type CommentRow = { id: string; body: string; created_at: string; author: Author };
 
 export type Signals = { available_until: string | null; reply_minutes: number | null; replies: number };
+export type ProviderCard = { title: string | null; services: string | null; price_from: string | null; city: string | null; about: string | null };
+
 export type ProviderRow = Author & Signals & {
+  card?: ProviderCard | null;
   city: string | null;
   district: string | null;
   bio: string | null;
