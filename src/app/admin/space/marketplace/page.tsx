@@ -94,6 +94,14 @@ export default async function MarketplacePage() {
             ))}
           </section>
 
+          {m.bookings && (
+            <section className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {([["Booking requests, 30 days", m.bookings.requests_30d], ["Agreed", m.bookings.agreed_30d], ["Declined", m.bookings.declined_30d], ["Expired unanswered", m.bookings.expired_30d], ["Waiting now", m.bookings.waiting_now]] as [string, number][]).map(([k, v]) => (
+                <div key={k} className={card}><p className="text-xs text-ink-muted">{k}</p><p className="text-2xl font-bold">{v}</p></div>
+              ))}
+            </section>
+          )}
+
           <section className={card}>
             <h2 className="text-sm font-semibold">Jobs that look stuck</h2>
             <p className="text-xs text-ink-muted">Accepted for more than 7 days without delivery, or delivered for more than 3 days without confirmation.</p>

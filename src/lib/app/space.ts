@@ -137,6 +137,7 @@ export type MarketplaceHealth = {
   funnel_all: Funnel; funnel_30d: Funnel;
   hours_to_first_quote: number | null; avg_stars: number | null; reviews: number;
   quotes_waiting_2d: number; no_quote_3d: number;
+  bookings?: { requests_30d: number; agreed_30d: number; declined_30d: number; expired_30d: number; waiting_now: number };
   stuck: { id: string; post_id: string; title: string; status: string; days: number; customer: string | null; provider: string | null }[];
   categories: { name: string; posts: number; providers: number }[];
   cities: { city: string; posts: number; providers: number }[];
@@ -239,7 +240,7 @@ export function monthLabel(iso: string): string {
 export type MonthlyReport = {
   month: string;
   people: { new: number; total_at_end: number; providers_now: number; identity_checked_now: number; paused_now: number };
-  market: { projects: number; quotes: number; accepted: number; delivered: number; confirmed: number; reviews: number; avg_stars: number | null; messages: number; companies_new: number };
+  market: { projects: number; quotes: number; accepted: number; delivered: number; confirmed: number; reviews: number; avg_stars: number | null; messages: number; companies_new: number; bookings?: number; bookings_agreed?: number };
   money: { revenue: number; costs: number; profit: number; volume: number };
   errors: { new: number; seen: number; open_now: number };
   admin_actions: number;

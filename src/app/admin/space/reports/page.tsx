@@ -76,6 +76,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             <Block title="People" rows={[["New this month", p.new], ["Total at the end of the month", p.total_at_end], ["Providers now", p.providers_now], ["Identity checked now", p.identity_checked_now], ["Paused now", p.paused_now]]} />
             <Block title="Marketplace" rows={[
               ["Projects posted", m.projects], ["Quotes sent", m.quotes], ["Quotes accepted", m.accepted], ["Work delivered", m.delivered], ["Jobs confirmed", m.confirmed],
+              ...(m.bookings === undefined ? [] : ([["Booking requests", m.bookings], ["Bookings agreed", m.bookings_agreed ?? 0]] as [string, number][])),
               ["Reviews", m.reviews], ["Average stars", m.avg_stars === null ? "none" : m.avg_stars], ["Messages sent", m.messages], ["New companies", m.companies_new],
             ]} />
             <Block title="Money" rows={[["Revenue", usd($.revenue)], ["Costs", usd($.costs)], ["Profit", usd($.profit)], ["Paid between users (market size)", usd($.volume)]]} />
