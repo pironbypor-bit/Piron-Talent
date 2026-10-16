@@ -54,6 +54,19 @@ ul{margin:6px 0 6px 20px;padding:0} li{margin:3px 0} table{border-collapse:colla
 <li>Cards two per row on a phone, three on a wide screen. A &ldquo;Show more&rdquo; button loads the next ones.</li>
 <li>Tapping the card opens the full profile (record, reviews, portfolio, all their services). Tapping Book starts a booking.</li>
 </ul>
+<h3>How the profile and this page connect</h3>
+<p>The profile says <b>who you are</b> (name, picture, record, reviews, identity). A <b>service card</b> says <b>what you offer</b> (title, price from, city). People appear on the Professionals page in two ways at once:</p>
+<table>
+<tr><th>Way</th><th>What happens</th></tr>
+<tr><td><b>Automatic first card</b></td><td>When someone turns on <i>I offer a service</i> on their profile, a first card is made from the profile: name, picture, role line, category, skills, price from, city, rating. No extra typing. It appears as soon as the profile has a role line, a category, a city and a price from.</td></tr>
+<tr><td><b>Their own cards (My services)</b></td><td>They can add more cards, or replace the automatic one, each with its own title, photo, price and hours. Example: an electrician with &ldquo;Home wiring&rdquo; and &ldquo;Solar panel check&rdquo;.</td></tr>
+</table>
+<ul>
+<li>The switch <b>I offer a service</b> on the profile is the master on/off. Off, or a paused account, hides every card.</li>
+<li>A card always links to the profile for the record and reviews. Reviews and the record belong to the person, not to one card.</li>
+<li>A profile that is too empty does not appear. The owner sees a small checklist: &ldquo;Add a role line, category, city and price from to appear.&rdquo;</li>
+<li>Companies work the same way: turn on <i>Offer services</i> on the company page and a card is made from the company details; the owner or a manager can add more.</li>
+</ul>
 <h3>What providers and companies need</h3>
 <p>The catalogue is only as good as the service cards in it, so providers get a small <b>My services</b> screen under <i>Profile &rarr; I offer a service</i>:</p>
 <ul>
@@ -110,7 +123,7 @@ ul{margin:6px 0 6px 20px;padding:0} li{margin:3px 0} table{border-collapse:colla
 <h2>Build steps</h2>
 <div class="step"><span class="tag">Step 1</span><b>Demo of the three pages</b> with sample data: cards, filters, Book sheet, My bookings. You approve or change it before any real work.</div>
 <div class="step"><span class="tag">Step 2</span><b>Three-button strip on Home</b> and the Posts page unchanged. Professionals and My bookings show &ldquo;coming soon&rdquo; behind the feature switch (Only me).</div>
-<div class="step"><span class="tag">Step 3</span><b>My services</b> for providers and companies (database, form, photo upload) and the <b>Professionals page</b> with search, filters and cards.</div>
+<div class="step"><span class="tag">Step 3</span><b>Automatic cards from profiles</b>, <b>My services</b> for extra cards (providers and companies, photo upload) and the <b>Professionals page</b> with search, filters and cards.</div>
 <div class="step"><span class="tag">Step 4</span><b>Book flow:</b> request, accept, suggest another price or time, decline, expire. It creates the normal job when agreed.</div>
 <div class="step"><span class="tag">Step 5</span><b>My bookings and applications page</b> with filters and next actions.</div>
 <div class="step"><span class="tag">Step 6</span><b>Notifications, reminders, Khmer, Space numbers and the feature switch.</b></div>
@@ -125,6 +138,7 @@ ul{margin:6px 0 6px 20px;padding:0} li{margin:3px 0} table{border-collapse:colla
 <tr><td>4</td><td>Must a provider be identity checked to appear?</td><td>No at first. Show the green mark and sort checked first when ratings tie.</td></tr>
 <tr><td>5</td><td>Photos: required?</td><td>Optional. A category icon is the default.</td></tr>
 <tr><td>6</td><td>Should My bookings also show quotes I sent?</td><td>Yes, as &ldquo;Quote&rdquo; rows, so the whole history is in one place.</td></tr>
+<tr><td>8</td><td>Appear automatically from the profile, or only after adding a service card by hand?</td><td>Both. An automatic first card from the profile, plus optional My services cards.</td></tr>
 <tr><td>7</td><td>Booking request expiry</td><td>48 hours, with a reminder to the provider at 24.</td></tr>
 </table>
 <p>Say &ldquo;use your recommendations&rdquo; or tell me which ones to change, and I will start with the Step 1 demo.</p>
