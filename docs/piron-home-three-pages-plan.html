@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home in three pages - plan and features</title>
+<style>
+body{font:16px/1.55 system-ui,Segoe UI,Arial,sans-serif;max-width:860px;margin:24px auto;padding:0 16px;color:#1c1917}
+h1{font-size:26px;margin-bottom:4px} h2{margin-top:34px;font-size:20px;border-top:2px solid #fbbf24;padding-top:14px} h3{font-size:16px;margin:18px 0 4px}
+.sub{color:#78716c;margin-top:0} .box{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 16px;margin:12px 0}
+.step{background:#fff;border:1px solid #e7e5e4;border-radius:14px;padding:14px 18px;margin:14px 0}
+.tag{display:inline-block;background:#fef3c7;border-radius:999px;padding:1px 10px;font-size:13px;font-weight:600;margin-right:6px}
+ul{margin:6px 0 6px 20px;padding:0} li{margin:3px 0} table{border-collapse:collapse;width:100%;margin:8px 0} td,th{border:1px solid #e7e5e4;padding:6px 10px;text-align:left;vertical-align:top} th{background:#fafaf9}
+.screen{border:2px solid #1c1917;border-radius:16px;padding:12px;margin:12px 0;background:#fffdf7}
+.tabs span{display:inline-block;border-radius:999px;padding:3px 12px;margin-right:6px;border:1px solid #d6d3d1;font-size:14px} .tabs .on{background:#1c1917;color:#fff}
+</style></head><body>
+<h1>Home in three pages</h1>
+<p class="sub">Plan and features. Written 16 October 2026. Nothing is built yet.</p>
+
+<div class="box"><b>The idea.</b> Today Home is one long list of posts. It becomes three pages, chosen with three buttons at the top of Home. Each page answers one question.</div>
+
+<div class="screen">
+<div class="tabs"><span class="on">Posts</span><span>Professionals</span><span>My bookings</span></div>
+<p style="margin:10px 0 0;color:#57534e">Three buttons under the top bar. The chosen one is dark. The bottom bar stays the same.</p>
+</div>
+
+<table>
+<tr><th>Page</th><th>Question it answers</th><th>Who it is for</th><th>Based on</th></tr>
+<tr><td><b>1. Posts</b></td><td>What work is being asked for or offered?</td><td>Everyone</td><td>The current Home. No change in what it does.</td></tr>
+<tr><td><b>2. Professionals</b></td><td>Who can I book right now?</td><td>Customers</td><td>The cards in your first picture: photo, name, services, rating, city, price from, a Book button.</td></tr>
+<tr><td><b>3. My bookings</b></td><td>What have I booked, applied for, or been asked?</td><td>Customers and providers</td><td>Your second picture: bookings and job applications in one list, with an empty state.</td></tr>
+</table>
+
+<h2>Page 1. Posts</h2>
+<p>Same as today, with the three-button strip above it.</p>
+<ul>
+<li>Search bar, kind filter (Job offer, Skill offer, Share knowledge) and the Post button stay.</li>
+<li>The filter and search remember what you chose when you come back.</li>
+<li>The &ldquo;Get started&rdquo; card stays on Profile.</li>
+</ul>
+
+<h2>Page 2. Professionals (the catalogue)</h2>
+<h3>What a card shows</h3>
+<ul>
+<li><b>Picture:</b> the provider&rsquo;s photo for that service, or a friendly category icon when there is none.</li>
+<li><b>Name:</b> a person or a company, with the green <i>Identity checked</i> mark and an <i>Available now</i> dot.</li>
+<li><b>Services line:</b> up to three things they do (&ldquo;Home wiring &middot; Lighting &middot; Fans&rdquo;).</li>
+<li><b>Rating and count</b>, and the <b>city</b>.</li>
+<li><b>Price from</b> with the unit (per hour, day, session or project).</li>
+<li><b>Book</b> button, and a small <b>Keep</b> (save) mark.</li>
+</ul>
+<h3>The page</h3>
+<ul>
+<li>Header &ldquo;Available professionals&rdquo; with the count (&ldquo;6 professionals&rdquo;).</li>
+<li><b>Search</b> by name, service or skill. <b>Filters:</b> category, city or province, price range, rating (4+ stars), remote, available now, person or company.</li>
+<li><b>Sort:</b> best rated, lowest price, most completed jobs, newest.</li>
+<li>Cards two per row on a phone, three on a wide screen. A &ldquo;Show more&rdquo; button loads the next ones.</li>
+<li>Tapping the card opens the full profile (record, reviews, portfolio, all their services). Tapping Book starts a booking.</li>
+</ul>
+<h3>What providers and companies need</h3>
+<p>The catalogue is only as good as the service cards in it, so providers get a small <b>My services</b> screen under <i>Profile &rarr; I offer a service</i>:</p>
+<ul>
+<li>Add a service: title, category, short description, price from and unit, city, remote yes or no, photo, days and hours they work.</li>
+<li>Several services per person. Pause or delete any of them.</li>
+<li>A <b>company</b> can list services too, from its own page, with a manager or owner as the contact.</li>
+<li>A paused account or an account with no services does not appear.</li>
+</ul>
+
+<h2>Book: what happens when someone taps it</h2>
+<ol>
+<li><b>Customer</b> chooses a date and time, writes what they need, adds the place if it is on site, and sees the &ldquo;from&rdquo; price. Presses <b>Send booking request</b>.</li>
+<li><b>Provider</b> gets a notification and has three choices: <b>Accept</b> at the shown price, <b>Suggest another price or time</b>, or <b>Decline</b> with a short reason.</li>
+<li>If the provider suggests a change, the customer accepts or declines it. Nothing is final until both agree.</li>
+<li>Once agreed it becomes a normal <b>job</b> with the same steps as today: provider marks delivered, customer confirms, review, invoice record, dispute if needed.</li>
+<li>A request that nobody answers in 48 hours is closed and the customer is told.</li>
+</ol>
+<div class="box"><b>Money.</b> Unchanged. Booking is a request and an agreement. Piron Work does not take or hold money; the customer pays the provider directly and the app keeps the record.</div>
+<p><b>Why reuse the job steps:</b> delivery, confirmation, reviews, invoices, disputes, reminders and the owner&rsquo;s numbers already work. A booking only adds the front door.</p>
+
+<h2>Page 3. My bookings and applications</h2>
+<ul>
+<li><b>Filter buttons:</b> All, Bookings, Applications. A second row: Waiting, Active, Done, Cancelled.</li>
+<li><b>Two roles in one list:</b> things you booked (as customer) and requests you received (as provider), each marked with a small label.</li>
+<li><b>Each row:</b> title, the other person or company, date, a coloured status, and the next action (Open, Cancel, Accept, Withdraw, Review).</li>
+<li><b>Applications:</b> job applications you sent from the Jobs tab with their status: Submitted, Shortlisted, Accepted, Rejected, Withdrawn.</li>
+<li><b>Also shown, so nothing is lost:</b> quotes you sent and projects you accepted appear as &ldquo;Quote&rdquo; rows that open the project.</li>
+<li><b>Empty state</b> like your picture: &ldquo;No bookings or applications yet&rdquo; with <b>Explore professionals</b>.</li>
+<li><b>Provider shortcut:</b> a count on the page button when requests are waiting for your answer.</li>
+</ul>
+
+<h2>Rules and safety</h2>
+<table>
+<tr><th>Rule</th><th>Why</th></tr>
+<tr><td>You cannot book yourself or your own company.</td><td>Prevents fake reviews and fake records.</td></tr>
+<tr><td>A provider needs a complete profile to list a service. Identity check is shown but not required at first.</td><td>Keeps the catalogue from being empty on day one; the green mark does the persuading.</td></tr>
+<tr><td>Booking requests are limited per day per person.</td><td>Stops spam, same as the message request limit.</td></tr>
+<tr><td>Paused accounts cannot book or be booked.</td><td>Same pause rules as the rest of the app.</td></tr>
+<tr><td>Blocked people cannot book each other.</td><td>Same block rules as messages.</td></tr>
+<tr><td>Reviews only after a confirmed job.</td><td>Same as today.</td></tr>
+</table>
+
+<h2>What changes in the rest of the app</h2>
+<ul>
+<li><b>Services tab:</b> the new Professionals page replaces it, so there is one catalogue, not two. The bottom bar becomes Home, Payments, Jobs, Messages. Old Services addresses keep working and lead to Professionals.</li>
+<li><b>Profile:</b> the &ldquo;I offer a service&rdquo; card gets <b>My services</b> and a booking requests count.</li>
+<li><b>Notifications:</b> new kinds: booking requested, accepted, declined, changed, cancelled, expired. They join the Projects and quotes group, with Khmer.</li>
+<li><b>Reminders:</b> a nudge to the provider after 24 hours of no answer.</li>
+<li><b>Piron Work Space:</b> a feature switch for the whole booking feature (start Off, then Only me), and bookings added to the Marketplace funnel and monthly report.</li>
+<li><b>Guides:</b> both PDF guides updated at the end.</li>
+<li><b>Fee (later):</b> if you charge a service fee, bookings are counted the same as other confirmed jobs.</li>
+</ul>
+
+<h2>Build steps</h2>
+<div class="step"><span class="tag">Step 1</span><b>Demo of the three pages</b> with sample data: cards, filters, Book sheet, My bookings. You approve or change it before any real work.</div>
+<div class="step"><span class="tag">Step 2</span><b>Three-button strip on Home</b> and the Posts page unchanged. Professionals and My bookings show &ldquo;coming soon&rdquo; behind the feature switch (Only me).</div>
+<div class="step"><span class="tag">Step 3</span><b>My services</b> for providers and companies (database, form, photo upload) and the <b>Professionals page</b> with search, filters and cards.</div>
+<div class="step"><span class="tag">Step 4</span><b>Book flow:</b> request, accept, suggest another price or time, decline, expire. It creates the normal job when agreed.</div>
+<div class="step"><span class="tag">Step 5</span><b>My bookings and applications page</b> with filters and next actions.</div>
+<div class="step"><span class="tag">Step 6</span><b>Notifications, reminders, Khmer, Space numbers and the feature switch.</b></div>
+<div class="step"><span class="tag">Step 7</span><b>Test run, security review, update the two PDF guides,</b> then switch to Everyone when you say so.</div>
+
+<h2>Decisions I need from you</h2>
+<table>
+<tr><th>#</th><th>Question</th><th>My recommendation</th></tr>
+<tr><td>1</td><td>Remove the Services tab from the bottom bar once Professionals exists?</td><td>Yes. One catalogue. Bottom bar of four tabs.</td></tr>
+<tr><td>2</td><td>Can companies list services and be booked?</td><td>Yes, with the owner or a manager answering.</td></tr>
+<tr><td>3</td><td>Must the provider accept at the shown price?</td><td>No. They can suggest another price or time; the customer then agrees or declines.</td></tr>
+<tr><td>4</td><td>Must a provider be identity checked to appear?</td><td>No at first. Show the green mark and sort checked first when ratings tie.</td></tr>
+<tr><td>5</td><td>Photos: required?</td><td>Optional. A category icon is the default.</td></tr>
+<tr><td>6</td><td>Should My bookings also show quotes I sent?</td><td>Yes, as &ldquo;Quote&rdquo; rows, so the whole history is in one place.</td></tr>
+<tr><td>7</td><td>Booking request expiry</td><td>48 hours, with a reminder to the provider at 24.</td></tr>
+</table>
+<p>Say &ldquo;use your recommendations&rdquo; or tell me which ones to change, and I will start with the Step 1 demo.</p>
+</body></html>
